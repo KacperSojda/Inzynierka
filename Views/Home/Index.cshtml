@@ -1,0 +1,62 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<User> signInManager;
+
+@{
+    ViewData["Title"] = "Home Page";    
+}
+
+@if (!signInManager.IsSignedIn(User))
+{
+    <div class="text-center">
+        <h1 class="display-4">Witaj na stronie!</h1>
+        <h1 class="display-4">Zaloguj się lub zarejestruj</h1>
+        <h1 class="display-4">Aby móc poznawać osoby dzielące</h1>
+        <h1 class="display-4">podobne zainteresowania co ty</h1>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        <h1 class="display-4">Witaj @ViewBag.UserName!</h1>
+        <h1 class="display-4">Chatuj ze znajomymi</h1>
+        <h1 class="display-4">Użyj wyszukiwarki</h1>
+        <h1 class="display-4">Lub dołącz do grupy tematycznej</h1>
+    </div>
+
+    <div class="footer-bar">
+        <button class="left-button">Grupy</button>
+        <button class="center-button">
+            <a asp-controller="Browser" asp-action="SearchUsersByTags">Wyszukiwarka</a>
+        </button>
+        <button class="right-button">
+            <a asp-controller="Profile" asp-action="Index">Profile</a>
+        </button>
+    </div>
+}
+
+<style>
+    .footer-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background-color: #f0f0f0;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        z-index: 999;
+    }
+
+    .footer-bar button {
+        padding: 50px 220px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    #btnCenter {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+</style>

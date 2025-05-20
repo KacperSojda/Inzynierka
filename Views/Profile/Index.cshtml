@@ -1,0 +1,29 @@
+﻿@model INZYNIERKA.ViewModels.UserViewModel
+
+@{
+    ViewData["Title"] = "Profile Home Page";
+}
+
+<div class="text-center">
+    <h2>@Model.Avatar</h2>
+    <h2>Witaj, @Model.UserName</h2>
+    <h2>@Model.PublicDescription</h2>
+    <h2>@Model.PrivateDescription</h2>
+    <h3>Twoje tagi:</h3>
+</div>
+    <ul>
+        @foreach (var tag in Model.Tags)
+        {
+            <li>@tag</li>
+        }
+    </ul>
+<div class="text-center">
+    <a asp-controller="Profile" asp-action="EditProfile" 
+    asp-route-UserName=@Model.UserName 
+    asp-route-PublicDescription=@Model.PublicDescription
+    asp-route-PrivateDescription=@Model.PrivateDescription
+    asp-route-Avatar=@Model.Avatar>Edytuj</a>
+</div>
+<div class="text-center">
+    <a asp-controller="Profile" asp-action="SelectTags">Tagi</a>
+</div>

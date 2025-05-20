@@ -1,0 +1,17 @@
+﻿@model INZYNIERKA.ViewModels.SelectTagsViewModel
+
+<h2>Wybierz swoje tagi</h2>
+
+<form asp-action="SelectTags" method="post">
+    <div class="form-group">
+        @for (int i = 0; i < Model.Tags.Count; i++)
+        {
+            <div class="form-check">
+                <input asp-for="@Model.Tags[i].IsSelected" class="form-check-input" />
+                <input type="hidden" asp-for="@Model.Tags[i].TagId" />
+                <label class="form-check-label">@Model.Tags[i].TagName</label>
+            </div>
+        }
+    </div>
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+</form>

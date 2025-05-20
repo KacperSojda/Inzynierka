@@ -1,0 +1,22 @@
+﻿@model INZYNIERKA.ViewModels.TagViewModel
+
+@{
+    ViewData["Title"] = "Add Tag Page";
+}
+
+<h2>Dodaj tag</h2>
+
+<form asp-action="AddTag" method="post">
+    <div class="form-group">
+        <label asp-for="TagName"></label>
+        <input asp-for="TagName" class="form-control" />
+        <span asp-validation-for="TagName" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

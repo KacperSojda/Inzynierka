@@ -1,0 +1,46 @@
+﻿@using INZYNIERKA.ViewModels;
+@model LoginViewModel;
+
+@{
+	ViewData["Titel"] = "Login";
+}
+
+<div class="account-container">
+	<div class="account-box">
+		<h2 class="text-center mb-4">Login</h2>
+		<form asp-action="Login" method="post">
+			<div asp-validation-summary="ModelOnly" class="text-damage"></div>
+			<div class="mb3">
+				<label asp-for="Name" class="form-label"></label>
+				<input asp-for="Name" class="form-control" />
+				<span asp-validation-for="Name" class="text-danger"></span>
+			</div>
+			<div class="mb3">
+				<label asp-for="Password" class="form-label"></label>
+				<input asp-for="Password" class="form-control" />
+				<span asp-validation-for="Password" class="text-danger"></span>
+			</div>
+			<div class="float-end">
+				<a asp-controller="Account" asp-action="VerifyEmail" class="text-decoration-none">
+					Forgot Password?
+				</a>
+			</div>
+			<div class="form-check mb-3">
+				<label class="form-check-label">
+					<input asp-for="RememberMe" class ="form-check-input" />
+					@Html.DisplayNameFor(a => a.RememberMe)
+				</label>
+			</div>
+			<input type="submit" value="Login" class="btn btn-succes w-100" />
+			<div class="text-center">
+				<a asp-controller="Home" asp-action="Index">Back</a>
+			</div>
+		</form>
+	</div>
+</div>
+
+@section Scripts{
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+	}
+}
