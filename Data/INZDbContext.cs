@@ -1,6 +1,8 @@
-﻿using INZYNIERKA.Models;
+﻿using System.Reflection.Emit;
+using INZYNIERKA.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace INZYNIERKA.Data
 {
@@ -8,7 +10,9 @@ namespace INZYNIERKA.Data
     {
         public DbSet<Tag> Tags { get; set; }
         public DbSet<UserTag> UserTags {  get; set; }
-        public DbSet<Notification> notifications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<UserFriend> UserFriends { get; set; }
+        public DbSet<Message> Messages { get; set; }
         public INZDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -29,6 +33,45 @@ namespace INZYNIERKA.Data
                 .WithMany(t => t.UserTags)
                 .HasForeignKey(ut => ut.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.Sender)
+                .WithMany(u => u.SendedNotifications)
+                .HasForeignKey(n => n.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.Receiver)
+                .WithMany(u => u.ReceivedNotifications)
+                .HasForeignKey(n => n.ReceiverId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserFriend>()
+                .HasKey(uf => new { uf.UserId, uf.FriendId });
+
+            builder.Entity<UserFriend>()
+                .HasOne(uf => uf.User)
+                .WithMany(u => u.SendedFriendRequests)
+                .HasForeignKey(uf => uf.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserFriend>()
+                .HasOne(uf => uf.Friend)
+                .WithMany(u => u.ReceivedFriendRequests)
+                .HasForeignKey(uf => uf.FriendId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Message>()
+                .HasOne(n => n.Sender)
+                .WithMany(u => u.SendedMessages)
+                .HasForeignKey(n => n.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Message>()
+                .HasOne(n => n.Receiver)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(n => n.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

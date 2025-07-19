@@ -1,0 +1,27 @@
+﻿@model List<INZYNIERKA.ViewModels.FriendViewModel>
+
+@{
+    ViewData["Title"] = "Twoje zaproszenia";
+}
+
+<h2>Lista Zaproszonych Osob</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var friend in Model)
+        {
+            <li>
+                <strong>@friend.UserName</strong>
+                <form asp-action="DeleteInvitation" method="post" style="display:inline">
+                    <input type="hidden" name="friendId" value="@friend.Id" />
+                    <button type="submit">Usuń zaproszenie</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Brak Wyslanych Zaproszen.</p>
+}

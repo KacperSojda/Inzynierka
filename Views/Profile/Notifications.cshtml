@@ -1,0 +1,43 @@
+﻿@model INZYNIERKA.ViewModels.NotificationListViewModel
+
+@{
+    ViewData["Title"] = "Notifications Page";
+}
+
+<h3>Powiadomienia</h3>
+
+@if (Model.Notifications.Any())
+{
+    <ul>
+        @foreach (var notification in Model.Notifications)
+        {
+            <li>
+                @if (notification.NotificationType == NotificationType.FriendRequest)
+                {
+                    <text>@notification.SenderUserName wysłał Ci zaproszenie do znajomych</text>
+
+                    <form asp-action="FriendRequestAccept" method="post" style="display:inline; margin-left:10px;">
+                        <input type="hidden" name="notificationId" value="@notification.Id" />
+                        <input type="hidden" name="senderUserName" value="@notification.SenderUserName" />
+                        <button type="submit">Akceptuj</button>
+                    </form>
+                }
+                else if (notification.NotificationType == NotificationType.Message)
+                {
+                    <text>Masz nową wiadomość od @notification.SenderUserName</text>
+                }
+                <br />
+                <small>@notification.CreationDate.ToString("g")</small>
+
+                <form asp-action="DeleteNotification" method="post" style="display:inline; margin-left:10px;">
+                    <input type="hidden" name="notificationId" value="@notification.Id" />
+                    <button type="submit">Usuń</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Brak powiadomień</p>
+}

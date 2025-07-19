@@ -1,0 +1,33 @@
+﻿@model List<INZYNIERKA.ViewModels.FriendViewModel>
+
+@{
+    ViewData["Title"] = "Twoi znajomi";
+}
+
+<h2>Lista znajomych</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var friend in Model)
+        {
+            <li>
+                <strong>@friend.UserName</strong>
+                <form asp-action="DeleteFriend" method="post" style="display:inline">
+                    <input type="hidden" name="friendId" value="@friend.Id" />
+                    <button type="submit">Usuń znajomego</button>
+                </form>
+                <a asp-action="Chat"
+                   asp-controller="Chat"
+                   asp-route-friendId="@friend.Id"
+                   class="btn btn-primary">
+                    Chat
+                </a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Nie masz jeszcze żadnych znajomych.</p>
+}

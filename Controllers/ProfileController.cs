@@ -14,16 +14,16 @@ namespace INZYNIERKA.Controllers
         public ProfileController(UserManager<User> userManager, INZDbContext dbcontext)
         {
             this.userManager = userManager;
-            context = dbcontext;
+            this.context = dbcontext;
         }
         public async Task<IActionResult> Index()
         {
             var user = await userManager.GetUserAsync(User);
 
             var userTags = await context.UserTags
-            .Where(ut => ut.UserId == user.Id)
-            .Include(ut => ut.Tag)
-            .ToListAsync();
+                .Where(ut => ut.UserId == user.Id)
+                .Include(ut => ut.Tag)
+                .ToListAsync();
 
             var model = new UserViewModel
             {
@@ -31,7 +31,7 @@ namespace INZYNIERKA.Controllers
                 PublicDescription = user.PublicDescription,
                 UserName = user.UserName,
                 Avatar = user.Avatar,
-                Tags = userTags.Select(ut => ut.Tag.Name).ToList()
+                Tags = userTags.Select(ut => ut.Tag.Name).ToList(),
             };
             return View(model);
         }
@@ -46,14 +46,13 @@ namespace INZYNIERKA.Controllers
                 PublicDescription = user.PublicDescription,
                 UserName = user.UserName,
                 Avatar = user.Avatar,
-                Tags = new List<String>()
             };
             return View(model);
         }
+
         [HttpPost]
         public async Task<IActionResult> EditProfile(UserViewModel model)
         {
-            model.Tags = new List<String>();
             if (ModelState.IsValid)
             {
                 var user = await userManager.GetUserAsync(User);
@@ -87,9 +86,9 @@ namespace INZYNIERKA.Controllers
             var user = await userManager.GetUserAsync(User);
 
             var userTagIds = await context.UserTags
-            .Where(ut => ut.UserId == user.Id)
-            .Select(ut => ut.TagId)
-            .ToListAsync();
+                .Where(ut => ut.UserId == user.Id)
+                .Select(ut => ut.TagId)
+                .ToListAsync();
 
             var tags = await context.Tags.ToListAsync();
 
@@ -110,10 +109,11 @@ namespace INZYNIERKA.Controllers
         public async Task<IActionResult> SelectTags(SelectTagsViewModel model)
         {
             var user = await userManager.GetUserAsync(User);
+
             var selectedTagIds = model.Tags
-            .Where(t => t.IsSelected)
-            .Select(t => t.TagId)
-            .ToList();
+                .Where(t => t.IsSelected)
+                .Select(t => t.TagId)
+                .ToList();
 
             var existingUserTags = await context.UserTags
                 .Where(ut => ut.UserId == user.Id)
@@ -132,6 +132,178 @@ namespace INZYNIERKA.Controllers
 
             await context.SaveChangesAsync();
             return RedirectToAction("Index", "Profile");
+        }
+
+        public async Task<IActionResult> Notifications()
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            user = await context.Users
+                .Include(u => u.ReceivedNotifications)
+                    .ThenInclude(n => n.Sender)
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+            var model = new NotificationListViewModel
+            {
+                Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
+                {
+                    Id = n.Id,
+                    SenderUserName = n.Sender.UserName,
+                    NotificationType = n.Type,
+                    CreationDate = n.CreationDate
+                }).OrderByDescending(n => n.CreationDate).ToList()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteNotification(int notificationId)
+        {
+            var notification = await context.Notifications
+                .Include(n => n.Sender)
+                .Include(n => n.Receiver)
+                .FirstOrDefaultAsync(n => n.Id == notificationId);
+
+            if (notification.Type == NotificationType.FriendRequest)
+            {
+                var Record = await context.UserFriends.FirstOrDefaultAsync(f =>
+                    (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
+
+                if (Record != null)
+                {
+                    context.UserFriends.Remove(Record);
+                }
+            }
+
+            context.Notifications.Remove(notification);
+
+            await context.SaveChangesAsync();
+
+            return RedirectToAction("Notifications");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FriendRequestAccept(int notificationId)
+        {
+            var notification = await context.Notifications
+                .Include(n => n.Sender)
+                .Include(n => n.Receiver)
+                .FirstOrDefaultAsync(n => n.Id == notificationId);
+
+            if(notification != null)
+            {
+                var FirstRecord = await context.UserFriends.FirstOrDefaultAsync(f =>
+                    (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
+
+                if (FirstRecord != null)
+                {
+                    context.UserFriends.RemoveRange(FirstRecord);
+                }
+
+                context.UserFriends.AddRange(
+                    new UserFriend { UserId = notification.SenderId, FriendId = notification.ReceiverId, Status = FriendshipStatus.Accepted },
+                    new UserFriend { UserId = notification.ReceiverId, FriendId = notification.SenderId, Status = FriendshipStatus.Accepted }
+                );
+
+                context.Notifications.Remove(notification);
+
+                await context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Notifications");
+        }
+
+        public async Task<IActionResult> FriendList()
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var model = await context.UserFriends
+                .Where(f =>
+                    f.UserId == user.Id && f.Status == FriendshipStatus.Accepted)
+                .Select(f => new FriendViewModel
+                {
+                    Id = f.Friend.Id,
+                    UserName = f.Friend.UserName
+                })
+                .ToListAsync();
+
+            return View("FriendList", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteFriend(string friendId)
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var friendship1 = await context.UserFriends
+                .FirstOrDefaultAsync(f =>
+                    (f.UserId == user.Id && f.FriendId == friendId));
+
+            var friendship2 = await context.UserFriends
+                .FirstOrDefaultAsync(f =>
+                    (f.FriendId == user.Id && f.UserId == friendId));
+
+            if (friendship1 != null)
+            {
+                context.UserFriends.Remove(friendship1);
+            }
+
+            if (friendship2 != null)
+            {
+                context.UserFriends.Remove(friendship2);
+            }
+
+            await context.SaveChangesAsync();
+
+            return RedirectToAction("FriendList");
+        }
+
+        public async Task<IActionResult> RequestList()
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var model = await context.UserFriends
+                .Where(f =>
+                    f.UserId == user.Id && f.Status == FriendshipStatus.Pending)
+                .Select(f => new FriendViewModel
+                {
+                    Id = f.Friend.Id,
+                    UserName = f.Friend.UserName
+                })
+                .ToListAsync();
+
+            return View("RequestList", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRequest(string friendId)
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var friendship = await context.UserFriends
+                .FirstOrDefaultAsync(f =>
+                    (f.UserId == user.Id && f.FriendId == friendId));
+
+            if (friendship != null)
+            {
+                context.UserFriends.Remove(friendship);
+            }
+
+            var notification = await context.Notifications
+                .FirstOrDefaultAsync(n =>
+                    n.Type == NotificationType.FriendRequest &&
+                    n.SenderId == user.Id &&
+                    n.ReceiverId == friendId);
+
+            if (notification != null)
+            {
+                context.Notifications.Remove(notification);
+            }
+
+            await context.SaveChangesAsync();
+
+            return RedirectToAction("RequestList");
         }
 
 

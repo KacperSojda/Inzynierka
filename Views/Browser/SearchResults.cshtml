@@ -1,18 +1,14 @@
-﻿@model SearchByTagsViewModel
+﻿@model INZYNIERKA.ViewModels.UserViewModel
 
-@if (Model.MatchingUsers.Any())
-{
-    var user = Model.MatchingUsers[Model.CurrentIndex];
-    <h3>@user.UserName</h3>
-    <p>@user.PublicDescription</p>
-    <p>Tagi: @string.Join(", ", user.Tags)</p>
+<h3>@Model.UserName</h3>
+<p> @Model.PublicDescription</p>
+<p>Tagi: @string.Join(", ", @Model.Tags)</p>
 
-    <form asp-action="NextUser" method="post" style="display: inline;">
-        <input type="hidden" name="currentIndex" value="@Model.CurrentIndex" />
-        <button type="submit" @(Model.CurrentIndex == Model.MatchingUsers.Count - 1 ? "disabled" : "")>Następny →</button>
-    </form>
-}
-else
-{
-    <p>Brak użytkowników spełniających kryteria.</p>
-}
+<form asp-action="NextUser" method="post" style="display:inline;">
+    <button type="submit" class="btn btn-primary">Następny →</button>
+</form>
+
+<form asp-action="SendFriendRequest" method="post" style="display:inline;">
+    <input type="hidden" name="userId" value="@Model.Id" />
+    <button type="submit" class="btn btn-secondary">Wyślij zaproszenie</button>
+</form>

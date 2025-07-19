@@ -44,12 +44,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxWZXJpZnlFbWFpbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Browser/NoSearchResults.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnJvd3NlclxOb1NlYXJjaFJlc3VsdHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Browser/NoSelectedTags.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnJvd3NlclxOb1NlbGVjdGVkVGFncy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Browser/SearchResults.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnJvd3NlclxTZWFyY2hSZXN1bHRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Browser/SearchUsersByTags.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnJvd3NlclxTZWFyY2hVc2Vyc0J5VGFncy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Chat/Chat.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hhdFxDaGF0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Home/Index.cshtml]
@@ -68,8 +80,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxFZGl0UHJvZmlsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/FriendList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxGcmllbmRMaXN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/Notifications.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxOb3RpZmljYXRpb25zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/RequestList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxSZXF1ZXN0TGlzdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/SelectTags.cshtml]

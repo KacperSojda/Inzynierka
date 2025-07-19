@@ -235,3 +235,5 @@ C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net9.0\INZYNIERKA.p
 C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net9.0\INZYNIERKA.genruntimeconfig.cache
 C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net9.0\ref\INZYNIERKA.dll
 C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net9.0\INZYNIERKA.sourcelink.json
+C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\bin\Debug\net9.0\System.Net.WebSockets.WebSocketProtocol.dll
