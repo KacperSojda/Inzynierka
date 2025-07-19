@@ -20,7 +20,7 @@ public class ChatHub : Hub
             SenderId = senderId,
             ReceiverId = receiverId,
             Content = message,
-            DateTime = DateTime.Now
+            DateTime = DateTime.UtcNow
         };
 
         _context.Messages.Add(msg);
@@ -38,7 +38,7 @@ public class ChatHub : Hub
                 SenderId = senderId,
                 ReceiverId = receiverId,
                 Type = NotificationType.Message,
-                CreationDate = DateTime.Now
+                CreationDate = DateTime.UtcNow
             };
 
             _context.Notifications.Add(notification);

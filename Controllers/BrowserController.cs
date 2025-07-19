@@ -154,7 +154,7 @@ namespace INZYNIERKA.Controllers
                     SenderId = sender.Id,
                     ReceiverId = receiver.Id,
                     Type = NotificationType.FriendRequest,
-                    CreationDate = DateTime.Now
+                    CreationDate = DateTime.UtcNow
                 };
 
                 context.Notifications.Add(notification);

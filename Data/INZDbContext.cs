@@ -13,7 +13,8 @@ namespace INZYNIERKA.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserFriend> UserFriends { get; set; }
         public DbSet<Message> Messages { get; set; }
-        public INZDbContext(DbContextOptions options) : base(options) { }
+
+        public INZDbContext(DbContextOptions<INZDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
