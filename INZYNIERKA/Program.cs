@@ -31,6 +31,8 @@ builder.Services.AddSession();
 
 builder.Services.AddSignalR();
 
+builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT")}");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
