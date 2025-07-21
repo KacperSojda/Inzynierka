@@ -21,7 +21,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 # Instalujemy natywne biblioteki potrzebne przez Npgsql i inne zależności systemowe
 RUN apt-get update && \
-    apt-get install -y libssl1.1 libicu66 && \
+    apt-get install -y libssl3 libicu70 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
