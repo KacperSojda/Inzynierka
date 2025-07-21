@@ -59,10 +59,10 @@ app.MapControllerRoute(
 
 app.MapHub<ChatHub>("/chathub");
 
-using (var scope = app.Services.CreateScope())
+/*using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<INZDbContext>();
     db.Database.Migrate();
-}
+}*/
 
 app.Run();
