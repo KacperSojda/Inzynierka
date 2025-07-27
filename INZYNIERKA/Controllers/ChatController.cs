@@ -60,7 +60,7 @@ namespace INZYNIERKA.Controllers
             }
             else
             {
-                var endpoint = $"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={apiKey}";
+                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}";
 
                 var requestBody = new
                 {
