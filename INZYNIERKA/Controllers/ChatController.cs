@@ -1,4 +1,6 @@
-﻿using INZYNIERKA.Data;
+﻿using System.Text.Json;
+using System.Text;
+using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -11,10 +13,12 @@ namespace INZYNIERKA.Controllers
     {
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
+        private readonly string apiKey;
         public ChatController(UserManager<User> userManager, INZDbContext dbcontext)
         {
             this.userManager = userManager;
             this.context = dbcontext;
+            this.apiKey = "AIzaSyB9zvmt8EiZ2VclEyfypLr9CwROXlQIIdA";
         }
 
         [HttpGet]
@@ -37,6 +41,59 @@ namespace INZYNIERKA.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AskGemini(ChatViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.GeminiQuestion))
+            {
+                model.GeminiAnswer = "Pytanie nie może być puste.";
+                return View("Chat", model);
+            }
+
+            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}";
+
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = model.GeminiQuestion }
+                        }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var httpClient = new HttpClient();
+
+            try
+            {
+                var response = await httpClient.PostAsync(endpoint, content);
+                response.EnsureSuccessStatusCode();
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(responseString);
+
+                model.GeminiAnswer = doc.RootElement
+                                        .GetProperty("candidates")[0]
+                                        .GetProperty("content")
+                                        .GetProperty("parts")[0]
+                                        .GetProperty("text")
+                                        .GetString();
+            }
+            catch (Exception ex)
+            {
+                model.GeminiAnswer = $"Błąd Gemini: {ex.Message}";
+            }
+
+            return View("Chat", model);
         }
     }
 }

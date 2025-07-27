@@ -4,17 +4,38 @@
     ViewData["Title"] = "Chat";
 }
 
-<h3>Rozmowa</h3>
+<div style="display: flex; gap: 30px; align-items: flex-start;">
+    <!-- Lewa kolumna: Chat -->
+    <div style="flex: 1;">
+        <h3>Rozmowa</h3>
 
-<div id="chatWindow" style="border:1px solid #ccc; height:300px; overflow-y:scroll; padding:10px;">
-    @foreach (var msg in Model.Messages)
-    {
-        <div><strong>@(msg.SenderId == Model.CurrentUserId ? "Ty" : "Znajomy"):</strong> @msg.Content</div>
-    }
+        <div id="chatWindow" style="border:1px solid #ccc; height:300px; overflow-y:scroll; padding:10px;">
+            @foreach (var msg in Model.Messages)
+            {
+                <div><strong>@(msg.SenderId == Model.CurrentUserId ? "Ty" : "Znajomy"):</strong> @msg.Content</div>
+            }
+        </div>
+
+        <input type="text" id="messageInput" placeholder="Napisz wiadomość..." style="width:80%" />
+        <button id="sendButton">Wyślij</button>
+    </div>
+
+    <!-- Prawa kolumna: Gemini -->
+    <div style="flex: 1;">
+        <h3>Zapytaj AI Gemini</h3>
+
+        <form method="post" asp-action="AskGemini">
+            <textarea name="QuestionToGemini" rows="4" style="width: 100%;" placeholder="Twoje pytanie...">@Model.GeminiQuestion</textarea><br />
+            <button type="submit">Zapytaj</button>
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(Model.GeminiAnswer))
+        {
+            <h4>Odpowiedź Gemini:</h4>
+            <div style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px;">@Model.GeminiAnswer</div>
+        }
+    </div>
 </div>
-
-<input type="text" id="messageInput" placeholder="Napisz wiadomość..." style="width:80%" />
-<button id="sendButton">Wyślij</button>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
@@ -23,9 +44,7 @@
             .withUrl("/chathub")
             .build();
 
-        connection.start().then(function () {
-            console.log("Connected");
-        });
+        connection.start().then(() => console.log("Connected"));
 
         connection.on("ReceiveMessage", function (senderId, receiverId, message) {
             const chatWindow = document.getElementById("chatWindow");
@@ -36,12 +55,8 @@
 
         document.getElementById("sendButton").addEventListener("click", function () {
             const message = document.getElementById("messageInput").value;
-            connection.invoke("SendMessage",
-                "@Model.CurrentUserId",
-                "@Model.FriendId",
-                message).catch(function (err) {
-                    return console.error(err.toString());
-                });
+            connection.invoke("SendMessage", "@Model.CurrentUserId", "@Model.FriendId", message)
+                .catch(err => console.error(err.toString()));
             document.getElementById("messageInput").value = "";
         });
     </script>
