@@ -60,17 +60,17 @@ namespace INZYNIERKA.Controllers
             }
             else
             {
-                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}";
+                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
 
                 var requestBody = new
                 {
                     contents = new[] {
-                new {
-                    parts = new[] {
-                        new { text = model.GeminiQuestion }
+                        new {
+                            parts = new[] {
+                                new { text = model.GeminiQuestion }
+                            }
+                        }
                     }
-                }
-            }
                 };
 
                 var json = JsonSerializer.Serialize(requestBody);
