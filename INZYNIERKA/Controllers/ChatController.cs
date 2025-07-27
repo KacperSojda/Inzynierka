@@ -37,7 +37,9 @@ namespace INZYNIERKA.Controllers
             {
                 FriendId = friendId,
                 CurrentUserId = user.Id,
-                Messages = messages
+                Messages = messages,
+                GeminiAnswer = "",
+                GeminiQuestion = "2+2"
             };
 
             return View(model);
@@ -93,7 +95,24 @@ namespace INZYNIERKA.Controllers
                 model.GeminiAnswer = $"Błąd Gemini: {ex.Message}";
             }
 
-            return View("Chat", model);
+            var user = await userManager.GetUserAsync(User);
+
+            var messages = await context.Messages
+                .Where(m =>
+                    (m.SenderId == user.Id && m.ReceiverId == model.FriendId) ||
+                    (m.SenderId == model.FriendId && m.ReceiverId == user.Id))
+                .OrderBy(m => m.DateTime)
+                .ToListAsync();
+
+            var model2 = new ChatViewModel{
+                FriendId = model.FriendId,
+                CurrentUserId = model.CurrentUserId,
+                Messages = messages,
+                GeminiAnswer = model.GeminiAnswer,
+                GeminiQuestion = "2+2"
+            };
+
+            return View("Chat", model2);
         }
     }
 }
