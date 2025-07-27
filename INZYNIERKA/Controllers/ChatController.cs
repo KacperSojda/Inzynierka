@@ -18,7 +18,7 @@ namespace INZYNIERKA.Controllers
         {
             this.userManager = userManager;
             this.context = dbcontext;
-            this.apiKey = "AIzaSyB9zvmt8EiZ2VclEyfypLr9CwROXlQIIdA";
+            this.apiKey = "AIzaSyBkEZNxzsKUNIW72EQbmrMcZeOZ0j9FA98";
         }
 
         [HttpGet]
