@@ -29,10 +29,11 @@
             <button type="submit">Zapytaj</button>
         </form>
 
-        @if (!string.IsNullOrWhiteSpace(Model.GeminiAnswer))
+        @if (!string.IsNullOrEmpty(Model.GeminiAnswer))
         {
-            <h4>Odpowiedź Gemini:</h4>
-            <div style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px;">@Model.GeminiAnswer</div>
+            <div style="margin-top: 15px; background-color: #f2f2f2; padding: 10px; border-radius: 5px;">
+                <strong>Gemini:</strong> @Model.GeminiAnswer
+            </div>
         }
     </div>
 </div>
