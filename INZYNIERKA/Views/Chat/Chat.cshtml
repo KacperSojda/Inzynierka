@@ -25,7 +25,7 @@
         <h3>Zapytaj AI Gemini</h3>
 
         <form method="post" asp-action="AskGemini">
-            <textarea name="QuestionToGemini" rows="4" style="width: 100%;" placeholder="Twoje pytanie...">@Model.GeminiQuestion</textarea><br />
+            <textarea name="GeminiQuestion" rows="4" style="width: 100%;" placeholder="Twoje pytanie...">@Model.GeminiQuestion</textarea><br />
             <button type="submit">Zapytaj</button>
         </form>
 
