@@ -5,7 +5,6 @@
 }
 
 <div style="display: flex; gap: 30px; align-items: flex-start;">
-    <!-- Lewa kolumna: Chat -->
     <div style="flex: 1;">
         <h3>Rozmowa</h3>
 
@@ -20,12 +19,12 @@
         <button id="sendButton">Wyślij</button>
     </div>
 
-    <!-- Prawa kolumna: Gemini -->
     <div style="flex: 1;">
         <h3>Zapytaj AI Gemini</h3>
 
         <form method="post" asp-action="AskGemini">
             <textarea name="GeminiQuestion" rows="4" style="width: 100%;" placeholder="Twoje pytanie...">@Model.GeminiQuestion</textarea><br />
+            <input type="hidden" name="FriendId" value="@Model.FriendId" />
             <button type="submit">Zapytaj</button>
         </form>
 

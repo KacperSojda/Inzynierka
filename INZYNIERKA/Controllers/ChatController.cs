@@ -51,7 +51,7 @@ namespace INZYNIERKA.Controllers
             var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
-                return RedirectToAction("Login", "Account"); // lub odpowiednia strona
+                return RedirectToAction("Login", "Account");
             }
 
             if (string.IsNullOrWhiteSpace(model.GeminiQuestion))
@@ -99,7 +99,6 @@ namespace INZYNIERKA.Controllers
                 }
             }
 
-            // Załaduj wiadomości do czatu
             var messages = await context.Messages
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == model.FriendId) ||
@@ -107,14 +106,13 @@ namespace INZYNIERKA.Controllers
                 .OrderBy(m => m.DateTime)
                 .ToListAsync();
 
-            // Zbuduj pełny model ponownie
             var updatedModel = new ChatViewModel
             {
                 FriendId = model.FriendId,
                 CurrentUserId = user.Id,
                 Messages = messages,
                 GeminiAnswer = model.GeminiAnswer,
-                GeminiQuestion = model.GeminiQuestion // zostawiamy wpisane pytanie
+                GeminiQuestion = model.GeminiQuestion
             };
 
             return View("Chat", updatedModel);
