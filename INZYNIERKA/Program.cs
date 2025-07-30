@@ -1,5 +1,6 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
+using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 builder.Services.AddSession();
 
 builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<GeminiService>();
 
 builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT")}");
 
