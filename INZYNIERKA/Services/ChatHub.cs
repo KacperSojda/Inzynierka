@@ -23,7 +23,7 @@ public class ChatHub : Hub
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            Content = await geminiService.AskAsync(message, "Ocenzuruj podną wiadomosc za pomoca znakow '*' "),
+            Content = await geminiService.AskAsync(message, "Ocenzuruj poniższą wiadomość, zamieniając nieodpowiednie słowa (wulgaryzmy, przemoc, seks, rasizm itp.) na znaki '*'. Zachowaj resztę tekstu bez zmian."),
             DateTime = DateTime.UtcNow
         };
 

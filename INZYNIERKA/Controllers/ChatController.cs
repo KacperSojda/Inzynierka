@@ -40,7 +40,7 @@ namespace INZYNIERKA.Controllers
                 CurrentUserId = user.Id,
                 Messages = messages,
                 GeminiAnswer = "",
-                GeminiQuestion = "2+2"
+                GeminiQuestion = ""
             };
 
             return View(model);
