@@ -15,7 +15,7 @@ namespace INZYNIERKA.Services
             this.httpClient = new HttpClient();
         }
 
-        public async Task<string> AskAsync(string question, string help)
+        public async Task<string> AskAsync(string question, string prompt)
         {
             if (string.IsNullOrWhiteSpace(question))
             {
@@ -24,13 +24,14 @@ namespace INZYNIERKA.Services
 
             var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
 
+            var fullPrompt = $"{prompt.Trim()}\n{question.Trim()}";
+
             var requestBody = new
             {
                 contents = new[] {
                     new {
                         parts = new[] {
-                            new { text = help },
-                            new { text = question }
+                            new { text = fullPrompt },
                         }
                     }
                 }

@@ -19,11 +19,13 @@ public class ChatHub : Hub
     public async Task SendMessage(string senderId, string receiverId, string message)
     {
 
+        string cenzuredMessage = await geminiService.AskAsync(message, "Ocenzuruj poniższą wiadomość, zamieniając nieodpowiednie słowa (wulgaryzmy, przemoc, seks, rasizm itp.) na znaki '*'. Zachowaj resztę tekstu bez zmian.\n\nTreść wiadomości:");
+
         var msg = new Message
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            Content = await geminiService.AskAsync(message, "Ocenzuruj poniższą wiadomość, zamieniając nieodpowiednie słowa (wulgaryzmy, przemoc, seks, rasizm itp.) na znaki '*'. Zachowaj resztę tekstu bez zmian."),
+            Content = cenzuredMessage,
             DateTime = DateTime.UtcNow
         };
 
@@ -50,8 +52,8 @@ public class ChatHub : Hub
 
         await _context.SaveChangesAsync();
 
-        await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, receiverId, message);
+        await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, receiverId, cenzuredMessage);
 
-        await Clients.User(senderId).SendAsync("ReceiveMessage", senderId, receiverId, message);
+        await Clients.User(senderId).SendAsync("ReceiveMessage", senderId, receiverId, cenzuredMessage);
     }
 }
