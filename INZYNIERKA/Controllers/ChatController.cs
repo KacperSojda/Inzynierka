@@ -6,6 +6,7 @@ using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using INZYNIERKA.Services;
 
 namespace INZYNIERKA.Controllers
 {
@@ -13,12 +14,12 @@ namespace INZYNIERKA.Controllers
     {
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
-        private readonly string apiKey;
-        public ChatController(UserManager<User> userManager, INZDbContext dbcontext)
+        private readonly GeminiService geminiService;
+        public ChatController(UserManager<User> userManager, INZDbContext dbcontext, GeminiService geminiService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
-            this.apiKey = "AIzaSyBkEZNxzsKUNIW72EQbmrMcZeOZ0j9FA98";
+            this.geminiService = geminiService;
         }
 
         [HttpGet]
@@ -54,50 +55,7 @@ namespace INZYNIERKA.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (string.IsNullOrWhiteSpace(model.GeminiQuestion))
-            {
-                model.GeminiAnswer = "Pytanie nie może być puste.";
-            }
-            else
-            {
-                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
-
-                var requestBody = new
-                {
-                    contents = new[] {
-                        new {
-                            parts = new[] {
-                                new { text = model.GeminiQuestion }
-                            }
-                        }
-                    }
-                };
-
-                var json = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                using var httpClient = new HttpClient();
-
-                try
-                {
-                    var response = await httpClient.PostAsync(endpoint, content);
-                    response.EnsureSuccessStatusCode();
-
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    using var doc = JsonDocument.Parse(responseString);
-
-                    model.GeminiAnswer = doc.RootElement
-                                            .GetProperty("candidates")[0]
-                                            .GetProperty("content")
-                                            .GetProperty("parts")[0]
-                                            .GetProperty("text")
-                                            .GetString();
-                }
-                catch (Exception ex)
-                {
-                    model.GeminiAnswer = $"Błąd Gemini: {ex.Message}";
-                }
-            }
+            model.GeminiAnswer = await geminiService.AskAsync(model.GeminiQuestion, " ");
 
             var messages = await context.Messages
                 .Where(m =>

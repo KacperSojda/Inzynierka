@@ -1,25 +1,29 @@
 ﻿using System.Reflection;
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
+using INZYNIERKA.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 public class ChatHub : Hub
 {
     private readonly INZDbContext _context;
+    private readonly GeminiService geminiService;
 
-    public ChatHub(INZDbContext context)
+    public ChatHub(INZDbContext context, GeminiService geminiService)
     {
         _context = context;
+        this.geminiService = geminiService;
     }
 
     public async Task SendMessage(string senderId, string receiverId, string message)
     {
+
         var msg = new Message
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            Content = message,
+            Content = await geminiService.AskAsync(message, "Ocenzuruj podną wiadomosc za pomoca znakow '*' "),
             DateTime = DateTime.UtcNow
         };
 
