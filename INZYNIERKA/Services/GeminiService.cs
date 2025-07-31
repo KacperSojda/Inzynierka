@@ -24,7 +24,7 @@ namespace INZYNIERKA.Services
 
             var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
 
-            var fullPrompt = $"{prompt.Trim()}\n{question.Trim()}";
+            var fullPrompt = prompt + question;
 
             var requestBody = new
             {

@@ -19,7 +19,7 @@ public class ChatHub : Hub
     public async Task SendMessage(string senderId, string receiverId, string message)
     {
 
-        string cenzuredMessage = await geminiService.AskAsync(message, "Ocenzuruj poniższą wiadomość, zamieniając wulgaryzmy na znaki '*' ilość znaków ma odpowiadać długości słowa, Zachowaj resztę tekstu bez zmian. Jeżeli nie ma czego cenzurować to po prostu wypisz tą wiadomość.\n\nTreść wiadomości:");
+        string cenzuredMessage = await geminiService.AskAsync(message, "Censor the given message, detect profanity, and replace it with '*' characters. The number of '*'s should correspond to the exact length of the word being censored, e.g., replace 'fuck' with ****. Leave the rest of the text unchanged. If the message does not contain profanity, print an exact copy. Message content:");
 
         var msg = new Message
         {
