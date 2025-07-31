@@ -31,8 +31,16 @@ namespace INZYNIERKA.Controllers
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == friendId) ||
                     (m.SenderId == friendId && m.ReceiverId == user.Id))
-                .OrderBy(m => m.DateTime)
+                .OrderByDescending(m => m.DateTime)
+                .Take(30)
                 .ToListAsync();
+
+            /*var messages = await context.Messages
+                .Where(m =>
+                    (m.SenderId == user.Id && m.ReceiverId == friendId) ||
+                    (m.SenderId == friendId && m.ReceiverId == user.Id))
+                .OrderBy(m => m.DateTime)
+                .ToListAsync();*/
 
             var model = new ChatViewModel
             {
