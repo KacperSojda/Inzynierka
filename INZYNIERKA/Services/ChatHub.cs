@@ -19,7 +19,7 @@ public class ChatHub : Hub
     public async Task SendMessage(string senderId, string receiverId, string message)
     {
 
-        string cenzuredMessage = await geminiService.AskAsync(message, "You are a profanity filter. Detect offensive words (e.g., profanity, hate, sexual content, racism) and replace each such word with asterisks (*), with the number of asterisks exactly matching the number of characters in the word. \r\nDo not change any other part of the message. Do not comment. Return only the censored message. Message content:");
+        string cenzuredMessage = await geminiService.AskAsync(message, "You are a profanity filter. Detect and censor only strong, explicit profanity such as “fuck”, “shit”, “bitch”, “cunt”, and similar words. \r\nDo not censor mild language or slang. Replace each censored word with asterisks (*) matching the exact length of the word. \r\nKeep everything else in the message unchanged. Do not add comments or explanations. Message content:");
 
         var msg = new Message
         {
