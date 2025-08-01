@@ -31,16 +31,8 @@ namespace INZYNIERKA.Controllers
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == friendId) ||
                     (m.SenderId == friendId && m.ReceiverId == user.Id))
-                .OrderByDescending(m => m.DateTime)
-                .Take(30)
-                .ToListAsync();
-
-            /*var messages = await context.Messages
-                .Where(m =>
-                    (m.SenderId == user.Id && m.ReceiverId == friendId) ||
-                    (m.SenderId == friendId && m.ReceiverId == user.Id))
                 .OrderBy(m => m.DateTime)
-                .ToListAsync();*/
+                .ToListAsync();
 
             var model = new ChatViewModel
             {
@@ -48,7 +40,7 @@ namespace INZYNIERKA.Controllers
                 CurrentUserId = user.Id,
                 Messages = messages,
                 GeminiAnswer = "",
-                GeminiQuestion = ""
+                GeminiQuestion = "",
             };
 
             return View(model);
@@ -78,8 +70,42 @@ namespace INZYNIERKA.Controllers
                 CurrentUserId = user.Id,
                 Messages = messages,
                 GeminiAnswer = model.GeminiAnswer,
-                GeminiQuestion = model.GeminiQuestion
+                GeminiQuestion = model.GeminiQuestion,
             };
+
+            return View("Chat", updatedModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResponseHelp(string friendId)
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var messages = await context.Messages
+                .Where(m =>
+                    (m.SenderId == user.Id && m.ReceiverId == friendId) ||
+                    (m.SenderId == friendId && m.ReceiverId == user.Id))
+                .OrderBy(m => m.DateTime)
+                .ToListAsync();
+
+            var updatedModel = new ChatViewModel
+            {
+                FriendId = friendId,
+                CurrentUserId = user.Id,
+                Messages = messages,
+                GeminiAnswer = "",
+                GeminiQuestion = "",
+            };
+
+            var last30Messages = messages.TakeLast(30).ToList();
+
+            var messageString = string.Join(", ",
+                last30Messages.Select(m =>
+                    (m.SenderId == user.Id ? "[user]" : "[friend]") + " " + m.Content
+                )
+            );
+
+            updatedModel.GeminiAnswer = await geminiService.AskAsync(messageString, "You are a helpful chat assistant. Below is a conversation between two people. Your task is to help user in conversation, understand the context of the conversation and suggest a thoughtful and relevant reply to the most recent message. Keep your tone natural and friendly. Your reply should be appropriate to the tone and style of the conversation so far. Do not repeat what has already been said. Do not add unnecessary commentary. Chat history:");
 
             return View("Chat", updatedModel);
         }

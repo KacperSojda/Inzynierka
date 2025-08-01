@@ -28,6 +28,11 @@
             <button type="submit">Zapytaj</button>
         </form>
 
+        <form method="post" asp-action="GetFunFact" style="margin-top: 10px;">
+            <input type="hidden" name="FriendId" value="@Model.FriendId" />
+            <button type="submit">Poproś o ciekawostkę</button>
+        </form>
+
         @if (!string.IsNullOrEmpty(Model.GeminiAnswer))
         {
             <div style="margin-top: 15px; background-color: #f2f2f2; padding: 10px; border-radius: 5px;">
