@@ -92,6 +92,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTZWxlY3RUYWdzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/ShowProfile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTaG93UHJvZmlsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Profile/ShowTags.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTaG93VGFncy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,18 @@
+﻿@model INZYNIERKA.ViewModels.UserViewModel
+
+@{
+    ViewData["Title"] = "Profile Home Page";
+}
+
+<div class="text-center">
+    <h2>@Model.Avatar</h2>
+    <h2>@Model.UserName</h2>
+    <h2>@Model.PublicDescription</h2>
+    <h3>Tagi znajomego:</h3>
+</div>
+<ul>
+    @foreach (var tag in Model.Tags)
+    {
+        <li>@tag</li>
+    }
+</ul>

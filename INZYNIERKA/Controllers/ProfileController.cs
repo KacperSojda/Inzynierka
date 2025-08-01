@@ -1,4 +1,5 @@
-﻿using INZYNIERKA.Data;
+﻿using AspNetCoreGeneratedDocument;
+using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -304,6 +305,30 @@ namespace INZYNIERKA.Controllers
             await context.SaveChangesAsync();
 
             return RedirectToAction("RequestList");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShowProfile(string userId)
+        {
+            var user = await context.Users
+                .FindAsync(userId);
+
+            var userTags = await context.UserTags
+                .Where(t => t.UserId == userId)
+                .Select(t => t.Tag.Name)
+                .ToListAsync();
+
+            var model = new UserViewModel
+            {
+                Id = userId,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                PublicDescription = user.PublicDescription,
+                PrivateDescription = "",
+                Tags = userTags
+            };
+
+            return View(model);
         }
 
 
