@@ -13,7 +13,7 @@
         {
             <li>
                 <strong>@friend.UserName</strong>
-                <form asp-action="DeleteInvitation" method="post" style="display:inline">
+                <form asp-action="DeleteRequest" method="post" style="display:inline">
                     <input type="hidden" name="friendId" value="@friend.Id" />
                     <button type="submit">Usuń zaproszenie</button>
                 </form>
