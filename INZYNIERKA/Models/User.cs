@@ -14,5 +14,6 @@ namespace INZYNIERKA.Models
         public List<UserFriend> ReceivedFriendRequests { get; set; }
         public List<Message> SendedMessages { get; set; }
         public List<Message> ReceivedMessages { get; set; }
+        public List<UserGroup> JoinedGroups { get; set; }
     }
 }

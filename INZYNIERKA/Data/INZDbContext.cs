@@ -13,6 +13,10 @@ namespace INZYNIERKA.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserFriend> UserFriends { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<UserGroup> UserGroups { get; set; }
+        public DbSet<GroupMessage> GroupMessages { get; set; }
+
 
         public INZDbContext(DbContextOptions<INZDbContext> options) : base(options) { }
 
@@ -72,6 +76,31 @@ namespace INZYNIERKA.Data
                 .HasOne(n => n.Receiver)
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(n => n.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserGroup>()
+                .HasKey(ug => new { ug.UserId, ug.ChatGroupId });
+
+            builder.Entity<UserGroup>()
+                .HasOne(ug => ug.User)
+                .WithMany(u => u.JoinedGroups)
+                .HasForeignKey(ug => ug.UserId);
+
+            builder.Entity<UserGroup>()
+                .HasOne(ug => ug.ChatGroup)
+                .WithMany(g => g.Members)
+                .HasForeignKey(ug => ug.ChatGroupId);
+
+            builder.Entity<GroupMessage>()
+                .HasOne(gm => gm.ChatGroup)
+                .WithMany(g => g.Messages)
+                .HasForeignKey(gm => gm.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<GroupMessage>()
+                .HasOne(gm => gm.Sender)
+                .WithMany()
+                .HasForeignKey(gm => gm.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
