@@ -55,7 +55,8 @@
             const currentFriendId = "@Model.FriendId";
             const currentUserId = "@Model.CurrentUserId";
 
-            if (senderId != currentFriendId || receiverId != currentUserId) return;
+            if ((senderId != currentFriendId || receiverId != currentUserId) &&
+                (senderId != currentUserId || receiverId != currentFriendId)) return;
 
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
