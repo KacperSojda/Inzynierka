@@ -52,6 +52,11 @@
         connection.start().then(() => console.log("Connected"));
 
         connection.on("ReceiveMessage", function (senderId, receiverId, message) {
+            const currentFriendId = "@Model.FriendId";
+            const currentUserId = "@Model.CurrentUserId";
+
+            if (senderId != currentFriendId || receiverId != currentUserId) return;
+
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
             div.innerHTML = `<strong>${senderId === "@Model.CurrentUserId" ? "Ty" : "Znajomy"}:</strong> ${message}`;
