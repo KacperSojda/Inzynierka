@@ -4,34 +4,38 @@
     ViewData["Title"] = "Twoi znajomi";
 }
 
-<h2>Lista znajomych</h2>
+<div class="container py-4">
+    <h2 class="mb-4">Lista znajomych</h2>
 
-@if (Model.Any())
-{
-    <ul>
-        @foreach (var friend in Model)
-        {
-            <li>
-                <strong>@friend.UserName</strong>
-                <form asp-action="DeleteFriend" method="post" style="display:inline">
-                    <input type="hidden" name="friendId" value="@friend.Id" />
-                    <button type="submit">Usuń znajomego</button>
-                </form>
-                <a asp-action="Chat"
-                   asp-controller="Chat"
-                   asp-route-friendId="@friend.Id"
-                   class="btn btn-primary">
-                    Chat
-                </a>
-                <form asp-action="ShowProfile" method="post">
-                    <input type="hidden" name="userId" value="@friend.Id" />
-                    <button type="submit" class="btn btn-primary">Pokaż Profil</button>
-                </form>
-            </li>
-        }
-    </ul>
-}
-else
-{
-    <p>Nie masz jeszcze żadnych znajomych.</p>
-}
+    @if (Model.Any())
+    {
+        <ul class="list-group">
+            @foreach (var friend in Model)
+            {
+                <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
+                    <strong>@friend.UserName</strong>
+
+                    <div class="btn-group" role="group" aria-label="Opcje znajomego">
+                        <form asp-action="DeleteFriend" method="post" class="m-0">
+                            <input type="hidden" name="friendId" value="@friend.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Usuń</button>
+                        </form>
+
+                        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="btn btn-primary btn-sm rounded-0">
+                            Chat
+                        </a>
+
+                        <form asp-action="ShowProfile" method="post" class="m-0">
+                            <input type="hidden" name="userId" value="@friend.Id" />
+                            <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Pokaż Profil</button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Nie masz jeszcze żadnych znajomych.</p>
+    }
+</div>

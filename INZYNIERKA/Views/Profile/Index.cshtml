@@ -4,35 +4,34 @@
     ViewData["Title"] = "Profile Home Page";
 }
 
-<div class="text-center">
-    <h2>@Model.Avatar</h2>
-    <h2>Witaj, @Model.UserName</h2>
-    <h2>@Model.PublicDescription</h2>
-    <h2>@Model.PrivateDescription</h2>
-    <h3>Twoje tagi:</h3>
-</div>
-    <ul>
-        @foreach (var tag in Model.Tags)
-        {
-            <li>@tag</li>
-        }
-    </ul>
-<div class="text-center">
-    <a asp-controller="Profile" asp-action="EditProfile" 
-    asp-route-UserName=@Model.UserName 
-    asp-route-PublicDescription=@Model.PublicDescription
-    asp-route-PrivateDescription=@Model.PrivateDescription
-    asp-route-Avatar=@Model.Avatar>Edytuj</a>
-</div>
-<div class="text-center">
-    <a asp-controller="Profile" asp-action="SelectTags">Tagi</a>
-</div>
-<div class="text-center">
-    <a asp-controller="Profile" asp-action="Notifications">Powiadomienia</a>
-</div>
-<div class="text-center">
-    <a asp-controller="Profile" asp-action="FriendList">Lista Znajomych</a>
-</div>
-<div class="text-center">
-    <a asp-controller="Profile" asp-action="RequestList">Lista Zaproszonych Osób</a>
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1>@Model.UserName</h1>
+        <p class="lead">@Model.PublicDescription</p>
+    </div>
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-4 text-center">
+            <img src="@Model.Avatar" alt="Avatar" class="img-fluid rounded-circle mb-3" />
+        </div>
+        <div class="col-md-8">
+            <h4>Opis prywatny:</h4>
+            <p>@Model.PrivateDescription</p>
+
+            <h5>Twoje tagi:</h5>
+            <ul class="list-inline">
+                @foreach (var tag in Model.Tags)
+                {
+                    <li class="list-inline-item badge bg-primary mx-1">@tag</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a asp-controller="Profile" asp-action="EditProfile" class="btn btn-outline-primary">Edytuj profil</a>
+        <a asp-controller="Profile" asp-action="SelectTags" class="btn btn-outline-secondary">Tagi</a>
+        <a asp-controller="Profile" asp-action="FriendList" class="btn btn-outline-success">Znajomi</a>
+        <a asp-controller="Profile" asp-action="RequestList" class="btn btn-outline-warning">Zaproszenia</a>
+    </div>
 </div>

@@ -1,18 +1,32 @@
 ﻿@model INZYNIERKA.ViewModels.UserViewModel
 
 @{
-    ViewData["Title"] = "Profile Home Page";
+    ViewData["Title"] = "Profil znajomego";
 }
 
-<div class="text-center">
-    <h2>@Model.Avatar</h2>
-    <h2>@Model.UserName</h2>
-    <h2>@Model.PublicDescription</h2>
-    <h3>Tagi znajomego:</h3>
+<div class="container py-5" style="max-width: 600px;">
+    <div class="text-center mb-4">
+        <img src="@Model.Avatar" alt="Avatar" class="img-fluid rounded-circle mb-3" style="max-width:150px; height:auto;" />
+        <h2>@Model.UserName</h2>
+        <p class="lead">@Model.PublicDescription</p>
+
+        <h5 class="mt-4">Tagi znajomego:</h5>
+        <ul class="list-inline">
+            @foreach (var tag in Model.Tags)
+            {
+                <li class="list-inline-item badge bg-primary mx-1">@tag</li>
+            }
+        </ul>
+
+        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn btn-primary">
+                Czatuj
+            </a>
+
+            <form asp-action="DeleteFriend" method="post" class="m-0">
+                <input type="hidden" name="friendId" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">Usuń</button>
+            </form>
+        </div>
+    </div>
 </div>
-<ul>
-    @foreach (var tag in Model.Tags)
-    {
-        <li>@tag</li>
-    }
-</ul>

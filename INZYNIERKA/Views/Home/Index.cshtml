@@ -2,13 +2,13 @@
 @inject SignInManager<User> signInManager;
 
 @{
-    ViewData["Title"] = "Home Page";    
+    ViewData["Title"] = "Home Page";
 }
 
 @if (!signInManager.IsSignedIn(User))
 {
     <div class="text-center">
-        <h1 class="display-4">Witaj na stronie!</h1>
+        <h1 class="display-1">Witaj na stronie!</h1>
         <h1 class="display-4">Zaloguj się lub zarejestruj</h1>
         <h1 class="display-4">Aby móc poznawać osoby dzielące</h1>
         <h1 class="display-4">podobne zainteresowania co ty</h1>
@@ -16,47 +16,18 @@
 }
 else
 {
-    <div class="text-center">
-        <h1 class="display-4">Witaj @ViewBag.UserName!</h1>
-        <h1 class="display-4">Chatuj ze znajomymi</h1>
-        <h1 class="display-4">Użyj wyszukiwarki</h1>
-        <h1 class="display-4">Lub dołącz do grupy tematycznej</h1>
-    </div>
+    <div class="container">
+        <div class="text-center row">
+            <h1 class="display-1">Witaj @ViewBag.UserName!</h1>
+            <p class="display-6">Chatuj ze znajomymi</p>
+            <p class="display-6">Użyj wyszukiwarki</p>
+            <p class="display-6">Lub dołącz do grupy tematycznej</p>
+        </div>
 
-    <div class="footer-bar">
-        <button class="left-button">Grupy</button>
-        <button class="center-button">
-            <a asp-controller="Browser" asp-action="SearchUsersByTags">Wyszukiwarka</a>
-        </button>
-        <button class="right-button">
-            <a asp-controller="Profile" asp-action="Index">Profile</a>
-        </button>
+        <div class="position-fixed bottom-0 start-0 w-100 d-flex" style="height: 30vh;">
+            <a asp-controller="" asp-action="" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Grupy</p></a>
+            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Wyszukiwarka</p></a>
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Profile</p></a>
+        </div>
     </div>
 }
-
-<style>
-    .footer-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 20px;
-        background-color: #f0f0f0;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-        z-index: 999;
-    }
-
-    .footer-bar button {
-        padding: 50px 220px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-    #btnCenter {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-</style>

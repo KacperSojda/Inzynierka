@@ -2,22 +2,27 @@
 @model VerifyEmailViewModel;
 
 @{
-	ViewData["Titel"] = "VerifyEmail";
+	ViewData["Title"] = "Verify Email";
 }
 
 <div class="account-container">
 	<div class="account-box">
 		<h2 class="text-center mb-4">Verify Email</h2>
 		<form asp-action="VerifyEmail" method="post">
-			<div asp-validation-summary="ModelOnly" class="text-damage"></div>
-			<div class="mb3">
+			<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+			<div class="mb-3">
 				<label asp-for="Email" class="form-label"></label>
 				<input asp-for="Email" class="form-control" />
 				<span asp-validation-for="Email" class="text-danger"></span>
 			</div>
-			<input type="submit" value="Verify" class="btn btn-succes w-100" />
+
+			<div class="text-center mb-3">
+				<input type="submit" value="Verify" class="btn btn-outline-success w-50" />
+			</div>
+
 			<div class="text-center">
-				<a asp-controller="Home" asp-action="Index">Back</a>
+				<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary w-50">Back</a>
 			</div>
 		</form>
 	</div>

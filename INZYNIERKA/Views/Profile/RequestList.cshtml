@@ -4,24 +4,26 @@
     ViewData["Title"] = "Twoje zaproszenia";
 }
 
-<h2>Lista Zaproszonych Osob</h2>
+<div class="container py-4">
+    <h2 class="mb-4">Lista Zaproszonych Osób</h2>
 
-@if (Model.Any())
-{
-    <ul>
-        @foreach (var friend in Model)
-        {
-            <li>
-                <strong>@friend.UserName</strong>
-                <form asp-action="DeleteRequest" method="post" style="display:inline">
-                    <input type="hidden" name="friendId" value="@friend.Id" />
-                    <button type="submit">Usuń zaproszenie</button>
-                </form>
-            </li>
-        }
-    </ul>
-}
-else
-{
-    <p>Brak Wyslanych Zaproszen.</p>
-}
+    @if (Model.Any())
+    {
+        <ul class="list-group">
+            @foreach (var friend in Model)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <strong>@friend.UserName</strong>
+                    <form asp-action="DeleteRequest" method="post" class="m-0">
+                        <input type="hidden" name="friendId" value="@friend.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Usuń zaproszenie</button>
+                    </form>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted">Brak wysłanych zaproszeń.</p>
+    }
+</div>

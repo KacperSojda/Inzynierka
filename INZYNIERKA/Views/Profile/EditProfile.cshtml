@@ -1,32 +1,38 @@
 ﻿@model INZYNIERKA.ViewModels.UserViewModel
 
 @{
-    ViewData["Title"] = "Profile Home Page";
+    ViewData["Title"] = "Edytuj Profil";
 }
 
-<div class="text-center">
-    <h2>Edytuj Profil, @Model.UserName</h2>
-	<form asp-action="EditProfile" method="post">
-		<div asp-validation-summary="ModelOnly" class="text-damage"></div>
-		<div class="mb3">
-			<label asp-for="Avatar" class="form-label"></label>
-			<input asp-for="Avatar" class="form-control" />
-			<span asp-validation-for="Avatar" class="text-danger"></span>
-		</div>
-		<div class="mb3">
-			<label asp-for="UserName" class="form-label"></label>
-			<input asp-for="UserName" class="form-control" readonly/>
-		</div>
-		<div class="mb3">
-			<label asp-for="PublicDescription" class="form-label"></label>
-			<input asp-for="PublicDescription" class="form-control" />
-			<span asp-validation-for="PublicDescription" class="text-danger"></span>
-		</div>
-		<div class="mb3">
-			<label asp-for="PrivateDescription" class="form-label"></label>
-			<input asp-for="PrivateDescription" class="form-control" />
-			<span asp-validation-for="PrivateDescription" class="text-danger"></span>
-		</div>
-		<input type="submit" value="Change Profile" class="btn btn-succes w-100" />
-	</form>
+<div class="container py-5" style="max-width: 600px;">
+    <h2 class="text-center mb-4">Edytuj Profil, @Model.UserName</h2>
+
+    <form asp-action="EditProfile" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Avatar" class="form-label"></label>
+            <input asp-for="Avatar" class="form-control" />
+            <span asp-validation-for="Avatar" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="UserName" class="form-label"></label>
+            <input asp-for="UserName" class="form-control" readonly />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PublicDescription" class="form-label"></label>
+            <input asp-for="PublicDescription" class="form-control" />
+            <span asp-validation-for="PublicDescription" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PrivateDescription" class="form-label"></label>
+            <input asp-for="PrivateDescription" class="form-control" />
+            <span asp-validation-for="PrivateDescription" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Zapisz zmiany</button>
+    </form>
 </div>
