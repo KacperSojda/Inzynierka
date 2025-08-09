@@ -7,5 +7,14 @@
 
         public int ChatGroupId { get; set; }
         public Group ChatGroup { get; set; }
+
+        public MemberType Type { get; set; }
+    }
+
+    public enum MemberType
+    {
+        Member,
+        Administrator,
+        Banned
     }
 }

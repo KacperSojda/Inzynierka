@@ -56,8 +56,36 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hhdFxDaGF0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/CreateGroup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcQ3JlYXRlR3JvdXAuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/EditGroup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcRWRpdEdyb3VwLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/GroupChat.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcR3JvdXBDaGF0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/SelectGroupTags.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcU2VsZWN0R3JvdXBUYWdzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/ShowAvailableGroups.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcU2hvd0F2YWlsYWJsZUdyb3Vwcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/ShowGroupMembers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcU2hvd0dyb3VwTWVtYmVycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Group/ShowUserGroups.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcU2hvd1VzZXJHcm91cHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Kacper/source/repos/INZYNIERKA/INZYNIERKA/Views/Home/Index.cshtml]

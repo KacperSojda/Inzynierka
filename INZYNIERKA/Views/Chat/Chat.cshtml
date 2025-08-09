@@ -38,11 +38,13 @@
             <form method="post" asp-action="AskGemini" class="mb-3">
                 <textarea name="GeminiQuestion" rows="4" class="form-control" placeholder="Twoje pytanie...">@Model.GeminiQuestion</textarea>
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
+                <input type="hidden" name="UserMessage" value="@Model.UserMessage" />
                 <button type="submit" class="btn btn-secondary mt-2 w-100">Zapytaj</button>
             </form>
 
             <form method="post" asp-action="ResponseHelp">
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
+                <input type="hidden" name="UserMessage" value="@Model.UserMessage" />
                 <button type="submit" class="btn btn-outline-secondary w-100">Pomoc w odpowiedzi</button>
             </form>
 
@@ -62,8 +64,6 @@
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chathub")
             .build();
-
-        connection.start().then(() => console.log("Connected"));
 
         connection.on("ReceiveMessage", function (senderId, receiverId, message) {
             const currentFriendId = "@Model.FriendId";

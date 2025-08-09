@@ -57,3 +57,4 @@ public class ChatHub : Hub
         await Clients.User(senderId).SendAsync("ReceiveMessage", senderId, receiverId, cenzuredMessage);
     }
 }
+

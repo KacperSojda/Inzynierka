@@ -1,0 +1,69 @@
+﻿@model INZYNIERKA.ViewModels.GroupViewModel
+
+<h2>Twoje grupy</h2>
+
+@if (Model.AdminGroups.Any())
+{
+    <h3>Administrator</h3>
+    <ul>
+        @foreach (var group in Model.AdminGroups)
+        {
+            <li>
+                <form asp-action="GroupChat" asp-controller="Group" method="get" style="display:inline;">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit">@group.Name</button>
+                </form>
+                <p class="lead">@group.Description</p>
+                <ul class="list-inline">
+                    @foreach (var tag in group.Tags)
+                    {
+                        <li class="list-inline-item badge bg-primary mx-1">@tag</li>
+                    }
+                </ul>
+                <form asp-action="EditGroup" asp-controller="Group" method="get" style="display:inline;">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit">Edytuj grupe</button>
+                </form>
+                <form asp-action="LeaveGroup" method="post" class="m-0">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Opuść</button>
+                </form>
+                <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Pokaż Członków</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+
+@if (Model.Groups.Any())
+{
+    <h3>Członek</h3>
+    <ul>
+        @foreach (var group in Model.Groups)
+        {
+            <li>
+                <p class="lead">@group.Description</p>
+                <ul class="list-inline">
+                    @foreach (var tag in group.Tags)
+                    {
+                        <li class="list-inline-item badge bg-primary mx-1">@tag</li>
+                    }
+                </ul>
+                <form asp-action="LeaveGroup" method="post" class="m-0">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Opuść</button>
+                </form>
+                <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Pokaż Członków</button>
+                </form>
+                <form asp-action="GroupChat" method="get" class="m-0">
+                    <input type="hidden" name="groupId" value="@group.GroupId" />
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Chat</button>
+                </form>
+            </li>
+        }
+    </ul>
+}

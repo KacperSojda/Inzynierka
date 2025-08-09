@@ -16,6 +16,7 @@ namespace INZYNIERKA.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<GroupMessage> GroupMessages { get; set; }
+        public DbSet<GroupTag> GroupTags { get; set; }
 
 
         public INZDbContext(DbContextOptions<INZDbContext> options) : base(options) { }
@@ -102,6 +103,21 @@ namespace INZYNIERKA.Data
                 .WithMany()
                 .HasForeignKey(gm => gm.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<GroupTag>()
+                .HasKey(gt => new { gt.GroupId, gt.TagId });
+
+            builder.Entity<GroupTag>()
+                .HasOne(gt => gt.Group)
+                .WithMany(g => g.GroupTags)
+                .HasForeignKey(gt => gt.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<GroupTag>()
+                .HasOne(gt => gt.Tag)
+                .WithMany(t => t.GroupTags)
+                .HasForeignKey(gt => gt.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

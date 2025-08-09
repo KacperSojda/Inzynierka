@@ -3,6 +3,7 @@ using System;
 using INZYNIERKA.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace INZYNIERKA.Migrations
 {
     [DbContext(typeof(INZDbContext))]
-    partial class INZDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250807171019_Administrators")]
+    partial class Administrators
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,10 +32,6 @@ namespace INZYNIERKA.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -72,21 +71,6 @@ namespace INZYNIERKA.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("GroupMessages");
-                });
-
-            modelBuilder.Entity("INZYNIERKA.Models.GroupTag", b =>
-                {
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("GroupId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("GroupTags");
                 });
 
             modelBuilder.Entity("INZYNIERKA.Models.Message", b =>
@@ -447,25 +431,6 @@ namespace INZYNIERKA.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("INZYNIERKA.Models.GroupTag", b =>
-                {
-                    b.HasOne("INZYNIERKA.Models.Group", "Group")
-                        .WithMany("GroupTags")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("INZYNIERKA.Models.Tag", "Tag")
-                        .WithMany("GroupTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("INZYNIERKA.Models.Message", b =>
                 {
                     b.HasOne("INZYNIERKA.Models.User", "Receiver")
@@ -614,8 +579,6 @@ namespace INZYNIERKA.Migrations
 
             modelBuilder.Entity("INZYNIERKA.Models.Group", b =>
                 {
-                    b.Navigation("GroupTags");
-
                     b.Navigation("Members");
 
                     b.Navigation("Messages");
@@ -623,8 +586,6 @@ namespace INZYNIERKA.Migrations
 
             modelBuilder.Entity("INZYNIERKA.Models.Tag", b =>
                 {
-                    b.Navigation("GroupTags");
-
                     b.Navigation("UserTags");
                 });
 

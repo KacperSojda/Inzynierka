@@ -1,0 +1,26 @@
+﻿@model INZYNIERKA.ViewModels.GroupViewModel
+
+<h3>Dostępne grupy</h3>
+<ul>
+    @foreach (var group in Model.Groups)
+    {
+        <li>@group.Name</li>
+        <p class="lead">@group.Description</p>
+        <h5>Tagi:</h5>
+        <ul class="list-inline">
+            @foreach (var tag in group.Tags)
+            {
+                <li class="list-inline-item badge bg-primary mx-1">@tag</li>
+            }
+        </ul>
+
+        <form asp-action="JoinGroup" method="post" class="m-0">
+            <input type="hidden" name="groupId" value="@group.GroupId" />
+            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Dołącz</button>
+        </form>
+        <form asp-action="ShowGroupMembers" method="post" class="m-0">
+            <input type="hidden" name="groupId" value="@group.GroupId" />
+            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Pokaż Członków</button>
+        </form>
+    }
+</ul>

@@ -34,7 +34,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<GeminiService>();
 
-//builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT")}");
+builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT")}");
 
 var app = builder.Build();
 
@@ -59,5 +59,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapHub<ChatHub>("/chathub");
+
+app.MapHub<GroupChatHub>("/groupchathub");
 
 app.Run();

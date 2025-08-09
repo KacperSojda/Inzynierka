@@ -1,0 +1,57 @@
+﻿@model INZYNIERKA.ViewModels.GroupChatViewModel
+
+<h2>Czat grupowy: @Model.groupID</h2>
+
+<div id="chatWindow" style="border:1px solid #ccc; height:300px; overflow-y:scroll; padding:10px; margin-bottom:15px;">
+    @foreach (var msg in Model.messages)
+    {
+        <div><strong>@msg.SenderId:</strong> @msg.Content</div>
+    }
+</div>
+<div class="input-group">
+    <input type="text" id="messageInput" class="form-control" placeholder="Napisz wiadomość..." />
+    <button id="sendButton" class="btn btn-primary">Wyślij</button>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/groupchathub")
+            .build();
+
+        const currentgroupID = "@Model.groupID";
+        const currentUserId = "@Model.currentUserID";
+
+        connection.on("ReceiveGroupMessage", function (groupId, senderId, message) {
+
+            if(groupId != currentgroupID) return;
+
+            const chatWindow = document.getElementById("chatWindow");
+            const div = document.createElement("div");
+            div.innerHTML = `<strong>${senderId === currentUserId ? "Ty" : senderId}:</strong> ${message}`;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        });
+
+        connection.start().then(function () {
+            connection.invoke("JoinGroup", `group_${currentgroupID}`)
+                .catch(function (err) {
+                    return console.error("JoinGroup error:", err.toString());
+                });
+        });
+
+        document.getElementById("sendButton").addEventListener("click", function () {
+            console.log("co jest");
+            const message = document.getElementById("messageInput").value;
+            if (!message.trim()) {
+                console.log("blad okienka");
+                return;
+            }
+
+            connection.invoke("SendMessageToGroup", currentgroupID, currentUserId, message)
+                .catch(err => console.error(err.toString()));
+            document.getElementById("messageInput").value = "";
+        });
+    </script>
+}

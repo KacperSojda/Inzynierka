@@ -1,0 +1,39 @@
+﻿@model INZYNIERKA.Models.Group
+
+@{
+    ViewData["Title"] = "Edytuj grupę";
+}
+
+<h2>Edytuj grupę</h2>
+
+<form asp-action="EditGroup" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description">Opis grupy</label>
+        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">Zapisz zmiany</button>
+</form>
+
+<form asp-action="DeleteGroup" method="post" onsubmit="return confirm('Czy na pewno chcesz usunąć tę grupę?')">
+    <input type="hidden" name="groupId" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">
+        Usuń grupę
+    </button>
+</form>
+
+<form asp-action="SelectGroupTags" method="get">
+    <input type="hidden" name="groupId" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">
+        Edytuj tagi
+    </button>
+</form>
