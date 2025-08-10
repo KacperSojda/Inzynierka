@@ -1,11 +1,11 @@
 ﻿@model INZYNIERKA.ViewModels.UserViewModel
 
 @{
-    ViewData["Title"] = "Edytuj Profil";
+    ViewData["Title"] = "Edit Profile";
 }
 
 <div class="container py-5" style="max-width: 600px;">
-    <h2 class="text-center mb-4">Edytuj Profil, @Model.UserName</h2>
+    <h2 class="text-center mb-4">Edit Profile, @Model.UserName</h2>
 
     <form asp-action="EditProfile" method="post" novalidate>
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -33,6 +33,6 @@
             <span asp-validation-for="PrivateDescription" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-success w-100">Zapisz zmiany</button>
+        <button type="submit" class="btn btn-success w-100">Save changes</button>
     </form>
 </div>

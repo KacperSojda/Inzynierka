@@ -9,10 +9,10 @@
         <!-- Lewa kolumna: rozmowa -->
         <div class="flex-grow-1" style="min-width: 300px; max-width: 600px;">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Rozmowa</h3>
+                <h3>Chat</h3>
                 <form asp-controller="Profile" asp-action="ShowProfile" method="post" class="m-0">
                     <input type="hidden" name="userId" value="@Model.FriendId" />
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Pokaż Profil</button>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Show Profile</button>
                 </form>
             </div>
 
@@ -20,32 +20,44 @@
                 @foreach (var msg in Model.Messages)
                 {
                     <div>
-                        <strong>@(msg.SenderId == Model.CurrentUserId ? "Ty" : "Znajomy"):</strong> @msg.Content
+                        <strong>@(msg.SenderId == Model.CurrentUserId ? "You" : "Friend"):</strong> @msg.Content
                     </div>
                 }
             </div>
 
             <div class="input-group">
-                <input type="text" id="messageInput" class="form-control" placeholder="Napisz wiadomość..." />
-                <button id="sendButton" class="btn btn-primary">Wyślij</button>
+                <input type="text" id="messageInput" class="form-control"
+                       placeholder="Write a message..."
+                       value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
+                <button id="sendButton" class="btn btn-primary">Send</button>
             </div>
         </div>
 
         <!-- Prawa kolumna: AI Gemini -->
         <div style="min-width: 300px; max-width: 400px;">
-            <h3>Zapytaj AI Gemini</h3>
+            <h3>Ask Gemini AI</h3>
 
             <form method="post" asp-action="AskGemini" class="mb-3">
-                <textarea name="GeminiQuestion" rows="4" class="form-control" placeholder="Twoje pytanie...">@Model.GeminiQuestion</textarea>
+                <textarea name="GeminiQuestion" rows="4" class="form-control" placeholder="Your question...">@Model.GeminiQuestion</textarea>
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
-                <input type="hidden" name="UserMessage" value="@Model.UserMessage" />
-                <button type="submit" class="btn btn-secondary mt-2 w-100">Zapytaj</button>
+                <button type="submit" class="btn btn-secondary mt-2 w-100">Ask</button>
             </form>
 
             <form method="post" asp-action="ResponseHelp">
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
-                <input type="hidden" name="UserMessage" value="@Model.UserMessage" />
-                <button type="submit" class="btn btn-outline-secondary w-100">Pomoc w odpowiedzi</button>
+                <button type="submit" class="btn btn-outline-secondary w-100">Help with response</button>
+            </form>
+
+            <form id="CorrectForm" method="post" asp-action="CorrectMessage">
+                <input type="hidden" name="FriendId" value="@Model.FriendId" />
+                <input type="hidden" id="userMessageCorrect" name="UserMessage" value="" />
+                <button type="submit" class="btn btn-secondary mt-2 w-100">Correct my message</button>
+            </form>
+
+            <form id="TranslateForm" method="post" asp-action="TranslateMessage">
+                <input type="hidden" name="FriendId" value="@Model.FriendId" />
+                <input type="hidden" id="userMessageTranslate" name="UserMessage" value="" />
+                <button type="submit" class="btn btn-secondary mt-2 w-100">Translate</button>
             </form>
 
             @if (!string.IsNullOrEmpty(Model.GeminiAnswer))
@@ -65,6 +77,12 @@
             .withUrl("/chathub")
             .build();
 
+        async function startConnection() {
+            await connection.start();
+        }
+
+        startConnection();
+
         connection.on("ReceiveMessage", function (senderId, receiverId, message) {
             const currentFriendId = "@Model.FriendId";
             const currentUserId = "@Model.CurrentUserId";
@@ -74,7 +92,7 @@
 
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
-            div.innerHTML = `<strong>${senderId === "@Model.CurrentUserId" ? "Ty" : "Znajomy"}:</strong> ${message}`;
+            div.innerHTML = `<strong>${senderId === "@Model.CurrentUserId" ? "You" : "Friend"}:</strong> ${message}`;
             chatWindow.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         });
@@ -86,5 +104,22 @@
                 .catch(err => console.error(err.toString()));
             document.getElementById("messageInput").value = "";
         });
+
+        connection.onclose(async () => {
+                    console.log("Disconnected, reconnecting...");
+            await startConnection();
+        });
+    </script>
+
+    <script>
+        function bindMessageToForm(formId, hiddenInputId) {
+            document.getElementById(formId).addEventListener("submit", function () {
+                var message = document.getElementById("messageInput").value;
+                document.getElementById(hiddenInputId).value = message;
+            });
+        }
+
+        bindMessageToForm("CorrectForm", "userMessageCorrect");
+        bindMessageToForm("TranslateForm", "userMessageTranslate");
     </script>
 }

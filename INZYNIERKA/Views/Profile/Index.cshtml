@@ -15,7 +15,7 @@
             <img src="@Model.Avatar" alt="Avatar" class="img-fluid rounded-circle mb-3" />
         </div>
         <div class="col-md-8">
-            <h4>Opis prywatny:</h4>
+            <h4>Private Description:</h4>
             <p>@Model.PrivateDescription</p>
 
             <h5>Twoje tagi:</h5>
@@ -29,9 +29,9 @@
     </div>
 
     <div class="d-flex flex-wrap justify-content-center gap-3">
-        <a asp-controller="Profile" asp-action="EditProfile" class="btn btn-outline-primary">Edytuj profil</a>
-        <a asp-controller="Profile" asp-action="SelectTags" class="btn btn-outline-secondary">Tagi</a>
-        <a asp-controller="Profile" asp-action="FriendList" class="btn btn-outline-success">Znajomi</a>
-        <a asp-controller="Profile" asp-action="RequestList" class="btn btn-outline-warning">Zaproszenia</a>
+        <a asp-controller="Profile" asp-action="EditProfile" class="btn btn-outline-primary">Edit profile</a>
+        <a asp-controller="Profile" asp-action="SelectTags" class="btn btn-outline-secondary">Tags</a>
+        <a asp-controller="Profile" asp-action="FriendList" class="btn btn-outline-success">Friends</a>
+        <a asp-controller="Profile" asp-action="RequestList" class="btn btn-outline-warning">Requests</a>
     </div>
 </div>

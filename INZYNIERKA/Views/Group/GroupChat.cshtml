@@ -9,8 +9,8 @@
     }
 </div>
 <div class="input-group">
-    <input type="text" id="messageInput" class="form-control" placeholder="Napisz wiadomość..." />
-    <button id="sendButton" class="btn btn-primary">Wyślij</button>
+    <input type="text" id="messageInput" class="form-control" placeholder="Write message..." />
+    <button id="sendButton" class="btn btn-primary">Send</button>
 </div>
 
 @section Scripts {
@@ -29,7 +29,7 @@
 
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
-            div.innerHTML = `<strong>${senderId === currentUserId ? "Ty" : senderId}:</strong> ${message}`;
+            div.innerHTML = `<strong>${senderId === currentUserId ? "You" : senderId}:</strong> ${message}`;
             chatWindow.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         });
@@ -45,7 +45,7 @@
             console.log("co jest");
             const message = document.getElementById("messageInput").value;
             if (!message.trim()) {
-                console.log("blad okienka");
+                console.log("Window Error");
                 return;
             }
 

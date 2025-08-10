@@ -22,15 +22,15 @@
                 </ul>
                 <form asp-action="EditGroup" asp-controller="Group" method="get" style="display:inline;">
                     <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit">Edytuj grupe</button>
+                    <button type="submit">Edit groupe</button>
                 </form>
                 <form asp-action="LeaveGroup" method="post" class="m-0">
                     <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Opuść</button>
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Leave</button>
                 </form>
                 <form asp-action="ShowGroupMembers" method="post" class="m-0">
                     <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Pokaż Członków</button>
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Show members</button>
                 </form>
             </li>
         }
@@ -53,11 +53,11 @@
                 </ul>
                 <form asp-action="LeaveGroup" method="post" class="m-0">
                     <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Opuść</button>
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Leave</button>
                 </form>
                 <form asp-action="ShowGroupMembers" method="post" class="m-0">
                     <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Pokaż Członków</button>
+                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Show members</button>
                 </form>
                 <form asp-action="GroupChat" method="get" class="m-0">
                     <input type="hidden" name="groupId" value="@group.GroupId" />

@@ -4,8 +4,8 @@ namespace INZYNIERKA.ViewModels
 {
     public class TagViewModel
     {
-        [Required(ErrorMessage = "Nazwa tagu jest wymagana")]
-        [Display(Name = "Nazwa tagu")]
+        [Required(ErrorMessage = "Tag name is required")]
+        [Display(Name = "Tag name")]
         public string TagName { get; set; }
     }
 }

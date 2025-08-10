@@ -1,11 +1,11 @@
 ﻿@model List<INZYNIERKA.ViewModels.FriendViewModel>
 
 @{
-    ViewData["Title"] = "Twoi znajomi";
+    ViewData["Title"] = "Your FriendList";
 }
 
 <div class="container py-4">
-    <h2 class="mb-4">Lista znajomych</h2>
+    <h2 class="mb-4">Friend list</h2>
 
     @if (Model.Any())
     {
@@ -18,7 +18,7 @@
                     <div class="btn-group" role="group" aria-label="Opcje znajomego">
                         <form asp-action="DeleteFriend" method="post" class="m-0">
                             <input type="hidden" name="friendId" value="@friend.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Usuń</button>
+                            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Delete</button>
                         </form>
 
                         <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="btn btn-primary btn-sm rounded-0">
@@ -27,7 +27,7 @@
 
                         <form asp-action="ShowProfile" method="post" class="m-0">
                             <input type="hidden" name="userId" value="@friend.Id" />
-                            <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Pokaż Profil</button>
+                            <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Show Profile</button>
                         </form>
                     </div>
                 </li>

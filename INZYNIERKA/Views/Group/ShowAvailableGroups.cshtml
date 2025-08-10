@@ -1,12 +1,12 @@
 ﻿@model INZYNIERKA.ViewModels.GroupViewModel
 
-<h3>Dostępne grupy</h3>
+<h3>Available groups</h3>
 <ul>
     @foreach (var group in Model.Groups)
     {
         <li>@group.Name</li>
         <p class="lead">@group.Description</p>
-        <h5>Tagi:</h5>
+        <h5>Tags:</h5>
         <ul class="list-inline">
             @foreach (var tag in group.Tags)
             {
@@ -16,11 +16,11 @@
 
         <form asp-action="JoinGroup" method="post" class="m-0">
             <input type="hidden" name="groupId" value="@group.GroupId" />
-            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Dołącz</button>
+            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Join</button>
         </form>
         <form asp-action="ShowGroupMembers" method="post" class="m-0">
             <input type="hidden" name="groupId" value="@group.GroupId" />
-            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Pokaż Członków</button>
+            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Show members</button>
         </form>
     }
 </ul>

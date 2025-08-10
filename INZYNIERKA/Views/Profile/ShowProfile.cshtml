@@ -1,7 +1,7 @@
 ﻿@model INZYNIERKA.ViewModels.UserViewModel
 
 @{
-    ViewData["Title"] = "Profil znajomego";
+    ViewData["Title"] = "User profile";
 }
 
 <div class="container py-5" style="max-width: 600px;">
@@ -10,7 +10,7 @@
         <h2>@Model.UserName</h2>
         <p class="lead">@Model.PublicDescription</p>
 
-        <h5 class="mt-4">Tagi znajomego:</h5>
+        <h5 class="mt-4">User tags:</h5>
         <ul class="list-inline">
             @foreach (var tag in Model.Tags)
             {
@@ -20,12 +20,12 @@
 
         <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
             <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn btn-primary">
-                Czatuj
+                Chat
             </a>
 
             <form asp-action="DeleteFriend" method="post" class="m-0">
                 <input type="hidden" name="friendId" value="@Model.Id" />
-                <button type="submit" class="btn btn-danger">Usuń</button>
+                <button type="submit" class="btn btn-danger">Delete</button>
             </form>
         </div>
     </div>

@@ -5,10 +5,10 @@
 <p>Tagi: @string.Join(", ", @Model.Tags)</p>
 
 <form asp-action="NextUser" method="post" style="display:inline;">
-    <button type="submit" class="btn btn-primary">Następny →</button>
+    <button type="submit" class="btn btn-primary">Next →</button>
 </form>
 
 <form asp-action="SendFriendRequest" method="post" style="display:inline;">
     <input type="hidden" name="userId" value="@Model.Id" />
-    <button type="submit" class="btn btn-secondary">Wyślij zaproszenie</button>
+    <button type="submit" class="btn btn-secondary">Send a friend request</button>
 </form>

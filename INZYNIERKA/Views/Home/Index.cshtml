@@ -8,25 +8,25 @@
 @if (!signInManager.IsSignedIn(User))
 {
     <div class="text-center">
-        <h1 class="display-1">Witaj na stronie!</h1>
-        <h1 class="display-4">Zaloguj się lub zarejestruj</h1>
-        <h1 class="display-4">Aby móc poznawać osoby dzielące</h1>
-        <h1 class="display-4">podobne zainteresowania co ty</h1>
+        <h1 class="display-1">Welcome to the website!</h1>
+        <h1 class="display-4">register or log in</h1>
+        <h1 class="display-4">to be able to meet people who share</h1>
+        <h1 class="display-4">similar interests as you</h1>
     </div>
 }
 else
 {
     <div class="container">
         <div class="text-center row">
-            <h1 class="display-1">Witaj @ViewBag.UserName!</h1>
-            <p class="display-6">Chatuj ze znajomymi</p>
-            <p class="display-6">Użyj wyszukiwarki</p>
-            <p class="display-6">Lub dołącz do grupy tematycznej</p>
+            <h1 class="display-1">Welcome @ViewBag.UserName!</h1>
+            <p class="display-6">Chat with friends</p>
+            <p class="display-6">use browser</p>
+            <p class="display-6">or join a thematic group</p>
         </div>
 
         <div class="position-fixed bottom-0 start-0 w-100 d-flex" style="height: 30vh;">
-            <a asp-controller="Group" asp-action="Index" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Grupy</p></a>
-            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Wyszukiwarka</p></a>
+            <a asp-controller="Group" asp-action="Index" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Groups</p></a>
+            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Browser</p></a>
             <a asp-controller="Profile" asp-action="Index" class="btn btn-light flex-fill rounded-0 d-flex align-items-center justify-content-center"><p class="display-6">Profile</p></a>
         </div>
     </div>

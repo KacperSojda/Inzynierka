@@ -5,7 +5,7 @@
 }
 
 <div class="container py-4">
-    <h2 class="mb-4">Lista Zaproszonych Osób</h2>
+    <h2 class="mb-4">List of invited people</h2>
 
     @if (Model.Any())
     {
@@ -16,7 +16,7 @@
                     <strong>@friend.UserName</strong>
                     <form asp-action="DeleteRequest" method="post" class="m-0">
                         <input type="hidden" name="friendId" value="@friend.Id" />
-                        <button type="submit" class="btn btn-danger btn-sm">Usuń zaproszenie</button>
+                        <button type="submit" class="btn btn-danger btn-sm">Delete invitation</button>
                     </form>
                 </li>
             }
@@ -24,6 +24,6 @@
     }
     else
     {
-        <p class="text-muted">Brak wysłanych zaproszeń.</p>
+        <p class="text-muted">No invitations sent</p>
     }
 </div>

@@ -19,7 +19,7 @@ namespace INZYNIERKA.Services
         {
             if (string.IsNullOrWhiteSpace(question))
             {
-                return "Pytanie nie może być puste.";
+                return "The question cannot be empty.";
             }
 
             var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";

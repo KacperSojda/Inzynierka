@@ -16,25 +16,21 @@ public class GroupChatHub : Hub
     }
     public async Task JoinGroup(string groupName)
     {
-        Console.WriteLine($"[DEBUG] groupName: {groupName}");
        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
     }
 
     public async Task SendMessageToGroup(string groupIDString, string senderID, string message)
     {
-        Console.WriteLine($"[DEBUG] test");
         if (string.IsNullOrWhiteSpace(message)) return;
 
         if (!int.TryParse(groupIDString, out int groupID))
         {
-            Console.WriteLine($"[ERROR] Cannot parse groupID: {groupIDString}");
             return;
         }
 
         var groupExists = await _context.Groups.AnyAsync(g => g.Id == groupID);
         if (!groupExists)
         {
-            Console.WriteLine($"Group {groupID} does not exist.");
             return;
         }
 

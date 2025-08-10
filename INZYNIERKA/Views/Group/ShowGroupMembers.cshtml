@@ -1,6 +1,6 @@
 ﻿@model GroupMembersViewModel
 
-<h2>Członkowie grupy</h2>
+<h2>Group members</h2>
 
 <h3>Administratorzy</h3>
 <ul>
@@ -13,26 +13,31 @@
                 <form asp-action="DemoteAdmin" asp-controller="Group" method="post" style="display:inline;">
                     <input type="hidden" name="groupId" value="@Model.GroupId" />
                     <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit">Zabierz administratora</button>
+                    <button type="submit">Demote Administrator</button>
                 </form>
                 <form asp-action="KickUser" asp-controller="Group" method="post" style="display:inline;" onsubmit="return confirm('Na pewno wyrzucić tego użytkownika?');">
                     <input type="hidden" name="groupId" value="@Model.GroupId" />
                     <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit">Wyrzuć</button>
+                    <button type="submit">Kick</button>
+                </form>
+                <form asp-action="BanUser" method="post" style="display:inline">
+                    <input type="hidden" name="groupId" value="@Model.GroupId" />
+                    <input type="hidden" name="userId" value="@admin.UserId" />
+                    <button type="submit" class="btn btn-danger btn-sm">Ban</button>
                 </form>
             }
             @if (admin.UserId != Model.CurrentUserId)
             {
                 <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
                     <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Pokaż Profil</button>
+                    <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Show profile</button>
                 </form>
             }
         </li>
     }
 </ul>
 
-<h3>Użytkownicy</h3>
+<h3>Members</h3>
 <ul>
     @foreach (var member in Model.Members)
     {
@@ -43,24 +48,24 @@
                 <form asp-action="GiveAdmin" asp-controller="Group" method="post" style="display:inline;">
                     <input type="hidden" name="groupId" value="@Model.GroupId" />
                     <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit">Nadaj administratora</button>
+                    <button type="submit">Give administrator</button>
                 </form>
                 <form asp-action="KickUser" asp-controller="Group" method="post" style="display:inline;" onsubmit="return confirm('Na pewno wyrzucić tego użytkownika?');">
                     <input type="hidden" name="groupId" value="@Model.GroupId" />
                     <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit">Wyrzuć</button>
+                    <button type="submit">Kick</button>
                 </form>
                 <form asp-action="BanUser" method="post" style="display:inline">
                     <input type="hidden" name="groupId" value="@Model.GroupId" />
                     <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit" class="btn btn-danger btn-sm">Zbanuj</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Ban</button>
                 </form>
             }
             @if (member.UserId != Model.CurrentUserId)
             {
                 <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
                     <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Pokaż Profil</button>
+                    <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Show Profile</button>
                 </form>
             }
         </li>
