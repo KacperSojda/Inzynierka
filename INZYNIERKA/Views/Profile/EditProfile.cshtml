@@ -33,6 +33,37 @@
             <span asp-validation-for="PrivateDescription" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-success w-100">Save changes</button>
+        <button type="submit" class="home-edit">Save changes</button>
     </form>
 </div>
+
+<style>
+    .home-edit {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 576px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .home-edit:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+        .home-edit i {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .home-edit h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+</style>

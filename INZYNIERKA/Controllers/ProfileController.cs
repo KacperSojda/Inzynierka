@@ -331,8 +331,35 @@ namespace INZYNIERKA.Controllers
             return View(model);
         }
 
+        public IActionResult EditAvatar()
+        {
+            return View();
+        }
 
-        /// Funkcje pomocnicze =====================================
+        [HttpPost]
+        public async Task<IActionResult> EditAvatar(IFormFile AvatarFile)
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            if (AvatarFile != null && AvatarFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(AvatarFile.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await AvatarFile.CopyToAsync(stream);
+                }
+
+                user.Avatar = $"/uploads/avatars/{fileName}";
+                await userManager.UpdateAsync(user);
+            }
+
+            return RedirectToAction("Index");
+        }
 
         public IActionResult AddTag()
         {
@@ -352,6 +379,8 @@ namespace INZYNIERKA.Controllers
 
             return RedirectToAction("Index", "Profile");
         }
+
+        /// Funkcje pomocnicze =====================================
 
         public async Task<IActionResult> ShowTags()
         {

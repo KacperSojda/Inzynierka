@@ -1,26 +1,104 @@
 ﻿@model INZYNIERKA.ViewModels.GroupViewModel
 
-<h3>Available groups</h3>
-<ul>
-    @foreach (var group in Model.Groups)
-    {
-        <li>@group.Name</li>
-        <p class="lead">@group.Description</p>
-        <h5>Tags:</h5>
-        <ul class="list-inline">
-            @foreach (var tag in group.Tags)
-            {
-                <li class="list-inline-item badge bg-primary mx-1">@tag</li>
-            }
-        </ul>
+<div class="row mb-3">
+    <div class="col">
+        <p class="display-4">Available Groups</p>
+    </div>
+</div>
 
-        <form asp-action="JoinGroup" method="post" class="m-0">
-            <input type="hidden" name="groupId" value="@group.GroupId" />
-            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Join</button>
-        </form>
-        <form asp-action="ShowGroupMembers" method="post" class="m-0">
-            <input type="hidden" name="groupId" value="@group.GroupId" />
-            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Show members</button>
-        </form>
+@if (Model.Groups != null && Model.Groups.Any())
+{
+    <ul class="list-unstyled">
+        @foreach (var group in Model.Groups)
+        {
+            <li class="mb-4">
+                <div class="row">
+                    <div class="col-3">
+                        <p class="display-6">@group.Name</p>
+                        <ul class="list-inline">
+                            @foreach (var tag in group.Tags)
+                            {
+                                <li class="list-inline-item badge">@tag</li>
+                            }
+                        </ul>
+                        <p class="lead">@group.Description</p>
+                    </div>
+                    <div class="col">
+                        <div class="menu">
+                            <form asp-action="JoinGroup" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="join">Join</button>
+                            </form>
+                            <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="show">Show Members</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p class="text-muted">No groups available.</p>
+}
+
+<style>
+
+    .menu {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 10px 0px;
     }
-</ul>
+
+    .show {
+        background: linear-gradient(135deg, #757009, #cfc61d);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .show:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .join {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .join:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .list-inline-item.badge {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+</style>

@@ -1,9 +1,54 @@
-﻿<div class="text-center">
-    <a asp-controller="Group" asp-action="ShowUserGroups">Your groups</a>
+﻿
+<div class="group-menu">
+    <a asp-controller="Group" asp-action="ShowUserGroups" class="group-card">
+        <i class="fas fa-users"></i>
+        <h3>Your Groups</h3>
+    </a>
+    <a asp-controller="Group" asp-action="ShowAvailableGroups" class="group-card">
+        <i class="fas fa-search"></i>
+        <h3>Search for Groups</h3>
+    </a>
+    <a asp-controller="Group" asp-action="CreateGroup" class="group-card">
+        <i class="fas fa-plus-circle"></i>
+        <h3>Create Group</h3>
+    </a>
 </div>
-<div class="text-center">
-    <a asp-controller="Group" asp-action="ShowAvailableGroups">Search for groups</a>
-</div>
-<div class="text-center">
-    <a asp-controller="Group" asp-action="CreateGroup">Create Group</a>
-</div>
+
+<style>
+    .group-menu {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 40px;
+    }
+
+    .group-card {
+        background: linear-gradient(135deg, #ae2eb8, #3b82f6);
+        color: white;
+        text-align: center;
+        padding: 30px 20px;
+        border-radius: 15px;
+        width: 250px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .group-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+        .group-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .group-card h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+</style>

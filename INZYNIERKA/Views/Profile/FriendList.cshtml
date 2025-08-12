@@ -4,6 +4,8 @@
     ViewData["Title"] = "Your FriendList";
 }
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
+
 <div class="container py-4">
     <h2 class="mb-4">Friend list</h2>
 
@@ -15,19 +17,17 @@
                 <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
                     <strong>@friend.UserName</strong>
 
-                    <div class="btn-group" role="group" aria-label="Opcje znajomego">
+                    <div class="menu" role="group" aria-label="Opcje znajomego">
                         <form asp-action="DeleteFriend" method="post" class="m-0">
                             <input type="hidden" name="friendId" value="@friend.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Delete</button>
+                            <button type="submit" class="delete" title="Delete" data-bs-toggle="tooltipp"><i class="bi bi-trash3"></i></button>
                         </form>
 
-                        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="btn btn-primary btn-sm rounded-0">
-                            Chat
-                        </a>
+                        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="chat" title="Chat" data-bs-toggle="tooltipp"><i class="bi bi-chat-dots"></i></a>
 
                         <form asp-action="ShowProfile" method="post" class="m-0">
                             <input type="hidden" name="userId" value="@friend.Id" />
-                            <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Show Profile</button>
+                            <button type="submit" class="profile" title="Show Profile" data-bs-toggle="tooltipp"><i class="bi bi-person"></i></button>
                         </form>
                     </div>
                 </li>
@@ -39,3 +39,64 @@
         <p>Nie masz jeszcze żadnych znajomych.</p>
     }
 </div>
+
+<style>
+
+    .menu {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .delete {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 10px 10px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .delete:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .chat {
+        background: linear-gradient(135deg, #1b3480, #4565c4);
+        color: white;
+        text-align: center;
+        padding: 10px 10px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .chat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .profile {
+        background: linear-gradient(135deg, #757009, #cfc61d);
+        color: white;
+        text-align: center;
+        padding: 10px 10px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .profile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+</style>

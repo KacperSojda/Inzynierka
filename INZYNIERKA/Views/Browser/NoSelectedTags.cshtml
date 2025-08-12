@@ -1,5 +1,29 @@
-﻿<h3>You haven't selected any tags</h3>
-
-<div class="text-center">
-	<a asp-controller="Browser" asp-action="SearchUsersByTags">Back to browser</a>
+﻿<div class="text-center">
+    <h3>You haven't selected any tags</h3>
+    <div class="padding">
+	    <a asp-controller="Browser" asp-action="SearchUsersByTags" class="back">Back to browser</a>
+    </div>
 </div>
+
+<style>
+    .padding{
+        padding: 30px 0px
+    }
+
+    .back {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        text-align: center;
+        padding: 15px 30px;
+        border-radius: 15px;
+        width: 200px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .back:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+</style>

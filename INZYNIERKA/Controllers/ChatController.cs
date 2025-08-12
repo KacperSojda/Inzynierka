@@ -26,19 +26,34 @@ namespace INZYNIERKA.Controllers
         public async Task<IActionResult> Chat(string friendId)
         {
             var user = await userManager.GetUserAsync(User);
+            var friend = await userManager.FindByIdAsync(friendId);
 
             var messages = await context.Messages
+                .Include(m => m.Sender)
+                .Include(m => m.Receiver)
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == friendId) ||
                     (m.SenderId == friendId && m.ReceiverId == user.Id))
                 .OrderBy(m => m.DateTime)
                 .ToListAsync();
 
+            var modelMessages = messages.Select(m => new MessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                ReceiverId = m.ReceiverId,
+                ReceiverName = m.Receiver.UserName,
+                Content = m.Content,
+                DateTime = m.DateTime
+            }).ToList();
+
             var model = new ChatViewModel
             {
-                FriendId = friendId,
+                FriendId = friend.Id,
+                FriendName = friend.UserName,
                 CurrentUserId = user.Id,
-                Messages = messages,
+                CurrentUserName = user.UserName,
+                Messages = modelMessages,
                 UserMessage = "",
                 GeminiAnswer = "",
                 GeminiQuestion = "",
@@ -47,7 +62,7 @@ namespace INZYNIERKA.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        /*[HttpPost]
         public async Task<IActionResult> AskGemini(ChatViewModel model)
         {
             var user = await userManager.GetUserAsync(User);
@@ -55,6 +70,7 @@ namespace INZYNIERKA.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            var friend = await userManager.FindByIdAsync(model.FriendId);
 
             model.GeminiAnswer = await geminiService.AskAsync(model.GeminiQuestion, " ");
 
@@ -65,11 +81,23 @@ namespace INZYNIERKA.Controllers
                 .OrderBy(m => m.DateTime)
                 .ToListAsync();
 
+            var modelMessages = messages.Select(m => new MessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                ReceiverId = m.ReceiverId,
+                ReceiverName = m.Receiver.UserName,
+                Content = m.Content,
+                DateTime = m.DateTime
+            }).ToList();
+
             var updatedModel = new ChatViewModel
             {
-                FriendId = model.FriendId,
+                FriendId = friend.Id,
+                FriendName = friend.UserName,
                 CurrentUserId = user.Id,
-                Messages = messages,
+                CurrentUserName = user.UserName,
+                Messages = modelMessages,
                 UserMessage = model.UserMessage,
                 GeminiAnswer = model.GeminiAnswer,
                 GeminiQuestion = "",
@@ -77,11 +105,24 @@ namespace INZYNIERKA.Controllers
 
             return View("Chat", updatedModel);
         }
+                    <form method="post" asp-action="AskGemini" class="mb-3">
+                <textarea name="GeminiQuestion" rows="4" class="form-control" placeholder="Your question...">@Model.GeminiQuestion</textarea>
+                <input type="hidden" name="FriendId" value="@Model.FriendId" />
+                <button type="submit" class="btn btn-secondary mt-2 w-100">Ask</button>
+            </form>
+
+         
+         
+        */
 
         [HttpPost]
         public async Task<IActionResult> ResponseHelp(ChatViewModel model)
         {
             var user = await userManager.GetUserAsync(User);
+            var friend = await userManager.FindByIdAsync(model.FriendId);
+
+            Console.WriteLine(user);
+            Console.WriteLine(friend);
 
             var messages = await context.Messages
                 .Where(m =>
@@ -90,17 +131,29 @@ namespace INZYNIERKA.Controllers
                 .OrderBy(m => m.DateTime)
                 .ToListAsync();
 
+            var modelMessages = messages.Select(m => new MessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                ReceiverId = m.ReceiverId,
+                ReceiverName = m.Receiver.UserName,
+                Content = m.Content,
+                DateTime = m.DateTime
+            }).ToList();
+
             var updatedModel = new ChatViewModel
             {
-                FriendId = model.FriendId,
+                FriendId = friend.Id,
+                FriendName = friend.UserName,
                 CurrentUserId = user.Id,
-                Messages = messages,
+                CurrentUserName = user.UserName,
+                Messages = modelMessages,
                 UserMessage = model.UserMessage,
                 GeminiAnswer = "",
                 GeminiQuestion = "",
             };
 
-            var last30Messages = messages.TakeLast(30).ToList();
+            var last30Messages = modelMessages.TakeLast(30).ToList();
 
             var messageString = string.Join(", ",
                 last30Messages.Select(m =>
@@ -121,6 +174,7 @@ namespace INZYNIERKA.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            var friend = await userManager.FindByIdAsync(model.FriendId);
 
             var messages = await context.Messages
                 .Where(m =>
@@ -129,11 +183,23 @@ namespace INZYNIERKA.Controllers
                 .OrderBy(m => m.DateTime)
                 .ToListAsync();
 
+            var modelMessages = messages.Select(m => new MessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                ReceiverId = m.ReceiverId,
+                ReceiverName = m.Receiver.UserName,
+                Content = m.Content,
+                DateTime = m.DateTime
+            }).ToList();
+
             var updatedModel = new ChatViewModel
             {
-                FriendId = model.FriendId,
+                FriendId = friend.Id,
+                FriendName = friend.UserName,
                 CurrentUserId = user.Id,
-                Messages = messages,
+                CurrentUserName = user.UserName,
+                Messages = modelMessages,
                 UserMessage = model.UserMessage,
                 GeminiAnswer = "",
                 GeminiQuestion = "",
@@ -151,6 +217,7 @@ namespace INZYNIERKA.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            var friend = await userManager.FindByIdAsync(model.FriendId);
 
             var messages = await context.Messages
                 .Where(m =>
@@ -159,11 +226,23 @@ namespace INZYNIERKA.Controllers
                 .OrderBy(m => m.DateTime)
                 .ToListAsync();
 
+            var modelMessages = messages.Select(m => new MessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                ReceiverId = m.ReceiverId,
+                ReceiverName = m.Receiver.UserName,
+                Content = m.Content,
+                DateTime = m.DateTime
+            }).ToList();
+
             var updatedModel = new ChatViewModel
             {
-                FriendId = model.FriendId,
+                FriendId = friend.Id,
+                FriendName = friend.UserName,
                 CurrentUserId = user.Id,
-                Messages = messages,
+                CurrentUserName = user.UserName,
+                Messages = modelMessages,
                 UserMessage = model.UserMessage,
                 GeminiAnswer = "",
                 GeminiQuestion = "",

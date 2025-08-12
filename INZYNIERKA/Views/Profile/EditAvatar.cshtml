@@ -1,28 +1,31 @@
-﻿<div class="text-center">
-    <h3>There are no more users with the selected tags</h3>
+﻿<form asp-action="EditAvatar" asp-controller="Profile" method="post" enctype="multipart/form-data">
+    <input type="file" name="AvatarFile" class="form-control" accept="image/*" />
     <div class="padding">
-        <a asp-controller="Browser" asp-action="SearchUsersByTags" class="back">Back to browser</a>
+        <button type="submit" class="save">Save</button>
     </div>
-</div>
+</form>
 
 <style>
-    .padding {
-        padding: 30px 0px
+    .padding
+    {
+        padding: 10px 0px;
     }
 
-    .back {
+    .save
+    {
         background: linear-gradient(135deg, #552459, #ae2eb8);
         color: white;
         text-align: center;
-        padding: 15px 30px;
+        padding: 10px 10px;
         border-radius: 15px;
-        width: 200px;
+        width: 100px;
         text-decoration: none;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-        .back:hover {
+        .save:hover
+        {
             transform: translateY(-5px);
             box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         }

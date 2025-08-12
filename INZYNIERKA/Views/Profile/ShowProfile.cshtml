@@ -14,19 +14,73 @@
         <ul class="list-inline">
             @foreach (var tag in Model.Tags)
             {
-                <li class="list-inline-item badge bg-primary mx-1">@tag</li>
+                <li class="list-inline-item badge">@tag</li>
             }
         </ul>
 
-        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
-            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn btn-primary">
+        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap menu">
+            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="chat">
                 Chat
             </a>
-
-            <form asp-action="DeleteFriend" method="post" class="m-0">
-                <input type="hidden" name="friendId" value="@Model.Id" />
-                <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
         </div>
     </div>
 </div>
+
+<style>
+
+    .menu {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 10px 0px;
+    }
+
+    .chat {
+        background: linear-gradient(135deg, #1b3480, #4565c4);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 200px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .chat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+
+    .delete {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 200px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .delete:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .list-inline-item.badge {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+</style>

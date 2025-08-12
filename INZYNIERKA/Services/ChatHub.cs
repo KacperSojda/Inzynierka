@@ -2,6 +2,7 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,6 +56,20 @@ public class ChatHub : Hub
         await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, receiverId, cenzuredMessage);
 
         await Clients.User(senderId).SendAsync("ReceiveMessage", senderId, receiverId, cenzuredMessage);
+    }
+
+    public async Task ClearNotifications(string userId, string friendId)
+    {
+        var notification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId);
+
+        if (notification != null)
+        {
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        await _context.SaveChangesAsync();
     }
 }
 

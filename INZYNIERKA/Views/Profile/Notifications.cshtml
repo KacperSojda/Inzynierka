@@ -17,25 +17,37 @@
                         @if (notification.NotificationType == NotificationType.FriendRequest)
                         {
                             <span>@notification.SenderUserName wysłał Ci zaproszenie do znajomych</span>
-
-                            <form asp-action="FriendRequestAccept" method="post" class="d-inline ms-3">
-                                <input type="hidden" name="notificationId" value="@notification.Id" />
-                                <input type="hidden" name="senderUserName" value="@notification.SenderUserName" />
-                                <button type="submit" class="btn btn-success btn-sm">Accept</button>
-                            </form>
                         }
                         else if (notification.NotificationType == NotificationType.Message)
                         {
-                            <span>New Message<strong>@notification.SenderUserName</strong></span>
+                            <span>New Message <strong>@notification.SenderUserName</strong></span>
                         }
                         <br />
                         <small class="text-muted">@notification.CreationDate.ToString("g")</small>
                     </div>
 
-                    <form asp-action="DeleteNotification" method="post" class="ms-md-3 mt-2 mt-md-0">
-                        <input type="hidden" name="notificationId" value="@notification.Id" />
-                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
-                    </form>
+                    <div class="menu">
+                        @if (notification.NotificationType == NotificationType.FriendRequest)
+                        {
+                            <form asp-action="FriendRequestAccept" method="post" class="d-inline ms-3">
+                                <input type="hidden" name="notificationId" value="@notification.Id" />
+                                <input type="hidden" name="senderUserName" value="@notification.SenderUserName" />
+                                <button type="submit" class="accept">Accept</button>
+                            </form>
+                        }
+                        else if (notification.NotificationType == NotificationType.Message)
+                        {
+                            /*<form asp-controller="Chat" asp-action="Chat" method="post" class="d-inline ms-3">
+                                <input type="hidden" name="friendId" value="@notification.SenderUserName" />     ///zmienić powiadomienia żeby wysyłały SENDER ID
+                                <button type="submit" class="accept">Accept</button>
+                            </form>*/
+                        }
+
+                        <form asp-action="DeleteNotification" method="post" class="ms-md-3 mt-2 mt-md-0">
+                            <input type="hidden" name="notificationId" value="@notification.Id" />
+                            <button type="submit" class="delete">Delete</button>
+                        </form>
+                    </div>
                 </li>
             }
         </ul>
@@ -45,3 +57,47 @@
         <p class="text-muted">No notifications</p>
     }
 </div>
+
+<style>
+
+    .menu {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .delete {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .delete:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .accept {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .accept:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+</style>

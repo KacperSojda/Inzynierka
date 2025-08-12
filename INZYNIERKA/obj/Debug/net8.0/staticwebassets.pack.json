@@ -257,6 +257,10 @@
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.slim.min.map"
     },
     {
+      "Id": "C:\\Users\\Kacper\\source\\repos\\INZYNIERKA\\INZYNIERKA\\wwwroot\\uploads\\avatars\\e61b1709-b953-4516-aa44-38065c28fb43.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\e61b1709-b953-4516-aa44-38065c28fb43.jpg"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.INZYNIERKA.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

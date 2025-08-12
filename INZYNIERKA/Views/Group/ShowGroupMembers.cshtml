@@ -1,73 +1,159 @@
 ﻿@model GroupMembersViewModel
 
-<h2>Group members</h2>
+<div class="row mb-3">
+    <div class="col">
+        <p class="display-4">Group Members</p>
+    </div>
+</div>
 
-<h3>Administratorzy</h3>
-<ul>
+<h3>Administrators</h3>
+<ul class="list-unstyled">
     @foreach (var admin in Model.Admins)
     {
-        <li>
-            @admin.Name
-            @if (Model.Admins.Any(a => a.UserId == Model.CurrentUserId) && admin.UserId != Model.CurrentUserId)
-            {
-                <form asp-action="DemoteAdmin" asp-controller="Group" method="post" style="display:inline;">
-                    <input type="hidden" name="groupId" value="@Model.GroupId" />
-                    <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit">Demote Administrator</button>
-                </form>
-                <form asp-action="KickUser" asp-controller="Group" method="post" style="display:inline;" onsubmit="return confirm('Na pewno wyrzucić tego użytkownika?');">
-                    <input type="hidden" name="groupId" value="@Model.GroupId" />
-                    <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit">Kick</button>
-                </form>
-                <form asp-action="BanUser" method="post" style="display:inline">
-                    <input type="hidden" name="groupId" value="@Model.GroupId" />
-                    <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit" class="btn btn-danger btn-sm">Ban</button>
-                </form>
-            }
-            @if (admin.UserId != Model.CurrentUserId)
-            {
-                <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
-                    <input type="hidden" name="userId" value="@admin.UserId" />
-                    <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Show profile</button>
-                </form>
-            }
+        <li class="mb-3">
+            <div class="row">
+                <div class="col-1">
+                    <strong>@admin.Name</strong>
+                </div>
+                <div class="col">
+                    <div class="menu">
+                        @if (Model.Admins.Any(a => a.UserId == Model.CurrentUserId) && admin.UserId != Model.CurrentUserId)
+                        {
+
+                            <form asp-action="DemoteAdmin" asp-controller="Group" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                <input type="hidden" name="userId" value="@admin.UserId" />
+                                <button type="submit" class="demote">Demote Admin</button>
+                            </form>
+                            <form asp-action="KickUser" asp-controller="Group" method="post" class="m-0"
+                                  onsubmit="return confirm('Are you sure you want to remove this user?');">
+                                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                <input type="hidden" name="userId" value="@admin.UserId" />
+                                <button type="submit" class="demote">Kick</button>
+                            </form>
+                            <form asp-action="BanUser" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                <input type="hidden" name="userId" value="@admin.UserId" />
+                                <button type="submit" class="demote">Ban</button>
+                            </form>
+                        
+                        }
+                        @if (admin.UserId != Model.CurrentUserId)
+                        {
+                            <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
+                                <input type="hidden" name="userId" value="@admin.UserId" />
+                                <button type="submit" class="show">Show Profile</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
         </li>
     }
 </ul>
 
 <h3>Members</h3>
-<ul>
+<ul class="list-unstyled">
     @foreach (var member in Model.Members)
     {
-        <li>
-            @member.Name
-            @if (Model.Admins.Any(a => a.UserId == Model.CurrentUserId))
-            {
-                <form asp-action="GiveAdmin" asp-controller="Group" method="post" style="display:inline;">
-                    <input type="hidden" name="groupId" value="@Model.GroupId" />
-                    <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit">Give administrator</button>
-                </form>
-                <form asp-action="KickUser" asp-controller="Group" method="post" style="display:inline;" onsubmit="return confirm('Na pewno wyrzucić tego użytkownika?');">
-                    <input type="hidden" name="groupId" value="@Model.GroupId" />
-                    <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit">Kick</button>
-                </form>
-                <form asp-action="BanUser" method="post" style="display:inline">
-                    <input type="hidden" name="groupId" value="@Model.GroupId" />
-                    <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit" class="btn btn-danger btn-sm">Ban</button>
-                </form>
-            }
-            @if (member.UserId != Model.CurrentUserId)
-            {
-                <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
-                    <input type="hidden" name="userId" value="@member.UserId" />
-                    <button type="submit" class="btn btn-secondary btn-sm rounded-start-0 rounded-end-2">Show Profile</button>
-                </form>
-            }
+        <li class="mb-2">
+            <div class="row">
+                <div class="col-1">
+                    <strong>@member.Name</strong>
+                </div>
+                <div class="col">
+                    <div class="menu">
+                        @if (Model.Admins.Any(a => a.UserId == Model.CurrentUserId))
+                        {
+                            <form asp-action="GiveAdmin" asp-controller="Group" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                <input type="hidden" name="userId" value="@member.UserId" />
+                                <button type="submit" class="give">Give Admin</button>
+                            </form>
+                            <form asp-action="KickUser" asp-controller="Group" method="post" class="m-0"
+                                  onsubmit="return confirm('Are you sure you want to remove this user?');">
+                                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                <input type="hidden" name="userId" value="@member.UserId" />
+                                <button type="submit" class="demote">Kick</button>
+                            </form>
+                            <form asp-action="BanUser" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                <input type="hidden" name="userId" value="@member.UserId" />
+                                <button type="submit" class="demote">Ban</button>
+                            </form>
+                        }
+                        @if (member.UserId != Model.CurrentUserId)
+                        {
+                            <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
+                                <input type="hidden" name="userId" value="@member.UserId" />
+                                <button type="submit" class="show">Show Profile</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
         </li>
     }
 </ul>
+
+<style>
+
+    .menu {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .demote {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .demote:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .show {
+        background: linear-gradient(135deg, #757009, #cfc61d);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .show:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .give {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .give:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+    }
+
+</style>

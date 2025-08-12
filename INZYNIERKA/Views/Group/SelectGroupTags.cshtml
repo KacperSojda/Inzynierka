@@ -1,18 +1,28 @@
 ﻿@model INZYNIERKA.ViewModels.SelectGroupTagsViewModel
 
-<h2 class="mb-4">Choose group tags</h2>
+<div class="row mb-3">
+    <div class="col">
+        <p class="display-4">Choose Group Tags</p>
+    </div>
+</div>
 
 <form asp-action="SelectGroupTags" method="post">
-    <input type="hidden" name="groupId" value="@Model.GroupID"
+    <input type="hidden" name="groupId" value="@Model.GroupID" />
+
     <div class="mb-3">
         @for (int i = 0; i < Model.Tags.Count; i++)
         {
-                <div class="form-check">
-                    <input asp-for="Tags[i].IsSelected" class="form-check-input" />
-                    <input type="hidden" asp-for="Tags[i].TagId" />
-                    <label asp-for="Tags[i].IsSelected" class="form-check-label">@Model.Tags[i].TagName</label>
-                </div>
+            <div class="form-check">
+                <input asp-for="Tags[i].IsSelected" class="form-check-input" />
+                <input type="hidden" asp-for="Tags[i].TagId" />
+                <label asp-for="Tags[i].IsSelected" class="form-check-label">
+                    @Model.Tags[i].TagName
+                </label>
+            </div>
         }
     </div>
-    <button type="submit" class="btn btn-primary">Save</button>
+
+    <div class="d-flex flex-wrap justify-content-left gap-3">
+        <button type="submit" class="btn btn-outline-success btn-sm">Save</button>
+    </div>
 </form>

@@ -2,12 +2,40 @@
     ViewData["Title"] = "Create Group";
 }
 
-<h2>Create new group</h2>
+<div class="row mb-3">
+    <div class="col">
+        <p class="display-4">Create New Group</p>
+    </div>
+</div>
 
 <form asp-action="CreateGroup" method="post">
-    <div class="form-group">
-        <label for="name">Group name:</label>
+    <div class="form-group mb-3">
+        <label for="groupName">Group Name:</label>
         <input type="text" class="form-control" id="groupName" name="name" required />
     </div>
-    <button type="submit" class="btn btn-primary mt-2">Create group</button>
+
+    <div class="d-flex flex-wrap justify-content-left gap-3">
+        <button type="submit" class="create">Create Group</button>
+    </div>
 </form>
+
+<style>
+
+    .create {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .create:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+</style>

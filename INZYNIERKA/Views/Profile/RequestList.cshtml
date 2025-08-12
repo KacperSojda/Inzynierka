@@ -16,7 +16,7 @@
                     <strong>@friend.UserName</strong>
                     <form asp-action="DeleteRequest" method="post" class="m-0">
                         <input type="hidden" name="friendId" value="@friend.Id" />
-                        <button type="submit" class="btn btn-danger btn-sm">Delete invitation</button>
+                        <button type="submit" class="delete" title="Delete" data-bs-toggle="tooltipp"><i class="bi bi-trash3"></i></button>
                     </form>
                 </li>
             }
@@ -27,3 +27,22 @@
         <p class="text-muted">No invitations sent</p>
     }
 </div>
+
+<style>
+    .delete {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 10px 10px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .delete:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+</style>

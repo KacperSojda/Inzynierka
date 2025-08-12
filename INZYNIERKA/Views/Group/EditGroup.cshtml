@@ -4,36 +4,99 @@
     ViewData["Title"] = "Edit Group";
 }
 
-<h2>Edytuj grupę</h2>
+<div class="row mb-3">
+    <div class="col">
+        <p class="display-4">Edit Group</p>
+    </div>
+</div>
 
-<form asp-action="EditGroup" method="post">
+<form asp-action="EditGroup" method="post" class="mb-3">
     <input type="hidden" asp-for="Id" />
 
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label asp-for="Name"></label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label asp-for="Description">Opis grupy</label>
+    <div class="form-group mb-3">
+        <label asp-for="Description">Group Description</label>
         <textarea asp-for="Description" class="form-control" rows="4"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success mt-3">Zapisz zmiany</button>
+    <div class="menu">
+        <button type="submit" class="save">Save changes</button>
+        <form asp-action="DeleteGroup" method="post"
+              onsubmit="return confirm('Are you sure you want to delete this group?')" class="m-0">
+            <input type="hidden" name="groupId" value="@Model.Id" />
+            <button type="submit" class="delete">Delete group</button>
+        </form>
+        <form asp-action="SelectGroupTags" method="get" class="m-0">
+            <input type="hidden" name="groupId" value="@Model.Id" />
+            <button type="submit" class="edit">Edit tags</button>
+        </form>
+    </div>
 </form>
 
-<form asp-action="DeleteGroup" method="post" onsubmit="return confirm('Are you sure you want to delete this group?')">
-    <input type="hidden" name="groupId" value="@Model.Id" />
-    <button type="submit" class="btn btn-danger">
-        Delete group
-    </button>
-</form>
+<style>
 
-<form asp-action="SelectGroupTags" method="get">
-    <input type="hidden" name="groupId" value="@Model.Id" />
-    <button type="submit" class="btn btn-danger">
-        Edit tags
-    </button>
-</form>
+    .menu {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .delete {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .delete:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .edit {
+        background: linear-gradient(135deg, #757009, #cfc61d);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .edit:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+    }
+
+    .save {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .save:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+</style>

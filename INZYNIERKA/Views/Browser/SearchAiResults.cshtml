@@ -14,6 +14,11 @@
     <button type="submit" class="btn btn-outline-success" title="Send friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-add fs-4"></i></button>
 </form>
 
-<form asp-action="NextUser" method="post" style="display:inline;">
+<form asp-action="ShowUserWithAI" method="get" style="display:inline;">
     <button type="submit" class="btn btn-outline-primary fs-4">Next →</button>
+</form>
+
+<form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
+    <input type="hidden" name="userId" value="@Model.Id" />
+    <button type="submit" class="btn btn-outline-primary fs-4">Show Profile</button>
 </form>

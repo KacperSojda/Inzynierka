@@ -1,69 +1,188 @@
 ﻿@model INZYNIERKA.ViewModels.GroupViewModel
 
-<h2>Twoje grupy</h2>
+<div class="row">
+    <div class="col">
+        <p class="display-4">Your groups</p>
+    </div>
+</div>
 
+@if (!Model.AdminGroups.Any() && !Model.Groups.Any())
+{
+    <h4>You don't belong to any group!</h4>
+    <a asp-controller="Group" asp-action="ShowAvailableGroups" class="btn btn-primary">Search for groups</a>
+}
 @if (Model.AdminGroups.Any())
 {
-    <h3>Administrator</h3>
+    <h3>Admin</h3>
     <ul>
         @foreach (var group in Model.AdminGroups)
         {
-            <li>
-                <form asp-action="GroupChat" asp-controller="Group" method="get" style="display:inline;">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit">@group.Name</button>
-                </form>
-                <p class="lead">@group.Description</p>
-                <ul class="list-inline">
-                    @foreach (var tag in group.Tags)
-                    {
-                        <li class="list-inline-item badge bg-primary mx-1">@tag</li>
-                    }
-                </ul>
-                <form asp-action="EditGroup" asp-controller="Group" method="get" style="display:inline;">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit">Edit groupe</button>
-                </form>
-                <form asp-action="LeaveGroup" method="post" class="m-0">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Leave</button>
-                </form>
-                <form asp-action="ShowGroupMembers" method="post" class="m-0">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Show members</button>
-                </form>
-            </li>
+            <dt>
+                <div class="row">
+                    <div class="col-3">
+                        <p class="display-6">@group.Name</p>
+                        <ul class="list-inline">
+                            @foreach (var tag in group.Tags)
+                            {
+                                <li class="list-inline-item badge">@tag</li>
+                            }
+                        </ul>
+                        <p class="lead">@group.Description</p>
+                    </div>
+                    <div class="col">
+                        <div class="menu">
+                            <form asp-action="LeaveGroup" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="leave">Leave</button>
+                            </form>
+                            <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="show">Show members</button>
+                            </form>
+                            <form asp-action="GroupChat" asp-controller="Group" method="get" style="display:inline;">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="chat">Chat</button>
+                            </form>
+                            <form asp-action="EditGroup" asp-controller="Group" method="get" style="display:inline;">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="edit">Edit group</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </dt>
         }
     </ul>
 }
 
 @if (Model.Groups.Any())
 {
-    <h3>Członek</h3>
+    <h3>Groups</h3>
     <ul>
         @foreach (var group in Model.Groups)
         {
-            <li>
-                <p class="lead">@group.Description</p>
-                <ul class="list-inline">
-                    @foreach (var tag in group.Tags)
-                    {
-                        <li class="list-inline-item badge bg-primary mx-1">@tag</li>
-                    }
-                </ul>
-                <form asp-action="LeaveGroup" method="post" class="m-0">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Leave</button>
-                </form>
-                <form asp-action="ShowGroupMembers" method="post" class="m-0">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Show members</button>
-                </form>
-                <form asp-action="GroupChat" method="get" class="m-0">
-                    <input type="hidden" name="groupId" value="@group.GroupId" />
-                    <button type="submit" class="btn btn-danger btn-sm rounded-start-2 rounded-end-0">Chat</button>
-                </form>
-            </li>
+            <dt>
+                <div class="row">
+                    <div class="col-3">
+                        <p class="display-6">@group.Name</p>
+                        <ul class="list-inline">
+                            @foreach (var tag in group.Tags)
+                            {
+                                <li class="list-inline-item badge">@tag</li>
+                            }
+                        </ul>
+                        <p class="lead">@group.Description</p>
+                    </div>
+                    <div class="col">
+                        <div class="menu">
+                            <form asp-action="LeaveGroup" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="leave">Leave</button>
+                            </form>
+                            <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="show">Show members</button>
+                            </form>
+                            <form asp-action="GroupChat" method="get" class="m-0">
+                                <input type="hidden" name="groupId" value="@group.GroupId" />
+                                <button type="submit" class="chat">Chat</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </dt>
         }
     </ul>
 }
+
+<style>
+
+    .menu {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .leave {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .leave:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .show {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .show:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .chat {
+        background: linear-gradient(135deg, #1b3480, #4565c4);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .chat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .edit {
+        background: linear-gradient(135deg, #757009, #cfc61d);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .edit:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .list-inline-item.badge {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        text-align: center;
+        padding: 10px 0px;
+        border-radius: 15px;
+        width: 100px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+</style>

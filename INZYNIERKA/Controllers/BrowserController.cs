@@ -1,10 +1,13 @@
 ﻿using INZYNIERKA.Data;
 using INZYNIERKA.Models;
+using INZYNIERKA.Services;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace INZYNIERKA.Controllers
 {
@@ -12,10 +15,12 @@ namespace INZYNIERKA.Controllers
     {
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
-        public BrowserController(UserManager<User> userManager, INZDbContext context)
+        private readonly GeminiService geminiService;
+        public BrowserController(UserManager<User> userManager, INZDbContext context, GeminiService geminiService)
         {
             this.context = context;
             this.userManager = userManager;
+            this.geminiService = geminiService;
         }
 
         public async Task<IActionResult> SearchUsersByTags()
@@ -47,15 +52,14 @@ namespace INZYNIERKA.Controllers
                 .Select(t => t.TagId)
                 .ToList();
 
-            if(selectedTagIds.Count == 0)
+            if (selectedTagIds.Count == 0)
             {
                 return View("NoSelectedTags");
             }
 
             var connectedUserIds = await context.UserFriends
                 .Where(f =>
-                    (f.UserId == currentUserId || f.FriendId == currentUserId) &&
-                    f.Status == FriendshipStatus.Accepted) 
+                    (f.UserId == currentUserId || f.FriendId == currentUserId))
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
                 .ToListAsync();
 
@@ -96,7 +100,7 @@ namespace INZYNIERKA.Controllers
 
             if (string.IsNullOrEmpty(usersJson))
             {
-                return RedirectToAction("SearchUsersByTags"); 
+                return RedirectToAction("SearchUsersByTags");
             }
 
             var users = JsonConvert.DeserializeObject<List<UserViewModel>>(usersJson);
@@ -188,5 +192,155 @@ namespace INZYNIERKA.Controllers
 
             return RedirectToAction("ShowUser");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchWithAI()
+        {
+            var currentUserId = userManager.GetUserId(User);
+
+            var user = await context.Users
+                .Include(u => u.UserTags)
+                    .ThenInclude(ut => ut.Tag)
+                .FirstOrDefaultAsync(u => u.Id == currentUserId);
+
+            if (user == null)
+                return NotFound();
+
+            var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
+
+            var combinedString = $"User Description: {user.PublicDescription} " +
+                                 $"{user.PrivateDescription} " +
+                                 $"Hobby: {string.Join(", ", tags)}";
+
+            var connectedUserIds = await context.UserFriends
+                .Where(f =>
+                    (f.UserId == currentUserId || f.FriendId == currentUserId))
+                .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
+                .ToListAsync();
+
+            var matchingUsers = await context.Users
+                .Where(u =>
+                    u.Id != currentUserId &&
+                    !connectedUserIds.Contains(u.Id))
+                .OrderBy(u => Guid.NewGuid())
+                .Select(u => u.Id)
+                .ToListAsync();
+
+            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUsers));
+            HttpContext.Session.SetInt32("CurrentIndex", matchingUsers.Any() ? 0 : -1);
+
+            return RedirectToAction("ShowUserWithAI");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ShowUserWithAI()
+        {
+            var usersJson = HttpContext.Session.GetString("MatchingUsers");
+
+            if (string.IsNullOrEmpty(usersJson))
+            {
+                return RedirectToAction("SearchUsersByTags");
+            }
+
+            var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
+
+            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+
+            if (currentIndex == -1)
+            {
+                return View("NoSearchResults");
+            }
+            else
+            {
+                var userId = userManager.GetUserId(User);
+
+                var user = await context.Users
+                    .Include(u => u.UserTags)
+                        .ThenInclude(ut => ut.Tag)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                    return NotFound();
+
+                var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
+
+                var combinedString = $"First Description: {user.PublicDescription} " +
+                                     $"{user.PrivateDescription} " +
+                                     $"Hobby: {string.Join(", ", tags)}";
+
+                while (currentIndex < users.Count)
+                {
+
+                    var currentUser = users[currentIndex];
+
+                    currentIndex++;
+
+                    var dbUser = await context.Users
+                        .Include(u => u.UserTags)
+                            .ThenInclude(ut => ut.Tag)
+                        .FirstOrDefaultAsync(u => u.Id == currentUser);
+
+                    if (dbUser == null)
+                    {
+                        return NotFound();
+                    }
+
+                    var friendTags = dbUser.UserTags.Select(ut => ut.Tag.Name);
+
+                    var friendCombinedString =
+                        $"Second Description: {dbUser.PublicDescription}" +
+                        $"Hobby: {string.Join(", ", friendTags)}";
+
+                    var promptString = combinedString + " " + friendCombinedString;
+
+                    var geminiAns = await geminiService.AskAsync(promptString, "You will receive two descriptions of 2 people. Determine if they have anything in common based on the information given. do not add any additional descriptions or characters. Respond with only one word: YES if they share any common characteristics, otherwise NO.");
+
+                    Console.WriteLine($"[{geminiAns}]");
+
+                    if (geminiAns.Trim().ToUpper() == "YES")
+                    {
+                        var modeluser = await context.Users
+                            .Include(u => u.UserTags)
+                                .ThenInclude(ut => ut.Tag)
+                            .FirstOrDefaultAsync(u => u.Id == currentUser);
+
+                        var model = new UserViewModel
+                        {
+                            Id = modeluser.Id,
+                            UserName = modeluser.UserName,
+                            Avatar = modeluser.Avatar,
+                            PublicDescription = modeluser.PublicDescription,
+                            Tags = modeluser.UserTags.Select(ut => ut.Tag.Name).ToList()
+                        };
+
+                        HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
+
+                        return View("SearchAiResults", model);
+                    }
+                }
+                return View("NoSearchResults");
+            }
+        }
+
+        /*[HttpPost]
+        public IActionResult NextUser()
+        {
+            var usersJson = HttpContext.Session.GetString("MatchingUsers");
+
+            var users = JsonConvert.DeserializeObject<List<UserViewModel>>(usersJson);
+
+            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+
+            currentIndex++;
+
+            if (currentIndex >= users.Count)
+            {
+                currentIndex = -1;
+            }
+
+            HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
+
+            return RedirectToAction("ShowUser");
+        }*/
     }
 }
