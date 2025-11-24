@@ -8,5 +8,6 @@
         public List<UserGroup> Members { get; set; } = new List<UserGroup>();
         public List<GroupMessage> Messages { get; set; } = new List<GroupMessage>();
         public List<GroupTag> GroupTags { get; set; } = new List<GroupTag>();
+        public List<Notification> SendedNotifications { get; set; }
     }
 }

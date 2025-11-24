@@ -31,7 +31,7 @@ namespace INZYNIERKA.Services
                 contents = new[] {
                     new {
                         parts = new[] {
-                            new { text = fullPrompt },
+                            new {text = fullPrompt},
                         }
                     }
                 }

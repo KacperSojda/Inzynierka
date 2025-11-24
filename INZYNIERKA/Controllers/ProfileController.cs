@@ -1,4 +1,5 @@
-﻿using AspNetCoreGeneratedDocument;
+﻿using System.Linq;
+using AspNetCoreGeneratedDocument;
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
@@ -140,9 +141,11 @@ namespace INZYNIERKA.Controllers
             var user = await userManager.GetUserAsync(User);
 
             user = await context.Users
-                .Include(u => u.ReceivedNotifications)
-                    .ThenInclude(n => n.Sender)
-                .FirstOrDefaultAsync(u => u.Id == user.Id);
+            .Include(u => u.ReceivedNotifications)
+                .ThenInclude(n => n.Sender)
+            .Include(u => u.ReceivedNotifications)
+                .ThenInclude(n => n.Group)
+            .FirstOrDefaultAsync(u => u.Id == user.Id);
 
             var model = new NotificationListViewModel
             {
@@ -150,6 +153,7 @@ namespace INZYNIERKA.Controllers
                 {
                     Id = n.Id,
                     SenderUserName = n.Sender.UserName,
+                    //GroupName = n.Group != null ? n.Group.Name : null,
                     NotificationType = n.Type,
                     CreationDate = n.CreationDate
                 }).OrderByDescending(n => n.CreationDate).ToList()

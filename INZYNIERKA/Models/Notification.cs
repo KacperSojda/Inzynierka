@@ -6,13 +6,16 @@
         public string ReceiverId { get; set; }
         public User Receiver { get; set; } 
         public string SenderId { get; set; }
-        public User Sender { get; set; }  
+        public User Sender { get; set; }
+        public string? GroupId { get; set; } = "";
+        public Group Group { get; set; }
         public NotificationType Type { get; set; }
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     }
     public enum NotificationType
     {
         FriendRequest,
-        Message
+        Message,
+        GroupMessage
     }
 }

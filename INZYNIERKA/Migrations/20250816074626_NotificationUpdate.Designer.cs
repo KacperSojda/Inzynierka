@@ -3,6 +3,7 @@ using System;
 using INZYNIERKA.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace INZYNIERKA.Migrations
 {
     [DbContext(typeof(INZDbContext))]
-    partial class INZDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250816074626_NotificationUpdate")]
+    partial class NotificationUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,10 +136,8 @@ namespace INZYNIERKA.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("GroupId")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("GroupId1")
-                        .HasColumnType("integer");
 
                     b.Property<string>("ReceiverId")
                         .IsRequired()
@@ -150,8 +151,6 @@ namespace INZYNIERKA.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId1");
 
                     b.HasIndex("ReceiverId");
 
@@ -495,12 +494,6 @@ namespace INZYNIERKA.Migrations
 
             modelBuilder.Entity("INZYNIERKA.Models.Notification", b =>
                 {
-                    b.HasOne("INZYNIERKA.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("INZYNIERKA.Models.User", "Receiver")
                         .WithMany("ReceivedNotifications")
                         .HasForeignKey("ReceiverId")
@@ -512,8 +505,6 @@ namespace INZYNIERKA.Migrations
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Group");
 
                     b.Navigation("Receiver");
 

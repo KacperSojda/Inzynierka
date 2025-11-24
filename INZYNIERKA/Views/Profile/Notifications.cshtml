@@ -16,11 +16,15 @@
                     <div>
                         @if (notification.NotificationType == NotificationType.FriendRequest)
                         {
-                            <span>@notification.SenderUserName wysłał Ci zaproszenie do znajomych</span>
+                            <span>@notification.SenderUserName Sended friend request</span>
                         }
                         else if (notification.NotificationType == NotificationType.Message)
                         {
-                            <span>New Message <strong>@notification.SenderUserName</strong></span>
+                            <span>New Message from: <strong>@notification.SenderUserName</strong></span>
+                        }
+                        else if (notification.NotificationType == NotificationType.GroupMessage)
+                        {
+                            <span>New Message in group: <strong>@notification.GroupName</strong></span>
                         }
                         <br />
                         <small class="text-muted">@notification.CreationDate.ToString("g")</small>

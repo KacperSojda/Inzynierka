@@ -9,20 +9,85 @@
 <form asp-action="SelectGroupTags" method="post">
     <input type="hidden" name="groupId" value="@Model.GroupID" />
 
-    <div class="mb-3">
+    <div class="tags-container">
         @for (int i = 0; i < Model.Tags.Count; i++)
         {
-            <div class="form-check">
-                <input asp-for="Tags[i].IsSelected" class="form-check-input" />
-                <input type="hidden" asp-for="Tags[i].TagId" />
-                <label asp-for="Tags[i].IsSelected" class="form-check-label">
-                    @Model.Tags[i].TagName
-                </label>
-            </div>
+            <input type="hidden" asp-for="Tags[i].TagId" />
+            <input type="checkbox" asp-for="Tags[i].IsSelected" id="tag-@i" class="tag-checkbox" />
+            <label for="tag-@i" class="tag-block">
+                @Model.Tags[i].TagName
+                <!--<span class="checkmark">✔</span>-->
+            </label>
         }
     </div>
 
-    <div class="d-flex flex-wrap justify-content-left gap-3">
-        <button type="submit" class="btn btn-outline-success btn-sm">Save</button>
+    <div class="mt-3">
+        <button type="submit" class="save">Save</button>
     </div>
 </form>
+
+<style>
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tag-checkbox {
+        display: none;
+    }
+
+    .tag-block {
+        position: relative;
+        display: inline-block;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        color: white;
+        border-radius: 15px;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        user-select: none;
+    }
+
+        .tag-block:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    .checkmark {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #32b528;
+        color: white;
+        border-radius: 50%;
+        font-size: 12px;
+        padding: 3px;
+        line-height: 1;
+        display: none;
+    }
+
+    .tag-checkbox:checked + .tag-block {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+        transform: translateY(-3px);
+    }
+
+        .tag-checkbox:checked + .tag-block .checkmark {
+            display: inline-block;
+        }
+
+    .save {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+        color: white;
+        text-align: center;
+        padding: 5px 0px;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+</style>
