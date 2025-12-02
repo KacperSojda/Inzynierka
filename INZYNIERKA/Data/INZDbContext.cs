@@ -52,6 +52,12 @@ namespace INZYNIERKA.Data
                 .HasForeignKey(n => n.ReceiverId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Notification>()
+                .HasOne(n => n.Group)
+                .WithMany(g => g.SendedNotifications)
+                .HasForeignKey(n => n.GroupId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             builder.Entity<UserFriend>()
                 .HasKey(uf => new { uf.UserId, uf.FriendId });
 
@@ -118,6 +124,7 @@ namespace INZYNIERKA.Data
                 .WithMany(t => t.GroupTags)
                 .HasForeignKey(gt => gt.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

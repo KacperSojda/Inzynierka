@@ -132,10 +132,7 @@ namespace INZYNIERKA.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("GroupId1")
+                    b.Property<int?>("GroupId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ReceiverId")
@@ -151,7 +148,7 @@ namespace INZYNIERKA.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId1");
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("ReceiverId");
 
@@ -496,10 +493,9 @@ namespace INZYNIERKA.Migrations
             modelBuilder.Entity("INZYNIERKA.Models.Notification", b =>
                 {
                     b.HasOne("INZYNIERKA.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("SendedNotifications")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("INZYNIERKA.Models.User", "Receiver")
                         .WithMany("ReceivedNotifications")
@@ -635,6 +631,8 @@ namespace INZYNIERKA.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("SendedNotifications");
                 });
 
             modelBuilder.Entity("INZYNIERKA.Models.Tag", b =>

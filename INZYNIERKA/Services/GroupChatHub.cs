@@ -64,7 +64,7 @@ public class GroupChatHub : Hub
             if (member.UserId == senderID) continue;
 
             var existingNotification = await _context.Notifications.FirstOrDefaultAsync(n =>
-                n.GroupId == groupIDString &&
+                n.GroupId == groupID &&
                 n.ReceiverId == member.UserId &&
                 n.Type == NotificationType.Message);
 
@@ -73,7 +73,7 @@ public class GroupChatHub : Hub
                 var notification = new Notification
                 {
                     SenderId = senderID,
-                    GroupId = groupIDString,
+                    GroupId = groupID,
                     ReceiverId = member.UserId,
                     Type = NotificationType.GroupMessage,
                     CreationDate = DateTime.UtcNow

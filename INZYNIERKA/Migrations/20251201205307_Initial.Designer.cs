@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace INZYNIERKA.Migrations
 {
     [DbContext(typeof(INZDbContext))]
-    [Migration("20250816080545_NotificationUpdate2")]
-    partial class NotificationUpdate2
+    [Migration("20251201205307_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -135,10 +135,7 @@ namespace INZYNIERKA.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("GroupId1")
+                    b.Property<int?>("GroupId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ReceiverId")
@@ -154,7 +151,7 @@ namespace INZYNIERKA.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId1");
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("ReceiverId");
 
@@ -499,10 +496,9 @@ namespace INZYNIERKA.Migrations
             modelBuilder.Entity("INZYNIERKA.Models.Notification", b =>
                 {
                     b.HasOne("INZYNIERKA.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("SendedNotifications")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("INZYNIERKA.Models.User", "Receiver")
                         .WithMany("ReceivedNotifications")
@@ -638,6 +634,8 @@ namespace INZYNIERKA.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("SendedNotifications");
                 });
 
             modelBuilder.Entity("INZYNIERKA.Models.Tag", b =>
