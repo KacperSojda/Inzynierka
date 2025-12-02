@@ -33,11 +33,11 @@ public class GroupChatHub : Hub
 
         Console.WriteLine("co jest2");
 
-        var groupExists = await _context.Groups.AnyAsync(g => g.Id == groupID);
-        if (!groupExists)
-        {
-            return;
-        }
+        var group = await _context.Groups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == groupID);
+
+        if (group == null) return;
 
         Console.WriteLine("co jest3");
 
@@ -51,14 +51,6 @@ public class GroupChatHub : Hub
 
         _context.GroupMessages.Add(groupMessage);
 
-        Console.WriteLine("co jest3");
-
-        var group = await _context.Groups
-            .Include(g => g.Members)
-            .FirstOrDefaultAsync(g => g.Id == groupID);
-
-        if (group == null) return;
-
         foreach (var member in group.Members)
         {
             if (member.UserId == senderID) continue;
@@ -66,7 +58,7 @@ public class GroupChatHub : Hub
             var existingNotification = await _context.Notifications.FirstOrDefaultAsync(n =>
                 n.GroupId == groupID &&
                 n.ReceiverId == member.UserId &&
-                n.Type == NotificationType.Message);
+                n.Type == NotificationType.GroupMessage);
 
             if (existingNotification == null)
             {
