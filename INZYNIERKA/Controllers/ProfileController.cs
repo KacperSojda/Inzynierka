@@ -153,7 +153,7 @@ namespace INZYNIERKA.Controllers
                 {
                     Id = n.Id,
                     SenderUserName = n.Sender.UserName,
-                    GroupName = n.Group != null ? n.Group.Name : "coś dziwnego",
+                    GroupName = n.Group != null ? n.Group.Name : "Error",
                     NotificationType = n.Type,
                     CreationDate = n.CreationDate
                 }).OrderByDescending(n => n.CreationDate).ToList()
