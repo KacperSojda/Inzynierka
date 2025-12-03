@@ -25,6 +25,7 @@
             </div>
 
             <div class="input-group">
+                <button id="emoji-button" type="button" class="btn btn-light">😊</button>
                 <input type="text" id="messageInput" class="form-control"
                        placeholder="Write a message..."
                        value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
@@ -61,6 +62,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
         const connection = new signalR.HubConnectionBuilder()
@@ -117,6 +119,20 @@
         document.getElementById("messageInput").addEventListener("focus", function () {
             connection.invoke("ClearNotifications", "@Model.CurrentUserId", "@Model.FriendId")
                 .catch(err => console.error(err.toString()));
+        });
+    </script>
+
+    <script>
+        const picker = new EmojiButton();
+        const button = document.querySelector('#emoji-button');
+        const input = document.querySelector('#messageInput');
+
+        button.addEventListener('click', () => {
+            picker.togglePicker(button);
+        });
+
+        picker.on('emoji', emoji => {
+            input.value += emoji;
         });
     </script>
 
