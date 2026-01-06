@@ -8,22 +8,27 @@
         <li class="list-inline-item badge bg-primary mx-1">@tag</li>
     }
 </ul>
+<div class="buttons-wrapper">
+    <form asp-action="SendFriendRequest" method="post" style="display:inline;">
+        <input type="hidden" name="userId" value="@Model.Id" />
+        <button type="submit" class="add-friend" title="Send friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-add fs-4"></i></button>
+    </form>
 
-<form asp-action="SendFriendRequest" method="post" style="display:inline;">
-    <input type="hidden" name="userId" value="@Model.Id" />
-    <button type="submit" class="add-friend" title="Send friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-add fs-4"></i></button>
-</form>
+    <form asp-action="ShowUserWithAI" method="get" style="display:inline;">
+        <button type="submit" class="next">Next →</button>
+    </form>
 
-<form asp-action="ShowUserWithAI" method="get" style="display:inline;">
-    <button type="submit" class="next">Next →</button>
-</form>
-
-<form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
-    <input type="hidden" name="userId" value="@Model.Id" />
-    <button type="submit" class="show-profile">Show Profile</button>
-</form>
+    <form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
+        <input type="hidden" name="userId" value="@Model.Id" />
+        <button type="submit" class="show-profile">Show Profile</button>
+    </form>
+</div>
 
 <style>
+
+    .buttons-wrapper {
+        text-align: center;
+    }
 
     .next, .add-friend, .show-profile {
         display: inline-block;
