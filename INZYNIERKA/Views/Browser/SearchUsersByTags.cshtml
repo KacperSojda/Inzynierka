@@ -20,7 +20,7 @@
     </div>
 </form>
 
-<a asp-controller="Browser" asp-action="SearchWithAI" class="btn btn-outline-primary" title="Search by AI" data-bs-toggle="tooltipp"><i class="bi bi-pencil-square"></i> Search with AI</a>
+<a asp-controller="Browser" asp-action="SearchWithAI" class="AIsearch" title="Search by AI" data-bs-toggle="tooltipp"><i class="bi bi-pencil-square"></i> Search with AI</a>
 
 <style>
     .tags-container {
@@ -74,7 +74,7 @@
             display: inline-block;
         }
 
-    .save, .add-tag {
+    .save, .AIsearch .add-tag {
         display: inline-block;
         text-align: center;
         padding: 5px 0;
@@ -87,6 +87,10 @@
     }
 
     .save {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+    }
+
+    .AIsearch {
         background: linear-gradient(135deg, #1c7a15, #32b528);
     }
 

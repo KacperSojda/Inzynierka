@@ -11,9 +11,45 @@
 
 <form asp-action="SendFriendRequest" method="post" style="display:inline;">
     <input type="hidden" name="userId" value="@Model.Id" />
-    <button type="submit" class="btn btn-outline-success" title="Send friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-add fs-4"></i></button>
+    <button type="submit" class="add-friend" title="Send friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-add fs-4"></i></button>
 </form>
 
 <form asp-action="NextUser" method="post" style="display:inline;">
-    <button type="submit" class="btn btn-outline-primary fs-4">Next →</button>
+    <button type="submit" class="next">Next →</button>
 </form>
+
+<form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
+    <input type="hidden" name="userId" value="@Model.Id" />
+    <button type="submit" class="show-profile">Show Profile</button>
+</form>
+
+<style>
+
+    .next, .add-friend {
+        display: inline-block;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 15px;
+        width: 150px;
+        text-decoration: none;
+        color: white;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .add-friend {
+        background: linear-gradient(135deg, #1c7a15, #32b528);
+    }
+
+    .next {
+        background: linear-gradient(135deg, #757009, #cfc61d);
+    }
+
+        .save:hover, .add-tag:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        }
+
+    }
+
+</style>
