@@ -210,6 +210,14 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> GiveAdmin(int groupId, string userId)
         {
+            var currentUserId = userManager.GetUserId(User);
+
+            var isAdmin = await context.UserGroups
+                .AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId && ug.Type == MemberType.Administrator);
+
+            if (!isAdmin)
+                return Forbid();
+
             var userGroup = await context.UserGroups
                 .FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId);
 
