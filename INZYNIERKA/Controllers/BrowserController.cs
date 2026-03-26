@@ -246,7 +246,7 @@ namespace INZYNIERKA.Controllers
 
             int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
-            if (currentIndex == -1)
+            if (currentIndex == -1 || currentIndex >= users.Count)
             {
                 return View("NoSearchResults");
             }
@@ -264,9 +264,7 @@ namespace INZYNIERKA.Controllers
 
                 var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
 
-                var combinedString = $"First Description: {user.PublicDescription} " +
-                                     $"{user.PrivateDescription} " +
-                                     $"Hobby: {string.Join(", ", tags)}";
+                var combinedString = $"First Description: {user.PublicDescription} {user.PrivateDescription} Hobby: {string.Join(", ", tags)}";
 
                 while (currentIndex < users.Count)
                 {
@@ -282,65 +280,36 @@ namespace INZYNIERKA.Controllers
 
                     if (dbUser == null)
                     {
-                        return NotFound();
+                        continue;
                     }
 
                     var friendTags = dbUser.UserTags.Select(ut => ut.Tag.Name);
 
-                    var friendCombinedString =
-                        $"Second Description: {dbUser.PublicDescription}" +
-                        $"Hobby: {string.Join(", ", friendTags)}";
+                    var friendCombinedString = $"Second Description: {dbUser.PublicDescription} Hobby: {string.Join(", ", friendTags)}";
 
                     var promptString = combinedString + " " + friendCombinedString;
 
                     var geminiAns = await geminiService.AskAsync(promptString, "You will receive two descriptions of 2 people. Determine if they have anything in common based on the information given. do not add any additional descriptions or characters. Respond with only one word: YES if they share any common characteristics, otherwise NO.");
 
-                    Console.WriteLine($"[{geminiAns}]");
-
-                    if (geminiAns.Trim().ToUpper() == "YES")
+                    if (geminiAns.Trim().ToUpper().Contains("YES"))
                     {
-                        var modeluser = await context.Users
-                            .Include(u => u.UserTags)
-                                .ThenInclude(ut => ut.Tag)
-                            .FirstOrDefaultAsync(u => u.Id == currentUser);
-
                         var model = new UserViewModel
                         {
-                            Id = modeluser.Id,
-                            UserName = modeluser.UserName,
-                            Avatar = modeluser.Avatar,
-                            PublicDescription = modeluser.PublicDescription,
-                            Tags = modeluser.UserTags.Select(ut => ut.Tag.Name).ToList()
+                            Id = dbUser.Id,
+                            UserName = dbUser.UserName,
+                            Avatar = dbUser.Avatar,
+                            PublicDescription = dbUser.PublicDescription,
+                            Tags = dbUser.UserTags.Select(ut => ut.Tag.Name).ToList()
                         };
 
                         HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
 
                         return View("SearchAiResults", model);
                     }
+                    await Task.Delay(15);
                 }
                 return View("NoSearchResults");
             }
         }
-
-        /*[HttpPost]
-        public IActionResult NextUser()
-        {
-            var usersJson = HttpContext.Session.GetString("MatchingUsers");
-
-            var users = JsonConvert.DeserializeObject<List<UserViewModel>>(usersJson);
-
-            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
-
-            currentIndex++;
-
-            if (currentIndex >= users.Count)
-            {
-                currentIndex = -1;
-            }
-
-            HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
-
-            return RedirectToAction("ShowUser");
-        }*/
     }
 }
