@@ -1,10 +1,8 @@
-﻿using System.Diagnostics.Eventing.Reader;
-using INZYNIERKA.Models;
+﻿using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace INZYNIERKA.Controllers
 {
@@ -19,8 +17,14 @@ namespace INZYNIERKA.Controllers
             this.userManager = userManager;
         }
 
+        [HttpGet]
         public IActionResult Login()
         {
+            if (signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
@@ -30,14 +34,6 @@ namespace INZYNIERKA.Controllers
             if (ModelState.IsValid)
             {
                 var result = await signInManager.PasswordSignInAsync(model.Name, model.Password, model.RememberMe, false);
-                foreach(var Err in ModelState)
-                {
-                    var errors = Err.Value.Errors;
-                    foreach (var Error in errors)
-                    {
-                        Console.WriteLine(Error);
-                    }
-                }
 
                 if (result.Succeeded)
                 {
@@ -45,15 +41,21 @@ namespace INZYNIERKA.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Name or password incorrect,");
+                    ModelState.AddModelError("", "Name or password incorrect");
                     return View(model);
                 }
             }
             return View(model);
         }
 
+        [HttpGet]
         public IActionResult Register()
         {
+            if (signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
