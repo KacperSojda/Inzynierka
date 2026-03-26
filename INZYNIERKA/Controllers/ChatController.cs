@@ -6,10 +6,12 @@ using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using INZYNIERKA.Services;
 
 namespace INZYNIERKA.Controllers
 {
+    [Authorize]
     public class ChatController : Controller
     {
         private readonly INZDbContext context;
@@ -21,6 +23,8 @@ namespace INZYNIERKA.Controllers
             this.context = dbcontext;
             this.geminiService = geminiService;
         }
+
+        // Chat Prywatny //
 
         [HttpGet]
         public async Task<IActionResult> Chat(string friendId)
@@ -54,66 +58,13 @@ namespace INZYNIERKA.Controllers
                 CurrentUserId = user.Id,
                 CurrentUserName = user.UserName,
                 Messages = modelMessages,
-                UserMessage = "",
-                GeminiAnswer = "",
+                UserMessage = TempData["UserMessage"]?.ToString() ?? "",
+                GeminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "",
                 GeminiQuestion = "",
             };
 
             return View(model);
         }
-
-        /*[HttpPost]
-        public async Task<IActionResult> AskGemini(ChatViewModel model)
-        {
-            var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-            var friend = await userManager.FindByIdAsync(model.FriendId);
-
-            model.GeminiAnswer = await geminiService.AskAsync(model.GeminiQuestion, " ");
-
-            var messages = await context.Messages
-                .Where(m =>
-                    (m.SenderId == user.Id && m.ReceiverId == model.FriendId) ||
-                    (m.SenderId == model.FriendId && m.ReceiverId == user.Id))
-                .OrderBy(m => m.DateTime)
-                .ToListAsync();
-
-            var modelMessages = messages.Select(m => new MessageViewModel
-            {
-                SenderId = m.SenderId,
-                SenderName = m.Sender.UserName,
-                ReceiverId = m.ReceiverId,
-                ReceiverName = m.Receiver.UserName,
-                Content = m.Content,
-                DateTime = m.DateTime
-            }).ToList();
-
-            var updatedModel = new ChatViewModel
-            {
-                FriendId = friend.Id,
-                FriendName = friend.UserName,
-                CurrentUserId = user.Id,
-                CurrentUserName = user.UserName,
-                Messages = modelMessages,
-                UserMessage = model.UserMessage,
-                GeminiAnswer = model.GeminiAnswer,
-                GeminiQuestion = "",
-            };
-
-            return View("Chat", updatedModel);
-        }
-                    <form method="post" asp-action="AskGemini" class="mb-3">
-                <textarea name="GeminiQuestion" rows="4" class="form-control" placeholder="Your question...">@Model.GeminiQuestion</textarea>
-                <input type="hidden" name="FriendId" value="@Model.FriendId" />
-                <button type="submit" class="btn btn-secondary mt-2 w-100">Ask</button>
-            </form>
-
-         
-         
-        */
 
         [HttpPost]
         public async Task<IActionResult> ResponseHelp(ChatViewModel model)
@@ -121,141 +72,166 @@ namespace INZYNIERKA.Controllers
             var user = await userManager.GetUserAsync(User);
             var friend = await userManager.FindByIdAsync(model.FriendId);
 
-            Console.WriteLine(user);
-            Console.WriteLine(friend);
-
             var messages = await context.Messages
+                .Include(m => m.Sender)
+                .Include(m => m.Receiver)
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == model.FriendId) ||
                     (m.SenderId == model.FriendId && m.ReceiverId == user.Id))
-                .OrderBy(m => m.DateTime)
+                .OrderByDescending(m => m.DateTime)
+                .Take(30)
                 .ToListAsync();
 
-            var modelMessages = messages.Select(m => new MessageViewModel
-            {
-                SenderId = m.SenderId,
-                SenderName = m.Sender.UserName,
-                ReceiverId = m.ReceiverId,
-                ReceiverName = m.Receiver.UserName,
-                Content = m.Content,
-                DateTime = m.DateTime
-            }).ToList();
-
-            var updatedModel = new ChatViewModel
-            {
-                FriendId = friend.Id,
-                FriendName = friend.UserName,
-                CurrentUserId = user.Id,
-                CurrentUserName = user.UserName,
-                Messages = modelMessages,
-                UserMessage = model.UserMessage,
-                GeminiAnswer = "",
-                GeminiQuestion = "",
-            };
-
-            var last30Messages = modelMessages.TakeLast(30).ToList();
+            messages.Reverse();
 
             var messageString = string.Join(", ",
-                last30Messages.Select(m =>
-                    (m.SenderId == user.Id ? "[user]" : "[friend]") + " " + m.Content
+                messages.Select(m =>
+                    (m.SenderId == user.Id ? "[user]" : $"[{m.Sender.UserName}]") + " " + m.Content
                 )
             );
 
-            updatedModel.GeminiAnswer = await geminiService.AskAsync(messageString, "You are a helpful chat assistant. Below is a conversation between two people. Your task is to help user in conversation, understand the context of the conversation and suggest a thoughtful and relevant reply to the most recent message. Keep your tone natural and friendly. Your reply should be appropriate to the tone and style of the conversation so far. Do not repeat what has already been said. Do not add unnecessary commentary. Chat history:");
+            var ans = await geminiService.AskAsync(messageString, "You are a helpful chat assistant. Below is a conversation between two people. Your task is to help user in conversation, understand the context of the conversation and suggest a thoughtful and relevant reply to the most recent message. Keep your tone natural and friendly. Your reply should be appropriate to the tone and style of the conversation so far. Do not repeat what has already been said. Do not add unnecessary commentary. Chat history:");
 
-            return View("Chat", updatedModel);
+            TempData["GeminiAnswer"] = ans;
+            TempData["UserMessage"] = model.UserMessage;
+
+            return View("Chat", new {friendId = model.FriendId});
         }
 
         [HttpPost]
         public async Task<IActionResult> CorrectMessage(ChatViewModel model)
         {
             var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-            var friend = await userManager.FindByIdAsync(model.FriendId);
 
-            var messages = await context.Messages
-                .Where(m =>
-                    (m.SenderId == user.Id && m.ReceiverId == model.FriendId) ||
-                    (m.SenderId == model.FriendId && m.ReceiverId == user.Id))
-                .OrderBy(m => m.DateTime)
-                .ToListAsync();
+            var ans = await geminiService.AskAsync(model.UserMessage, "You are a professional multilingual proofreader. Correct the following message, fixing spelling, punctuation, and grammar errors, and improving sentence structure for clarity and style. Keep the original meaning and language of the message, Respond only with the corrected message, without explanations or extra text ");
 
-            var modelMessages = messages.Select(m => new MessageViewModel
-            {
-                SenderId = m.SenderId,
-                SenderName = m.Sender.UserName,
-                ReceiverId = m.ReceiverId,
-                ReceiverName = m.Receiver.UserName,
-                Content = m.Content,
-                DateTime = m.DateTime
-            }).ToList();
+            TempData["UserMessage"] = ans;
 
-            var updatedModel = new ChatViewModel
-            {
-                FriendId = friend.Id,
-                FriendName = friend.UserName,
-                CurrentUserId = user.Id,
-                CurrentUserName = user.UserName,
-                Messages = modelMessages,
-                UserMessage = model.UserMessage,
-                GeminiAnswer = "",
-                GeminiQuestion = "",
-            };
-
-            updatedModel.UserMessage = await geminiService.AskAsync(model.UserMessage, "You are a professional multilingual proofreader. Correct the following message, fixing spelling, punctuation, and grammar errors, and improving sentence structure for clarity and style. Keep the original meaning and language of the message, Respond only with the corrected message, without explanations or extra text ");
-
-            return View("Chat", updatedModel);
+            return RedirectToAction("Chat", new {friendId = model.FriendId});
         }
 
+        [HttpPost]
         public async Task<IActionResult> TranslateMessage(ChatViewModel model)
         {
             var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-            var friend = await userManager.FindByIdAsync(model.FriendId);
 
             var messages = await context.Messages
+                .Include(m => m.Sender)
+                .Include(m => m.Receiver)
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == model.FriendId) ||
                     (m.SenderId == model.FriendId && m.ReceiverId == user.Id))
-                .OrderBy(m => m.DateTime)
+                .OrderByDescending(m => m.DateTime)
+                .Take(30)
                 .ToListAsync();
 
-            var modelMessages = messages.Select(m => new MessageViewModel
-            {
-                SenderId = m.SenderId,
-                SenderName = m.Sender.UserName,
-                ReceiverId = m.ReceiverId,
-                ReceiverName = m.Receiver.UserName,
-                Content = m.Content,
-                DateTime = m.DateTime
-            }).ToList();
+            messages.Reverse();
 
-            var updatedModel = new ChatViewModel
-            {
-                FriendId = friend.Id,
-                FriendName = friend.UserName,
-                CurrentUserId = user.Id,
-                CurrentUserName = user.UserName,
-                Messages = modelMessages,
-                UserMessage = model.UserMessage,
-                GeminiAnswer = "",
-                GeminiQuestion = "",
-            };
-
-            var last30Messages = messages.TakeLast(30).ToList();
-            string messagestoString = string.Join(", ", last30Messages.Select(m => m.Content));
+            string messagestoString = string.Join(", ", messages);
 
             string language = await geminiService.AskAsync(messagestoString, "Detect the language of the following message and respond with only the language name in English, without explanations or extra text");
 
-            updatedModel.UserMessage = await geminiService.AskAsync(model.UserMessage, string.Join("Translate the following text to",language,"Respond only with the translated text without any extra explanation"));
+            var ans = await geminiService.AskAsync(model.UserMessage, $"Translate the following text to {language}. Respond only with the translated text without any extra explanation.");
 
-            return View("Chat", updatedModel);
+            TempData["UserMessage"] = ans;
+
+            return View("Chat", new {friendId = model.FriendId});
+        }
+
+        // Chat Grupowy //
+
+        [HttpGet]
+        public async Task<IActionResult> GroupChat(int groupId)
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var group = await context.Groups
+                .Where(g => g.Id == groupId)
+                .Select(g => new { g.Name })
+                .FirstOrDefaultAsync();
+
+            var messages = await context.GroupMessages
+                .Include(m => m.Sender)
+                .Where(m => (m.GroupId == groupId))
+                .OrderBy(m => m.Timestamp)
+                .ToListAsync();
+
+            var modelMessages = messages.Select(m => new GroupMessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                Content = m.Content,
+                DateTime = m.Timestamp
+            }).ToList();
+
+            var model = new GroupChatViewModel
+            {
+                groupID = groupId,
+                groupName = group.Name,
+                currentUserID = user.Id,
+                messages = modelMessages,
+                UserMessage = TempData["UserMessage"]?.ToString() ?? "",
+                GeminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? ""
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GroupResponseHelp(GroupChatViewModel model)
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            var lastMessages = await context.GroupMessages
+                .Include(m => m.Sender)
+                .Where(m => m.GroupId == model.groupID)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(30)
+                .ToListAsync();
+
+            var messageString = string.Join(", ",
+                lastMessages.Select(m =>
+                    (m.SenderId == user.Id ? "[user]" : $"[{m.Sender.UserName}]") + " " + m.Content)
+            );
+
+            var ans = await geminiService.AskAsync(messageString, "You are a helpful chat assistant. Below is a conversation between multiple people. Your task is to help user in conversation, understand the context of the conversation and suggest a thoughtful and relevant reply to the most recent message. Keep your tone natural and friendly. Your reply should be appropriate to the tone and style of the conversation so far. Do not repeat what has already been said. Do not add unnecessary commentary. Chat history:");
+
+            TempData["GeminiAnswer"] = ans;
+            TempData["UserMessage"] = model.UserMessage;
+
+            return RedirectToAction("GroupChat", new {groupId = model.groupID});
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GroupCorrectMessage(GroupChatViewModel model)
+        {
+            var ans = await geminiService.AskAsync(model.UserMessage, "You are a professional multilingual proofreader. Correct the following message, fixing spelling, punctuation, and grammar errors, and improving sentence structure for clarity and style. Keep the original meaning and language of the message, Respond only with the corrected message, without explanations or extra text.");
+
+            TempData["UserMessage"] = ans;
+
+            return RedirectToAction("GroupChat", new {groupId = model.groupID});
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GroupTranslateMessage(GroupChatViewModel model)
+        {
+            var lastMessages = await context.GroupMessages
+                .Where(m => m.GroupId == model.groupID)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(30)
+                .Select(m => m.Content)
+                .ToListAsync();
+
+            string messagesToString = string.Join(", ", lastMessages);
+
+            string language = await geminiService.AskAsync(messagesToString, "Detect the language of the following message and respond with only the language name in English, without explanations or extra text");
+
+            string prompt = $"Translate the following text to {language}. Respond only with the translated text without any extra explanation.";
+            var ans = await geminiService.AskAsync(model.UserMessage, prompt);
+
+            TempData["UserMessage"] = ans;
+
+            return RedirectToAction("GroupChat", new {groupId = model.groupID});
         }
     }
 }

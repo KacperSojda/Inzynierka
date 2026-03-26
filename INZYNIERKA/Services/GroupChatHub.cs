@@ -21,25 +21,18 @@ public class GroupChatHub : Hub
 
     public async Task SendMessageToGroup(string groupIDString, string senderID, string message)
     {
-        Console.WriteLine("co jest4");
         if (string.IsNullOrWhiteSpace(message)) return;
-
-        Console.WriteLine("co jest3");
 
         if (!int.TryParse(groupIDString, out int groupID))
         {
             return;
         }
 
-        Console.WriteLine("co jest2");
-
         var group = await _context.Groups
             .Include(g => g.Members)
             .FirstOrDefaultAsync(g => g.Id == groupID);
 
         if (group == null) return;
-
-        Console.WriteLine("co jest3");
 
         var groupMessage = new GroupMessage
         {

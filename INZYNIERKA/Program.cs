@@ -45,12 +45,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseStaticFiles();
 
 app.UseSession();
 
@@ -61,5 +61,20 @@ app.MapControllerRoute(
 app.MapHub<ChatHub>("/chathub");
 
 app.MapHub<GroupChatHub>("/groupchathub");
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<INZDbContext>();
+        context.Database.Migrate(); // Automatycznie stworzy tabele w chmurze
+        Console.WriteLine("Migracje bazy danych zosta³y pomyœlnie na³o¿one.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Wyst¹pi³ b³¹d podczas nak³adania migracji: {ex.Message}");
+    }
+}
 
 app.Run();

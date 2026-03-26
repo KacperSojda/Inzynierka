@@ -11,7 +11,7 @@ namespace INZYNIERKA.Services
 
         public GeminiService()
         {
-            this.apiKey = "AIzaSyBkEZNxzsKUNIW72EQbmrMcZeOZ0j9FA98";
+            this.apiKey = "";
             this.httpClient = new HttpClient();
         }
 

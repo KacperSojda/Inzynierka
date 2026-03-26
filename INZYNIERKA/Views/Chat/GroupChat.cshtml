@@ -36,18 +36,18 @@
     </div>
 }
 <div class="menu">
-    <form method="post" asp-action="GroupResponseHelp">
+    <form method="post" asp-action="GroupResponseHelp" asp-controller="Chat">
         <input type="hidden" name="groupId" value="@Model.groupID" />
         <button type="submit" class="mybtn">Help with response</button>
     </form>
 
-    <form id="CorrectForm" method="post" asp-action="GroupCorrectMessage">
+    <form id="CorrectForm" method="post" asp-action="GroupCorrectMessage" asp-controller="Chat">
         <input type="hidden" name="groupId" value="@Model.groupID" />
         <input type="hidden" id="userMessageCorrect" name="UserMessage" value="" />
         <button type="submit" class="mybtn">Correct my message</button>
     </form>
 
-    <form id="TranslateForm" method="post" asp-action="GroupTranslateMessage">
+    <form id="TranslateForm" method="post" asp-action="GroupTranslateMessage" asp-controller="Chat">
         <input type="hidden" name="groupId" value="@Model.groupID" />
         <input type="hidden" id="userMessageTranslate" name="UserMessage" value="" />
         <button type="submit" class="mybtn">Translate</button>
