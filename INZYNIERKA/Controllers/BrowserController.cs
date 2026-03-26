@@ -5,12 +5,14 @@ using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace INZYNIERKA.Controllers
 {
+    [Authorize]
     public class BrowserController : Controller
     {
         private readonly INZDbContext context;
@@ -63,38 +65,27 @@ namespace INZYNIERKA.Controllers
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
                 .ToListAsync();
 
-            var users = await context.Users
-                .Include(u => u.UserTags)
-                    .ThenInclude(ut => ut.Tag)
+            var matchingUserIds = await context.Users
                 .Where(u =>
                     u.Id != currentUserId &&
                     !connectedUserIds.Contains(u.Id) &&
                     selectedTagIds.All(tagId =>
                         u.UserTags.Any(ut => ut.TagId == tagId)))
+                .Select(u => u.Id)
                 .ToListAsync();
 
             var random = new Random();
 
-            var matchingUsers = users
-                .OrderBy(u => random.Next())
-                .Select(u => new UserViewModel
-                {
-                    Id = u.Id,
-                    UserName = u.UserName,
-                    Avatar = u.Avatar,
-                    PublicDescription = u.PublicDescription,
-                    Tags = u.UserTags.Select(ut => ut.Tag.Name).ToList()
-                })
-                .ToList();
+            matchingUserIds = matchingUserIds.OrderBy(id => random.Next()).ToList();
 
-            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUsers));
-            HttpContext.Session.SetInt32("CurrentIndex", matchingUsers.Any() ? 0 : -1);
+            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUserIds));
+            HttpContext.Session.SetInt32("CurrentIndex", matchingUserIds.Any() ? 0 : -1);
 
             return RedirectToAction("ShowUser", "Browser");
         }
 
         [HttpGet]
-        public IActionResult ShowUser(int index)
+        public async Task<IActionResult> ShowUser()
         {
             var usersJson = HttpContext.Session.GetString("MatchingUsers");
 
@@ -103,18 +94,37 @@ namespace INZYNIERKA.Controllers
                 return RedirectToAction("SearchUsersByTags");
             }
 
-            var users = JsonConvert.DeserializeObject<List<UserViewModel>>(usersJson);
+            var userIds = JsonConvert.DeserializeObject<List<string>>(usersJson);
 
             int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
-            if (currentIndex == -1)
+            if (currentIndex == -1 || currentIndex >= userIds.Count)
             {
                 return View("NoSearchResults");
             }
-            else
+
+            var targetUserId = userIds[currentIndex];
+
+            var user = await context.Users
+                .Include(u => u.UserTags)
+                    .ThenInclude(ut => ut.Tag)
+                .FirstOrDefaultAsync(u => u.Id == targetUserId);
+
+            if (user == null)
             {
-                return View("SearchResults", users[currentIndex]);
+                return View("NoSearchResults");
             }
+
+            var model = new UserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Avatar = user.Avatar,
+                PublicDescription = user.PublicDescription,
+                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList()
+            };
+
+            return View("SearchResults", model);
         }
 
         [HttpPost]
@@ -122,7 +132,12 @@ namespace INZYNIERKA.Controllers
         {
             var usersJson = HttpContext.Session.GetString("MatchingUsers");
 
-            var users = JsonConvert.DeserializeObject<List<UserViewModel>>(usersJson);
+            if (string.IsNullOrEmpty(usersJson))
+            {
+                return RedirectToAction("SearchUsersByTags");
+            }
+
+            var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
 
             int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
@@ -177,7 +192,7 @@ namespace INZYNIERKA.Controllers
 
             var usersJson = HttpContext.Session.GetString("MatchingUsers");
 
-            var users = JsonConvert.DeserializeObject<List<UserViewModel>>(usersJson);
+            var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
 
             int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
