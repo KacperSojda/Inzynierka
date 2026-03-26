@@ -38,8 +38,11 @@ namespace INZYNIERKA.Controllers
                 .Where(m =>
                     (m.SenderId == user.Id && m.ReceiverId == friendId) ||
                     (m.SenderId == friendId && m.ReceiverId == user.Id))
-                .OrderBy(m => m.DateTime)
-                .ToListAsync();
+                .OrderByDescending(m => m.DateTime) 
+                .Take(30)                           
+                .ToListAsync();                     
+
+            messages.Reverse();
 
             var modelMessages = messages.Select(m => new MessageViewModel
             {
@@ -70,7 +73,6 @@ namespace INZYNIERKA.Controllers
         public async Task<IActionResult> ResponseHelp(ChatViewModel model)
         {
             var user = await userManager.GetUserAsync(User);
-            var friend = await userManager.FindByIdAsync(model.FriendId);
 
             var messages = await context.Messages
                 .Include(m => m.Sender)
@@ -95,14 +97,12 @@ namespace INZYNIERKA.Controllers
             TempData["GeminiAnswer"] = ans;
             TempData["UserMessage"] = model.UserMessage;
 
-            return View("Chat", new {friendId = model.FriendId});
+            return RedirectToAction("Chat", new {friendId = model.FriendId});
         }
 
         [HttpPost]
         public async Task<IActionResult> CorrectMessage(ChatViewModel model)
         {
-            var user = await userManager.GetUserAsync(User);
-
             var ans = await geminiService.AskAsync(model.UserMessage, "You are a professional multilingual proofreader. Correct the following message, fixing spelling, punctuation, and grammar errors, and improving sentence structure for clarity and style. Keep the original meaning and language of the message, Respond only with the corrected message, without explanations or extra text ");
 
             TempData["UserMessage"] = ans;
@@ -127,7 +127,7 @@ namespace INZYNIERKA.Controllers
 
             messages.Reverse();
 
-            string messagestoString = string.Join(", ", messages);
+            string messagestoString = string.Join(", ", messages.Select(m => m.Content));
 
             string language = await geminiService.AskAsync(messagestoString, "Detect the language of the following message and respond with only the language name in English, without explanations or extra text");
 
@@ -135,7 +135,7 @@ namespace INZYNIERKA.Controllers
 
             TempData["UserMessage"] = ans;
 
-            return View("Chat", new {friendId = model.FriendId});
+            return RedirectToAction("Chat", new {friendId = model.FriendId});
         }
 
         // Chat Grupowy //
@@ -153,8 +153,11 @@ namespace INZYNIERKA.Controllers
             var messages = await context.GroupMessages
                 .Include(m => m.Sender)
                 .Where(m => (m.GroupId == groupId))
-                .OrderBy(m => m.Timestamp)
-                .ToListAsync();
+                .OrderByDescending(m => m.Timestamp)
+                .Take(30)                           
+                .ToListAsync();                      
+
+            messages.Reverse();
 
             var modelMessages = messages.Select(m => new GroupMessageViewModel
             {
