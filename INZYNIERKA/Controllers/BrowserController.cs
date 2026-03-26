@@ -190,22 +190,7 @@ namespace INZYNIERKA.Controllers
                 await context.SaveChangesAsync();
             }
 
-            var usersJson = HttpContext.Session.GetString("MatchingUsers");
-
-            var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
-
-            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
-
-            currentIndex++;
-
-            if (currentIndex >= users.Count)
-            {
-                currentIndex = -1;
-            }
-
-            HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
-
-            return RedirectToAction("ShowUser");
+            return NextUser();
         }
 
         [HttpGet]
@@ -220,12 +205,6 @@ namespace INZYNIERKA.Controllers
 
             if (user == null)
                 return NotFound();
-
-            var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
-
-            var combinedString = $"User Description: {user.PublicDescription} " +
-                                 $"{user.PrivateDescription} " +
-                                 $"Hobby: {string.Join(", ", tags)}";
 
             var connectedUserIds = await context.UserFriends
                 .Where(f =>
