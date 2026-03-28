@@ -1,24 +1,23 @@
 ﻿using System.Text.RegularExpressions;
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
-using INZYNIERKA.Services;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace INZYNIERKA.Controllers
 {
+    [Authorize]
     public class GroupController : Controller
     {
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
-        private readonly GeminiService geminiService;
-        public GroupController(UserManager<User> userManager, INZDbContext dbcontext, GeminiService geminiService)
+        public GroupController(UserManager<User> userManager, INZDbContext dbcontext)
         {
             this.userManager = userManager;
             this.context = dbcontext;
-            this.geminiService = geminiService;
         }
 
         public IActionResult Index()
@@ -345,7 +344,7 @@ namespace INZYNIERKA.Controllers
                 await context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Members", new { id = groupId });
+            return RedirectToAction("ShowGroupMembers", new { groupId });
         }
 
         [HttpPost]
@@ -382,6 +381,16 @@ namespace INZYNIERKA.Controllers
 
         public async Task<IActionResult> SelectGroupTags(int groupID)
         {
+            var currentUser = await userManager.GetUserAsync(User);
+
+            var isAdmin = await context.UserGroups.AnyAsync(ug =>
+                ug.ChatGroupId == groupID &&
+                ug.UserId == currentUser.Id &&
+                ug.Type == MemberType.Administrator);
+
+            if (!isAdmin)
+                return Forbid();
+
             var GroupTagIds = await context.GroupTags
                 .Where(ut => ut.GroupId == groupID)
                 .Select(ut => ut.TagId)
@@ -400,7 +409,6 @@ namespace INZYNIERKA.Controllers
 
                 }).ToList()
             };
-            Console.WriteLine("debug1");
             return View(model);
         }
 
