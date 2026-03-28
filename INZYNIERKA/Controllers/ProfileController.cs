@@ -6,9 +6,11 @@ using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace INZYNIERKA.Controllers
 {
+    [Authorize]
     public class ProfileController : Controller
     {
         private readonly INZDbContext context;
@@ -165,10 +167,17 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteNotification(int notificationId)
         {
+            var user = await userManager.GetUserAsync(User);
+
             var notification = await context.Notifications
                 .Include(n => n.Sender)
                 .Include(n => n.Receiver)
-                .FirstOrDefaultAsync(n => n.Id == notificationId);
+                .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == user.Id);
+
+            if (notification == null)
+            {
+                return NotFound();
+            }
 
             if (notification.Type == NotificationType.FriendRequest)
             {
@@ -191,30 +200,34 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> FriendRequestAccept(int notificationId)
         {
+            var user = await userManager.GetUserAsync(User);
+
             var notification = await context.Notifications
                 .Include(n => n.Sender)
                 .Include(n => n.Receiver)
-                .FirstOrDefaultAsync(n => n.Id == notificationId);
+                .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == user.Id && n.Type == NotificationType.FriendRequest);
 
-            if(notification != null)
+            if (notification == null)
             {
-                var FirstRecord = await context.UserFriends.FirstOrDefaultAsync(f =>
-                    (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
-
-                if (FirstRecord != null)
-                {
-                    context.UserFriends.RemoveRange(FirstRecord);
-                }
-
-                context.UserFriends.AddRange(
-                    new UserFriend { UserId = notification.SenderId, FriendId = notification.ReceiverId, Status = FriendshipStatus.Accepted },
-                    new UserFriend { UserId = notification.ReceiverId, FriendId = notification.SenderId, Status = FriendshipStatus.Accepted }
-                );
-
-                context.Notifications.Remove(notification);
-
-                await context.SaveChangesAsync();
+                return NotFound();
             }
+
+            var FirstRecord = await context.UserFriends.FirstOrDefaultAsync(f =>
+                (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
+
+            if (FirstRecord != null)
+            {
+                context.UserFriends.Remove(FirstRecord);
+            }
+
+            context.UserFriends.AddRange(
+                new UserFriend { UserId = notification.SenderId, FriendId = notification.ReceiverId, Status = FriendshipStatus.Accepted },
+                new UserFriend { UserId = notification.ReceiverId, FriendId = notification.SenderId, Status = FriendshipStatus.Accepted }
+            );
+
+            context.Notifications.Remove(notification);
+
+            await context.SaveChangesAsync();
 
             return RedirectToAction("Notifications");
         }
