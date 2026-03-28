@@ -1,29 +1,26 @@
-using System.Diagnostics;
 using INZYNIERKA.Models;
-using Microsoft.AspNetCore.Identity;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace INZYNIERKA.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<User> userManager;
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger, UserManager<User> userManager)
+        public IActionResult Index()
         {
-            _logger = logger;
-            this.userManager = userManager;
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                var user = await userManager.GetUserAsync(User);
-                ViewBag.UserName = user.UserName;
+                ViewBag.UserName = User.Identity.Name;
             }
             return View();
         }
+        /*
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+
+            return View(new ErrorViewModel {RequestId = requestId});
+        }*/
     }
 }
