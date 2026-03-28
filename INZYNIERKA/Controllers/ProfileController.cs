@@ -386,13 +386,24 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTag(TagViewModel model)
         {
-            Tag tag = new Tag()
+            if (!ModelState.IsValid)
             {
-                Name = model.TagName
-            };
+                return View(model);
+            }
 
-            context.Tags.Add(tag);
-            await context.SaveChangesAsync();
+            var tagExists = await context.Tags
+                .AnyAsync(t => t.Name.ToLower() == model.TagName.ToLower());
+
+            if (!tagExists)
+            {
+                Tag tag = new Tag()
+                {
+                    Name = model.TagName
+                };
+
+                context.Tags.Add(tag);
+                await context.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index", "Profile");
         }
