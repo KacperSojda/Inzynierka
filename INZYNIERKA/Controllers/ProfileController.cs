@@ -152,6 +152,17 @@ namespace INZYNIERKA.Controllers
             var userId = userManager.GetUserId(User);
 
             var model = await notificationService.GetNotificationsAsync(userId);
+            var model = new NotificationListViewModel
+            {
+                Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
+                {
+                    Id = n.Id,
+                    SenderUserName = n.Sender != null ? n.Sender.UserName : "System",
+                    GroupName = n.Group != null ? n.Group.Name : "Error",
+                    NotificationType = n.Type,
+                    CreationDate = n.CreationDate
+                }).OrderByDescending(n => n.CreationDate).ToList()
+            };
 
             return View(model);
         }
