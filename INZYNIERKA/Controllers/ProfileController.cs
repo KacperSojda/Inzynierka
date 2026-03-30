@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using AspNetCoreGeneratedDocument;
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
@@ -75,7 +74,6 @@ namespace INZYNIERKA.Controllers
                 }
                 else
                 {
-                    Console.WriteLine(user.UserName);
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError("", error.Description);
@@ -329,7 +327,7 @@ namespace INZYNIERKA.Controllers
         {
             var user = await context.Users.FindAsync(userId);
 
-            if (user != null)
+            if (user == null)
             {
                 return NotFound();
             }
