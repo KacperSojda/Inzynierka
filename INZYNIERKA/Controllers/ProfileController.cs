@@ -16,11 +16,16 @@ namespace INZYNIERKA.Controllers
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
         private readonly IFriendshipService friendshipService;
-        public ProfileController(UserManager<User> userManager, INZDbContext dbcontext, IFriendshipService friendshipService)
+        private readonly INotificationService notificationService;
+        public ProfileController(UserManager<User> userManager, 
+                                 INZDbContext dbcontext, 
+                                 IFriendshipService friendshipService,
+                                 INotificationService notificationService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
             this.friendshipService = friendshipService;
+            this.notificationService = notificationService;
         }
         public async Task<IActionResult> Index()
         {
@@ -141,26 +146,9 @@ namespace INZYNIERKA.Controllers
 
         public async Task<IActionResult> Notifications()
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            user = await context.Users
-            .Include(u => u.ReceivedNotifications)
-                .ThenInclude(n => n.Sender)
-            .Include(u => u.ReceivedNotifications)
-                .ThenInclude(n => n.Group)
-            .FirstOrDefaultAsync(u => u.Id == user.Id);
-
-            var model = new NotificationListViewModel
-            {
-                Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
-                {
-                    Id = n.Id,
-                    SenderUserName = n.Sender != null ? n.Sender.UserName : "System",
-                    GroupName = n.Group != null ? n.Group.Name : "Error",
-                    NotificationType = n.Type,
-                    CreationDate = n.CreationDate
-                }).OrderByDescending(n => n.CreationDate).ToList()
-            };
+            var model = await notificationService.GetNotificationsAsync(userId);
 
             return View(model);
         }
@@ -168,32 +156,14 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteNotification(int notificationId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            var notification = await context.Notifications
-                .Include(n => n.Sender)
-                .Include(n => n.Receiver)
-                .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == user.Id);
+            var success = await notificationService.DeleteNotificationAsync(userId, notificationId);
 
-            if (notification == null)
+            if (!success)
             {
                 return NotFound();
             }
-
-            if (notification.Type == NotificationType.FriendRequest)
-            {
-                var Record = await context.UserFriends.FirstOrDefaultAsync(f =>
-                    (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
-
-                if (Record != null)
-                {
-                    context.UserFriends.Remove(Record);
-                }
-            }
-
-            context.Notifications.Remove(notification);
-
-            await context.SaveChangesAsync();
 
             return RedirectToAction("Notifications");
         }
