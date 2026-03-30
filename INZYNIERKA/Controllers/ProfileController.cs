@@ -16,11 +16,20 @@ namespace INZYNIERKA.Controllers
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
         private readonly IFriendshipService friendshipService;
-        public ProfileController(UserManager<User> userManager, INZDbContext dbcontext, IFriendshipService friendshipService)
+        private readonly INotificationService notificationService;
+        private readonly ITagService tagService;
+
+        public ProfileController(UserManager<User> userManager, 
+                                 INZDbContext dbcontext, 
+                                 IFriendshipService friendshipService,
+                                 INotificationService notificationService,
+                                 ITagService tagService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
             this.friendshipService = friendshipService;
+            this.notificationService = notificationService;
+            this.tagService = tagService;
         }
         public async Task<IActionResult> Index()
         {
@@ -86,81 +95,63 @@ namespace INZYNIERKA.Controllers
             return View(model);
         }
 
+        // Tag Service //
+
         public async Task<IActionResult> SelectTags()
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            var userTagIds = await context.UserTags
-                .Where(ut => ut.UserId == user.Id)
-                .Select(ut => ut.TagId)
-                .ToListAsync();
+            var model = await tagService.GetUserTagsForSelectionAsync(userId);
 
-            var tags = await context.Tags.ToListAsync();
-
-            var model = new SelectTagsViewModel
-            {
-                Tags = tags.Select(t => new TagItem
-                {
-                    TagId = t.Id,
-                    TagName = t.Name,
-                    IsSelected = userTagIds.Contains(t.Id)
-
-                }).ToList()
-            };
             return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> SelectTags(SelectTagsViewModel model)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
             var selectedTagIds = model.Tags
                 .Where(t => t.IsSelected)
                 .Select(t => t.TagId)
                 .ToList();
 
-            var existingUserTags = await context.UserTags
-                .Where(ut => ut.UserId == user.Id)
-                .ToListAsync();
+            await tagService.UpdateUserTagsAsync(userId, selectedTagIds);
 
-            context.UserTags.RemoveRange(existingUserTags);
-
-            foreach (var tagId in selectedTagIds)
-            {
-                context.UserTags.Add(new UserTag
-                {
-                    UserId = user.Id,
-                    TagId = tagId
-                });
-            }
-
-            await context.SaveChangesAsync();
             return RedirectToAction("Index", "Profile");
         }
 
+        public IActionResult AddTag()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddTag(TagViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            await tagService.AddNewTagAsync(model.TagName);
+
+            return RedirectToAction("Index", "Profile");
+        }
+
+        public async Task<IActionResult> ShowTags()
+        {
+            var tags = await context.Tags.ToListAsync();
+            return View(tags);
+        }
+
+        // Notification Service //
+
         public async Task<IActionResult> Notifications()
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            user = await context.Users
-            .Include(u => u.ReceivedNotifications)
-                .ThenInclude(n => n.Sender)
-            .Include(u => u.ReceivedNotifications)
-                .ThenInclude(n => n.Group)
-            .FirstOrDefaultAsync(u => u.Id == user.Id);
-
-            var model = new NotificationListViewModel
-            {
-                Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
-                {
-                    Id = n.Id,
-                    SenderUserName = n.Sender != null ? n.Sender.UserName : "System",
-                    GroupName = n.Group != null ? n.Group.Name : "Error",
-                    NotificationType = n.Type,
-                    CreationDate = n.CreationDate
-                }).OrderByDescending(n => n.CreationDate).ToList()
-            };
+            var model = await notificationService.GetNotificationsAsync(userId);
 
             return View(model);
         }
@@ -168,35 +159,19 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteNotification(int notificationId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            var notification = await context.Notifications
-                .Include(n => n.Sender)
-                .Include(n => n.Receiver)
-                .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == user.Id);
+            var success = await notificationService.DeleteNotificationAsync(userId, notificationId);
 
-            if (notification == null)
+            if (!success)
             {
                 return NotFound();
             }
 
-            if (notification.Type == NotificationType.FriendRequest)
-            {
-                var Record = await context.UserFriends.FirstOrDefaultAsync(f =>
-                    (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
-
-                if (Record != null)
-                {
-                    context.UserFriends.Remove(Record);
-                }
-            }
-
-            context.Notifications.Remove(notification);
-
-            await context.SaveChangesAsync();
-
             return RedirectToAction("Notifications");
         }
+
+        // Friendship Service //
 
         [HttpPost]
         public async Task<IActionResult> FriendRequestAccept(int notificationId)
@@ -320,44 +295,6 @@ namespace INZYNIERKA.Controllers
             }
 
             return RedirectToAction("Index");
-        }
-
-        public IActionResult AddTag()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddTag(TagViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var tagExists = await context.Tags
-                .AnyAsync(t => t.Name.ToLower() == model.TagName.ToLower());
-
-            if (!tagExists)
-            {
-                Tag tag = new Tag()
-                {
-                    Name = model.TagName
-                };
-
-                context.Tags.Add(tag);
-                await context.SaveChangesAsync();
-            }
-
-            return RedirectToAction("Index", "Profile");
-        }
-
-        /// Funkcje pomocnicze =====================================
-
-        public async Task<IActionResult> ShowTags()
-        {
-            var tags = await context.Tags.ToListAsync();
-            return View(tags);
         }
     }
 }

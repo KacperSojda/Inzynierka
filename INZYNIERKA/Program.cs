@@ -36,6 +36,10 @@ builder.Services.AddSingleton<GeminiService>();
 
 builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+builder.Services.AddScoped<ITagService, TagService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
