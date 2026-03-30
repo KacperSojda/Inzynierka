@@ -324,11 +324,15 @@ namespace INZYNIERKA.Controllers
             return RedirectToAction("RequestList");
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> ShowProfile(string userId)
         {
-            var user = await context.Users
-                .FindAsync(userId);
+            var user = await context.Users.FindAsync(userId);
+
+            if (user != null)
+            {
+                return NotFound();
+            }
 
             var userTags = await context.UserTags
                 .Where(t => t.UserId == userId)
