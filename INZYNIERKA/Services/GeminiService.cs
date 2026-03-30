@@ -1,17 +1,20 @@
 ﻿using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace INZYNIERKA.Services
 {
     public class GeminiService
     {
+        private readonly IConfiguration configuration;
         private readonly string apiKey;
         private readonly HttpClient httpClient;
 
-        public GeminiService()
+        public GeminiService(IConfiguration configuration)
         {
-            this.apiKey = "";
+            this.configuration = configuration;
+            this.apiKey = configuration["ApiKeys:Gemini"];
             this.httpClient = new HttpClient();
         }
 
@@ -22,7 +25,7 @@ namespace INZYNIERKA.Services
                 return "The question cannot be empty.";
             }
 
-            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+            string endpoint = configuration["EndPoints:Gemini"].Replace("{apiKey}", apiKey);
 
             var fullPrompt = prompt + question;
 
@@ -43,7 +46,12 @@ namespace INZYNIERKA.Services
             try
             {
                 var response = await httpClient.PostAsync(endpoint, content);
-                response.EnsureSuccessStatusCode();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return $"Błąd API (Status: {(int)response.StatusCode}): {errorContent}";
+                }
 
                 var responseString = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(responseString);

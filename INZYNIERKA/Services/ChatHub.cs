@@ -5,22 +5,26 @@ using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 public class ChatHub : Hub
 {
     private readonly INZDbContext _context;
     private readonly GeminiService geminiService;
+    private readonly IConfiguration configuration;
 
-    public ChatHub(INZDbContext context, GeminiService geminiService)
+    public ChatHub(INZDbContext context, GeminiService geminiService, IConfiguration configuration)
     {
         _context = context;
         this.geminiService = geminiService;
+        this.configuration = configuration;
     }
 
     public async Task SendMessage(string senderId, string receiverId, string message)
     {
+        string CenzurePrompt = configuration["Prompts:Cenzure"];
 
-        string cenzuredMessage = await geminiService.AskAsync(message, "You are a profanity filter. Detect and censor only strong, explicit profanity such as “fuck”, “shit”, “bitch”, “cunt”, and similar words. Do not censor mild language or slang. Replace each censored word with asterisks (*) matching the exact length of the word. Keep everything else in the message unchanged. Do not add comments or explanations. Message content: ");
+        string cenzuredMessage = await geminiService.AskAsync(message, CenzurePrompt);
 
         var msg = new Message
         {
