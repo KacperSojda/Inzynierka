@@ -122,7 +122,7 @@ namespace INZYNIERKA.Controllers
 
             context.Groups.Add(group);
             await context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            return RedirectToAction("ShowUserGroups");
         }
 
         [HttpPost]

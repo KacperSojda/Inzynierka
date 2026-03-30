@@ -152,7 +152,7 @@ namespace INZYNIERKA.Controllers
                 Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
                 {
                     Id = n.Id,
-                    SenderUserName = n.Sender.UserName,
+                    SenderUserName = n.Sender != null ? n.Sender.UserName : "System",
                     GroupName = n.Group != null ? n.Group.Name : "Error",
                     NotificationType = n.Type,
                     CreationDate = n.CreationDate
