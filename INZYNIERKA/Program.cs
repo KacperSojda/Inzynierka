@@ -44,6 +44,8 @@ builder.Services.AddTransient<IFileService, FileService>();
 
 builder.Services.AddScoped<IProfileService, ProfileService>();
 
+builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

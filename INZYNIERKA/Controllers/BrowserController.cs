@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace INZYNIERKA.Controllers
 {
@@ -20,12 +18,19 @@ namespace INZYNIERKA.Controllers
         private readonly UserManager<User> userManager;
         private readonly GeminiService geminiService;
         private readonly IConfiguration configuration;
-        public BrowserController(UserManager<User> userManager, INZDbContext context, GeminiService geminiService, IConfiguration configuration)
+        private readonly IMatchmakingService matchmakingService;
+        public BrowserController(
+            UserManager<User> userManager, 
+            INZDbContext context, 
+            GeminiService geminiService, 
+            IConfiguration configuration,
+            IMatchmakingService matchmakingService)
         {
             this.context = context;
             this.userManager = userManager;
             this.geminiService = geminiService;
             this.configuration = configuration;
+            this.matchmakingService = matchmakingService;
         }
 
         public async Task<IActionResult> SearchUsersByTags()
@@ -48,41 +53,19 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchUsersByTags(SearchByTagsViewModel model)
         {
-            var currentUser = await userManager.GetUserAsync(User);
-
-            var currentUserId = currentUser.Id;
+            var userId = userManager.GetUserId(User);
 
             var selectedTagIds = model.AvailableTags
                 .Where(t => t.IsSelected)
                 .Select(t => t.TagId)
                 .ToList();
 
-            if (selectedTagIds.Count == 0)
-            {
-                return View("NoSelectedTags");
-            }
+            if (selectedTagIds.Count == 0) return View("NoSelectedTags");
 
-            var connectedUserIds = await context.UserFriends
-                .Where(f =>
-                    (f.UserId == currentUserId || f.FriendId == currentUserId))
-                .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
-                .ToListAsync();
+            var matchedUserIds = await matchmakingService.GetMatchingUserIdsByTagsAsync(userId, selectedTagIds);
 
-            var matchingUserIds = await context.Users
-                .Where(u =>
-                    u.Id != currentUserId &&
-                    !connectedUserIds.Contains(u.Id) &&
-                    selectedTagIds.All(tagId =>
-                        u.UserTags.Any(ut => ut.TagId == tagId)))
-                .Select(u => u.Id)
-                .ToListAsync();
-
-            var random = new Random();
-
-            matchingUserIds = matchingUserIds.OrderBy(id => random.Next()).ToList();
-
-            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUserIds));
-            HttpContext.Session.SetInt32("CurrentIndex", matchingUserIds.Any() ? 0 : -1);
+            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchedUserIds));
+            HttpContext.Session.SetInt32("CurrentIndex", matchedUserIds.Any() ? 0 : -1);
 
             return RedirectToAction("ShowUser", "Browser");
         }
@@ -92,40 +75,19 @@ namespace INZYNIERKA.Controllers
         {
             var usersJson = HttpContext.Session.GetString("MatchingUsers");
 
-            if (string.IsNullOrEmpty(usersJson))
-            {
-                return RedirectToAction("SearchUsersByTags");
-            }
+            if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
 
-            var userIds = JsonConvert.DeserializeObject<List<string>>(usersJson);
+            var usersIds = JsonConvert.DeserializeObject<List<string>>(usersJson);
 
             int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
-            if (currentIndex == -1 || currentIndex >= userIds.Count)
-            {
-                return View("NoSearchResults");
-            }
+            if (currentIndex == -1 || currentIndex >= usersIds.Count) return View("NoSearchResults");
 
-            var targetUserId = userIds[currentIndex];
+            var targetUserId = usersIds[currentIndex];
 
-            var user = await context.Users
-                .Include(u => u.UserTags)
-                    .ThenInclude(ut => ut.Tag)
-                .FirstOrDefaultAsync(u => u.Id == targetUserId);
+            var model = await matchmakingService.GetUserForBrowserAsync(targetUserId);
 
-            if (user == null)
-            {
-                return View("NoSearchResults");
-            }
-
-            var model = new UserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Avatar = user.Avatar,
-                PublicDescription = user.PublicDescription,
-                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList()
-            };
+            if (model == null) return View("NoSearchResults");
 
             return View("SearchResults", model);
         }
@@ -135,10 +97,7 @@ namespace INZYNIERKA.Controllers
         {
             var usersJson = HttpContext.Session.GetString("MatchingUsers");
 
-            if (string.IsNullOrEmpty(usersJson))
-            {
-                return RedirectToAction("SearchUsersByTags");
-            }
+            if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
 
             var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
 
@@ -146,10 +105,7 @@ namespace INZYNIERKA.Controllers
 
             currentIndex++;
 
-            if (currentIndex >= users.Count)
-            {
-                currentIndex = -1;
-            }
+            if (currentIndex >= users.Count) currentIndex = -1;
 
             HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
 
