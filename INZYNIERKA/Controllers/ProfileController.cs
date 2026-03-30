@@ -360,10 +360,25 @@ namespace INZYNIERKA.Controllers
 
             if (AvatarFile != null && AvatarFile.Length > 0)
             {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png"};
+                var extension = Path.GetExtension(AvatarFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("", "Nieobsługiwany format pliku. Dozwolone formaty: .jpg, .jpeg, .png");
+                    return View();
+                }
+
+                if(AvatarFile.Length > 2 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("", "Plik jest zbyt duży. Maksymalny rozmiar to 2MB.");
+                    return View();
+                }
+
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
                 Directory.CreateDirectory(uploadsFolder);
 
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(AvatarFile.FileName)}";
+                var fileName = $"{Guid.NewGuid()}{extension}";
                 var filePath = Path.Combine(uploadsFolder, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
