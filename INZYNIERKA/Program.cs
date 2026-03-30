@@ -40,6 +40,8 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddScoped<ITagService, TagService>();
 
+builder.Services.AddTransient<IFileService, FileService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

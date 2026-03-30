@@ -18,18 +18,21 @@ namespace INZYNIERKA.Controllers
         private readonly IFriendshipService friendshipService;
         private readonly INotificationService notificationService;
         private readonly ITagService tagService;
+        private readonly IFileService fileService;
 
         public ProfileController(UserManager<User> userManager, 
                                  INZDbContext dbcontext, 
                                  IFriendshipService friendshipService,
                                  INotificationService notificationService,
-                                 ITagService tagService)
+                                 ITagService tagService,
+                                 IFileService fileService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
             this.friendshipService = friendshipService;
             this.notificationService = notificationService;
             this.tagService = tagService;
+            this.fileService = fileService;
         }
         public async Task<IActionResult> Index()
         {
@@ -263,6 +266,8 @@ namespace INZYNIERKA.Controllers
             return View(model);
         }
 
+        // File Service // 
+
         public IActionResult EditAvatar()
         {
             return View();
@@ -273,37 +278,16 @@ namespace INZYNIERKA.Controllers
         {
             var user = await userManager.GetUserAsync(User);
 
-            if (AvatarFile != null && AvatarFile.Length > 0)
+            var uploadResult = await fileService.UploadAvatarAsync(AvatarFile);
+
+            if (!uploadResult.IsSuccess)
             {
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png"};
-                var extension = Path.GetExtension(AvatarFile.FileName).ToLowerInvariant();
-
-                if (!allowedExtensions.Contains(extension))
-                {
-                    ModelState.AddModelError("", "Nieobsługiwany format pliku. Dozwolone formaty: .jpg, .jpeg, .png");
-                    return View();
-                }
-
-                if(AvatarFile.Length > 2 * 1024 * 1024)
-                {
-                    ModelState.AddModelError("", "Plik jest zbyt duży. Maksymalny rozmiar to 2MB.");
-                    return View();
-                }
-
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
-                Directory.CreateDirectory(uploadsFolder);
-
-                var fileName = $"{Guid.NewGuid()}{extension}";
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await AvatarFile.CopyToAsync(stream);
-                }
-
-                user.Avatar = $"/uploads/avatars/{fileName}";
-                await userManager.UpdateAsync(user);
+                ModelState.AddModelError("", uploadResult.Result);
+                return View();
             }
+
+            user.Avatar = uploadResult.Result;
+            await userManager.UpdateAsync(user);
 
             return RedirectToAction("Index");
         }
