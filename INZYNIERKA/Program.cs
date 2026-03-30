@@ -34,7 +34,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<GeminiService>();
 
-//builder.WebHost.UseUrls($"http://*:{Environment.GetEnvironmentVariable("PORT")}");
+builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 
 var app = builder.Build();
 

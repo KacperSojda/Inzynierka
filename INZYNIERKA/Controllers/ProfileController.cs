@@ -2,6 +2,7 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
+using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,12 @@ namespace INZYNIERKA.Controllers
     {
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
-        public ProfileController(UserManager<User> userManager, INZDbContext dbcontext)
+        private readonly IFriendshipService friendshipService;
+        public ProfileController(UserManager<User> userManager, INZDbContext dbcontext, IFriendshipService friendshipService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
+            this.friendshipService = friendshipService;
         }
         public async Task<IActionResult> Index()
         {
@@ -198,51 +201,21 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> FriendRequestAccept(int notificationId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
+            var result = await friendshipService.AcceptFriendRequestAsync(userId, notificationId);
 
-            var notification = await context.Notifications
-                .Include(n => n.Sender)
-                .Include(n => n.Receiver)
-                .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == user.Id && n.Type == NotificationType.FriendRequest);
-
-            if (notification == null)
+            if (!result)
             {
                 return NotFound();
             }
-
-            var FirstRecord = await context.UserFriends.FirstOrDefaultAsync(f =>
-                (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
-
-            if (FirstRecord != null)
-            {
-                context.UserFriends.Remove(FirstRecord);
-            }
-
-            context.UserFriends.AddRange(
-                new UserFriend { UserId = notification.SenderId, FriendId = notification.ReceiverId, Status = FriendshipStatus.Accepted },
-                new UserFriend { UserId = notification.ReceiverId, FriendId = notification.SenderId, Status = FriendshipStatus.Accepted }
-            );
-
-            context.Notifications.Remove(notification);
-
-            await context.SaveChangesAsync();
 
             return RedirectToAction("Notifications");
         }
 
         public async Task<IActionResult> FriendList()
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var model = await context.UserFriends
-                .Where(f =>
-                    f.UserId == user.Id && f.Status == FriendshipStatus.Accepted)
-                .Select(f => new FriendViewModel
-                {
-                    Id = f.Friend.Id,
-                    UserName = f.Friend.UserName
-                })
-                .ToListAsync();
+            var userId = userManager.GetUserId(User);
+            var model = await friendshipService.GetFriendListAsync(userId);
 
             return View("FriendList", model);
         }
@@ -250,44 +223,18 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteFriend(string friendId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            var friendship1 = await context.UserFriends
-                .FirstOrDefaultAsync(f =>
-                    (f.UserId == user.Id && f.FriendId == friendId));
-
-            var friendship2 = await context.UserFriends
-                .FirstOrDefaultAsync(f =>
-                    (f.FriendId == user.Id && f.UserId == friendId));
-
-            if (friendship1 != null)
-            {
-                context.UserFriends.Remove(friendship1);
-            }
-
-            if (friendship2 != null)
-            {
-                context.UserFriends.Remove(friendship2);
-            }
-
-            await context.SaveChangesAsync();
+            await friendshipService.DeleteFriendAsync(userId, friendId);
 
             return RedirectToAction("FriendList");
         }
 
         public async Task<IActionResult> RequestList()
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            var model = await context.UserFriends
-                .Where(f =>
-                    f.UserId == user.Id && f.Status == FriendshipStatus.Pending)
-                .Select(f => new FriendViewModel
-                {
-                    Id = f.Friend.Id,
-                    UserName = f.Friend.UserName
-                })
-                .ToListAsync();
+            var model = await friendshipService.GetRequestListAsync(userId);
 
             return View("RequestList", model);
         }
@@ -295,29 +242,9 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteRequest(string friendId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
 
-            var friendship = await context.UserFriends
-                .FirstOrDefaultAsync(f =>
-                    (f.UserId == user.Id && f.FriendId == friendId));
-
-            if (friendship != null)
-            {
-                context.UserFriends.Remove(friendship);
-            }
-
-            var notification = await context.Notifications
-                .FirstOrDefaultAsync(n =>
-                    n.Type == NotificationType.FriendRequest &&
-                    n.SenderId == user.Id &&
-                    n.ReceiverId == friendId);
-
-            if (notification != null)
-            {
-                context.Notifications.Remove(notification);
-            }
-
-            await context.SaveChangesAsync();
+            await friendshipService.DeleteRequestAsync(userId, friendId);
 
             return RedirectToAction("RequestList");
         }
