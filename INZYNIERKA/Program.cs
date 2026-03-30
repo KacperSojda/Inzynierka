@@ -42,6 +42,8 @@ builder.Services.AddScoped<ITagService, TagService>();
 
 builder.Services.AddTransient<IFileService, FileService>();
 
+builder.Services.AddScoped<IProfileService, ProfileService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

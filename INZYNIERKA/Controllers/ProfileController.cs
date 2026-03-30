@@ -19,82 +19,66 @@ namespace INZYNIERKA.Controllers
         private readonly INotificationService notificationService;
         private readonly ITagService tagService;
         private readonly IFileService fileService;
+        private readonly IProfileService profileService;
 
-        public ProfileController(UserManager<User> userManager, 
-                                 INZDbContext dbcontext, 
-                                 IFriendshipService friendshipService,
-                                 INotificationService notificationService,
-                                 ITagService tagService,
-                                 IFileService fileService)
+        public ProfileController(
+            UserManager<User> userManager, 
+            IFriendshipService friendshipService,
+            INotificationService notificationService,
+            ITagService tagService,
+            IFileService fileService,
+            IProfileService profileService)
         {
             this.userManager = userManager;
-            this.context = dbcontext;
             this.friendshipService = friendshipService;
             this.notificationService = notificationService;
             this.tagService = tagService;
             this.fileService = fileService;
+            this.profileService = profileService;
         }
+
+        // Profile Service //
         public async Task<IActionResult> Index()
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
+            var model = await profileService.GetUserProfileAsync(userId);
 
-            var userTags = await context.UserTags
-                .Where(ut => ut.UserId == user.Id)
-                .Include(ut => ut.Tag)
-                .ToListAsync();
+            if (model == null) return NotFound();
 
-            var model = new UserViewModel
-            {
-                PrivateDescription = user.PrivateDescription,
-                PublicDescription = user.PublicDescription,
-                UserName = user.UserName,
-                Avatar = user.Avatar,
-                Tags = userTags.Select(ut => ut.Tag.Name).ToList(),
-            };
             return View(model);
         }
 
         public async Task<IActionResult> EditProfile()
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
+            var model = await profileService.GetUserProfileForEditAsync(userId);
 
-            var model = new UserViewModel
-            {
-                PrivateDescription = user.PrivateDescription,
-                PublicDescription = user.PublicDescription,
-                UserName = user.UserName,
-                Avatar = user.Avatar,
-            };
+            if (model == null) return NotFound();
+
             return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> EditProfile(UserViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                var user = await userManager.GetUserAsync(User);
+            if (!ModelState.IsValid) return View(model);
 
-                if (user == null) return NotFound();
+            var userId = userManager.GetUserId(User);
 
-                user.Avatar = model.Avatar;
-                user.PublicDescription = model.PublicDescription;
-                user.PrivateDescription = model.PrivateDescription;
+            var (isSuccess, errors) = await profileService.UpdateUserProfileAsync(userId, model);
 
-                var result = await userManager.UpdateAsync(user);
+            if (isSuccess) return RedirectToAction("Index");
 
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index", "Profile");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
-                }
-            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ShowProfile(string userId)
+        {
+            var model = await profileService.GetOtherUserProfileAsync(userId);
+
+            if (model == null) return NotFound();
+
             return View(model);
         }
 
@@ -155,17 +139,6 @@ namespace INZYNIERKA.Controllers
             var userId = userManager.GetUserId(User);
 
             var model = await notificationService.GetNotificationsAsync(userId);
-            var model = new NotificationListViewModel
-            {
-                Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
-                {
-                    Id = n.Id,
-                    SenderUserName = n.Sender != null ? n.Sender.UserName : "System",
-                    GroupName = n.Group != null ? n.Group.Name : "Error",
-                    NotificationType = n.Type,
-                    CreationDate = n.CreationDate
-                }).OrderByDescending(n => n.CreationDate).ToList()
-            };
 
             return View(model);
         }
@@ -236,34 +209,6 @@ namespace INZYNIERKA.Controllers
             await friendshipService.DeleteRequestAsync(userId, friendId);
 
             return RedirectToAction("RequestList");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ShowProfile(string userId)
-        {
-            var user = await context.Users.FindAsync(userId);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            var userTags = await context.UserTags
-                .Where(t => t.UserId == userId)
-                .Select(t => t.Tag.Name)
-                .ToListAsync();
-
-            var model = new UserViewModel
-            {
-                Id = userId,
-                Avatar = user.Avatar,
-                UserName = user.UserName,
-                PublicDescription = user.PublicDescription,
-                PrivateDescription = "",
-                Tags = userTags
-            };
-
-            return View(model);
         }
 
         // File Service // 
