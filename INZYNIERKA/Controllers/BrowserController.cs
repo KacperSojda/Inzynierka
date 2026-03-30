@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace INZYNIERKA.Controllers
@@ -18,11 +19,13 @@ namespace INZYNIERKA.Controllers
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
         private readonly GeminiService geminiService;
-        public BrowserController(UserManager<User> userManager, INZDbContext context, GeminiService geminiService)
+        private readonly IConfiguration configuration;
+        public BrowserController(UserManager<User> userManager, INZDbContext context, GeminiService geminiService, IConfiguration configuration)
         {
             this.context = context;
             this.userManager = userManager;
             this.geminiService = geminiService;
+            this.configuration = configuration;
         }
 
         public async Task<IActionResult> SearchUsersByTags()
@@ -260,6 +263,8 @@ namespace INZYNIERKA.Controllers
 
                 var combinedString = $"First Description: {user.PublicDescription} {user.PrivateDescription} Hobby: {string.Join(", ", tags)}";
 
+                var BrowserPrompt = configuration["Prompts:Browser"];
+
                 while (currentIndex < users.Count)
                 {
 
@@ -283,7 +288,7 @@ namespace INZYNIERKA.Controllers
 
                     var promptString = combinedString + " " + friendCombinedString;
 
-                    var geminiAns = await geminiService.AskAsync(promptString, "You will receive two descriptions of 2 people. Determine if they have anything in common based on the information given. do not add any additional descriptions or characters. Respond with only one word: YES if they share any common characteristics, otherwise NO.");
+                    var geminiAns = await geminiService.AskAsync(promptString, BrowserPrompt);
 
                     if (geminiAns.Trim().ToUpper().Contains("YES"))
                     {

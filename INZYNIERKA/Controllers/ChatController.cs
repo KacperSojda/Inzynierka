@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 using INZYNIERKA.Services;
 
 namespace INZYNIERKA.Controllers
@@ -17,11 +18,13 @@ namespace INZYNIERKA.Controllers
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
         private readonly GeminiService geminiService;
-        public ChatController(UserManager<User> userManager, INZDbContext dbcontext, GeminiService geminiService)
+        private readonly IConfiguration configuration;
+        public ChatController(UserManager<User> userManager, INZDbContext dbcontext, GeminiService geminiService, IConfiguration configuration)
         {
             this.userManager = userManager;
             this.context = dbcontext;
             this.geminiService = geminiService;
+            this.configuration = configuration;
         }
 
         // Chat Prywatny //
@@ -92,8 +95,9 @@ namespace INZYNIERKA.Controllers
                 )
             );
 
-            var ans = await geminiService.AskAsync(messageString, "You are a helpful chat assistant. Below is a conversation between two people. Your task is to help user in conversation, understand the context of the conversation and suggest a thoughtful and relevant reply to the most recent message. Keep your tone natural and friendly. Your reply should be appropriate to the tone and style of the conversation so far. Do not repeat what has already been said. Do not add unnecessary commentary. Chat history:");
+            string ResponseHelpPrompt = configuration["Prompts:ResponseHelp"];
 
+            string ans = await geminiService.AskAsync(messageString, ResponseHelpPrompt);
             TempData["GeminiAnswer"] = ans;
             TempData["UserMessage"] = model.UserMessage;
 
@@ -103,7 +107,9 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> CorrectMessage(ChatViewModel model)
         {
-            var ans = await geminiService.AskAsync(model.UserMessage, "You are a professional multilingual proofreader. Correct the following message, fixing spelling, punctuation, and grammar errors, and improving sentence structure for clarity and style. Keep the original meaning and language of the message, Respond only with the corrected message, without explanations or extra text ");
+            string CorrectMessagePrompt = configuration["Prompts:CorrectMessage"];
+
+            string ans = await geminiService.AskAsync(model.UserMessage, CorrectMessagePrompt);
 
             TempData["UserMessage"] = ans;
 
@@ -129,9 +135,13 @@ namespace INZYNIERKA.Controllers
 
             string messagestoString = string.Join(", ", messages.Select(m => m.Content));
 
-            string language = await geminiService.AskAsync(messagestoString, "Detect the language of the following message and respond with only the language name in English, without explanations or extra text");
+            string LanguagePrompt = configuration["Prompts:Language"];
 
-            var ans = await geminiService.AskAsync(model.UserMessage, $"Translate the following text to {language}. Respond only with the translated text without any extra explanation.");
+            string language = await geminiService.AskAsync(messagestoString, LanguagePrompt);
+
+            string TranslatePrompt = configuration["Prompts:Translate"].Replace("{language}", language);
+
+            string ans = await geminiService.AskAsync(model.UserMessage, TranslatePrompt);
 
             TempData["UserMessage"] = ans;
 
@@ -197,7 +207,9 @@ namespace INZYNIERKA.Controllers
                     (m.SenderId == user.Id ? "[user]" : $"[{m.Sender.UserName}]") + " " + m.Content)
             );
 
-            var ans = await geminiService.AskAsync(messageString, "You are a helpful chat assistant. Below is a conversation between multiple people. Your task is to help user in conversation, understand the context of the conversation and suggest a thoughtful and relevant reply to the most recent message. Keep your tone natural and friendly. Your reply should be appropriate to the tone and style of the conversation so far. Do not repeat what has already been said. Do not add unnecessary commentary. Chat history:");
+            string ResponseHelpPrompt = configuration["Prompts:ResponseHelp"];
+
+            string ans = await geminiService.AskAsync(messageString, ResponseHelpPrompt);
 
             TempData["GeminiAnswer"] = ans;
             TempData["UserMessage"] = model.UserMessage;
@@ -208,7 +220,9 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> GroupCorrectMessage(GroupChatViewModel model)
         {
-            var ans = await geminiService.AskAsync(model.UserMessage, "You are a professional multilingual proofreader. Correct the following message, fixing spelling, punctuation, and grammar errors, and improving sentence structure for clarity and style. Keep the original meaning and language of the message, Respond only with the corrected message, without explanations or extra text.");
+            string CorrectMessagePrompt = configuration["Prompts:CorrectMessage"];
+
+            string ans = await geminiService.AskAsync(model.UserMessage, CorrectMessagePrompt);
 
             TempData["UserMessage"] = ans;
 
@@ -227,10 +241,13 @@ namespace INZYNIERKA.Controllers
 
             string messagesToString = string.Join(", ", lastMessages);
 
-            string language = await geminiService.AskAsync(messagesToString, "Detect the language of the following message and respond with only the language name in English, without explanations or extra text");
+            string LanguagePrompt = configuration["Prompts:Language"];
 
-            string prompt = $"Translate the following text to {language}. Respond only with the translated text without any extra explanation.";
-            var ans = await geminiService.AskAsync(model.UserMessage, prompt);
+            string language = await geminiService.AskAsync(messagesToString, LanguagePrompt);
+
+            string TranslatePrompt = configuration["Prompts:Translate"].Replace("{language}", language);
+
+             var ans = await geminiService.AskAsync(model.UserMessage, TranslatePrompt);
 
             TempData["UserMessage"] = ans;
 
