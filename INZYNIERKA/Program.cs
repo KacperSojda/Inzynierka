@@ -46,6 +46,8 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 
 builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
 
+builder.Services.AddScoped<IAiMatchmakingService, AiMatchmakingService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

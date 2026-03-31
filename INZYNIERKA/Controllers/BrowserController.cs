@@ -14,43 +14,27 @@ namespace INZYNIERKA.Controllers
     [Authorize]
     public class BrowserController : Controller
     {
-        private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
-        private readonly GeminiService geminiService;
-        private readonly IConfiguration configuration;
         private readonly IMatchmakingService matchmakingService;
         private readonly IFriendshipService friendshipService;
+        private readonly IAiMatchmakingService aiMatchmakingService;
         public BrowserController(
             UserManager<User> userManager, 
-            INZDbContext context, 
-            GeminiService geminiService, 
-            IConfiguration configuration,
             IMatchmakingService matchmakingService,
-            IFriendshipService friendshipService)
+            IFriendshipService friendshipService,
+            IAiMatchmakingService aiMatchmakingService)
         {
-            this.context = context;
             this.userManager = userManager;
-            this.geminiService = geminiService;
-            this.configuration = configuration;
             this.matchmakingService = matchmakingService;
             this.friendshipService = friendshipService;
+            this.aiMatchmakingService = aiMatchmakingService;
         }
 
         // Matchmaking Service //
 
         public async Task<IActionResult> SearchUsersByTags()
         {
-            var tags = await context.Tags.ToListAsync();
-
-            var viewModel = new SearchByTagsViewModel
-            {
-                AvailableTags = tags.Select(t => new TagCheckboxItem
-                {
-                    TagId = t.Id,
-                    TagName = t.Name,
-                    IsSelected = false
-                }).ToList()
-            };
+            var viewModel = await matchmakingService.GetTagsForSearchAsync();
 
             return View(viewModel);
         }
@@ -129,32 +113,14 @@ namespace INZYNIERKA.Controllers
             return NextUser();
         }
 
+        // AI Matchmaking Service //
+
         [HttpGet]
         public async Task<IActionResult> SearchWithAI()
         {
-            var currentUserId = userManager.GetUserId(User);
+            var userId = userManager.GetUserId(User);
 
-            var user = await context.Users
-                .Include(u => u.UserTags)
-                    .ThenInclude(ut => ut.Tag)
-                .FirstOrDefaultAsync(u => u.Id == currentUserId);
-
-            if (user == null)
-                return NotFound();
-
-            var connectedUserIds = await context.UserFriends
-                .Where(f =>
-                    (f.UserId == currentUserId || f.FriendId == currentUserId))
-                .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
-                .ToListAsync();
-
-            var matchingUsers = await context.Users
-                .Where(u =>
-                    u.Id != currentUserId &&
-                    !connectedUserIds.Contains(u.Id))
-                .OrderBy(u => Guid.NewGuid())
-                .Select(u => u.Id)
-                .ToListAsync();
+            var matchingUsers = await aiMatchmakingService.GetPotentialMatchesForAiAsync(userId);
 
             HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUsers));
             HttpContext.Session.SetInt32("CurrentIndex", matchingUsers.Any() ? 0 : -1);
@@ -167,81 +133,25 @@ namespace INZYNIERKA.Controllers
         {
             var usersJson = HttpContext.Session.GetString("MatchingUsers");
 
-            if (string.IsNullOrEmpty(usersJson))
-            {
-                return RedirectToAction("SearchUsersByTags");
-            }
+            if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
 
             var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
-
             int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
-            if (currentIndex == -1 || currentIndex >= users.Count)
+            if (currentIndex == -1 || currentIndex >= users.Count) return View("NoSearchResults");
+
+            var currentUserId = userManager.GetUserId(User);
+
+            var (matchedUser, newIndex) = await aiMatchmakingService.FindNextAiMatchAsync(currentUserId, users, currentIndex);
+
+            if (matchedUser != null)
             {
-                return View("NoSearchResults");
+                HttpContext.Session.SetInt32("CurrentIndex", newIndex);
+                return View("SearchAiResults", matchedUser);
             }
-            else
-            {
-                var userId = userManager.GetUserId(User);
 
-                var user = await context.Users
-                    .Include(u => u.UserTags)
-                        .ThenInclude(ut => ut.Tag)
-                    .FirstOrDefaultAsync(u => u.Id == userId);
-
-                if (user == null)
-                    return NotFound();
-
-                var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
-
-                var combinedString = $"First Description: {user.PublicDescription} {user.PrivateDescription} Hobby: {string.Join(", ", tags)}";
-
-                var BrowserPrompt = configuration["Prompts:Browser"];
-
-                while (currentIndex < users.Count)
-                {
-
-                    var currentUser = users[currentIndex];
-
-                    currentIndex++;
-
-                    var dbUser = await context.Users
-                        .Include(u => u.UserTags)
-                            .ThenInclude(ut => ut.Tag)
-                        .FirstOrDefaultAsync(u => u.Id == currentUser);
-
-                    if (dbUser == null)
-                    {
-                        continue;
-                    }
-
-                    var friendTags = dbUser.UserTags.Select(ut => ut.Tag.Name);
-
-                    var friendCombinedString = $"Second Description: {dbUser.PublicDescription} Hobby: {string.Join(", ", friendTags)}";
-
-                    var promptString = combinedString + " " + friendCombinedString;
-
-                    var geminiAns = await geminiService.AskAsync(promptString, BrowserPrompt);
-
-                    if (geminiAns.Trim().ToUpper().Contains("YES"))
-                    {
-                        var model = new UserViewModel
-                        {
-                            Id = dbUser.Id,
-                            UserName = dbUser.UserName,
-                            Avatar = dbUser.Avatar,
-                            PublicDescription = dbUser.PublicDescription,
-                            Tags = dbUser.UserTags.Select(ut => ut.Tag.Name).ToList()
-                        };
-
-                        HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
-
-                        return View("SearchAiResults", model);
-                    }
-                    await Task.Delay(15);
-                }
-                return View("NoSearchResults");
-            }
+            HttpContext.Session.SetInt32("CurrentIndex", -1);
+            return View("NoSearchResults");
         }
     }
 }
