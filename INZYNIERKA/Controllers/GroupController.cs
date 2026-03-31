@@ -1,10 +1,7 @@
-﻿using System.Text.RegularExpressions;
-using INZYNIERKA.Data;
-using INZYNIERKA.Models;
+﻿using INZYNIERKA.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using INZYNIERKA.Services;
 
@@ -13,17 +10,18 @@ namespace INZYNIERKA.Controllers
     [Authorize]
     public class GroupController : Controller
     {
-        private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
         private readonly IGroupService groupService;
+        private readonly IGroupMemberService groupMemberService;
+
         public GroupController(
             UserManager<User> userManager, 
-            INZDbContext dbcontext,
-            IGroupService groupService)
+            IGroupService groupService,
+            IGroupMemberService groupMemberService)
         {
             this.userManager = userManager;
-            this.context = dbcontext;
             this.groupService = groupService;
+            this.groupMemberService = groupMemberService;
         }
 
         // Group Service //
@@ -124,7 +122,7 @@ namespace INZYNIERKA.Controllers
             {
                 var selectedTagIds = model.Tags.Where(t => t.IsSelected).Select(t => t.TagId).ToList();
                 await groupService.UpdateGroupTagsAsync(model.GroupID, userManager.GetUserId(User), selectedTagIds);
-                return RedirectToAction("EditGroup", new { model.GroupID });
+                return RedirectToAction("EditGroup", new {model.GroupID});
             }
             catch (UnauthorizedAccessException) {return Forbid();}
         }
@@ -133,143 +131,59 @@ namespace INZYNIERKA.Controllers
 
         public async Task<IActionResult> ShowGroupMembers(int groupId)
         {
-            var user = await userManager.GetUserAsync(User);
+            var userId = userManager.GetUserId(User);
+            var model = await groupMemberService.GetGroupMembersAsync(groupId, userId);
 
-            var group = await context.Groups
-                .Include(g => g.Members)
-                .ThenInclude(ug => ug.User)
-                .FirstOrDefaultAsync(g => g.Id == groupId);
-
-            if (group == null)
-                return NotFound();
-
-            var admins = group.Members
-                .Where(m => m.Type == MemberType.Administrator)
-                .Select(m => new GroupMember
-                {
-                    UserId = m.User.Id,
-                    Name = m.User.UserName
-                }).ToList();
-
-            var members = group.Members
-                .Where(m => m.Type == MemberType.Member)
-                .Select(m => new GroupMember
-                {
-                    UserId = m.User.Id,
-                    Name = m.User.UserName
-                }).ToList();
-
-            var model = new GroupMembersViewModel
-            {
-                GroupId = group.Id,
-                Name = group.Name,
-                CurrentUserId = user.Id,
-                Admins = admins,
-                Members = members
-            };
-
+            if (model == null) return NotFound();
             return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> GiveAdmin(int groupId, string userId)
         {
-            var currentUserId = userManager.GetUserId(User);
-
-            var isAdmin = await context.UserGroups
-                .AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId && ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            var userGroup = await context.UserGroups
-                .FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId);
-
-            if (userGroup == null)
-                return NotFound();
-
-            userGroup.Type = MemberType.Administrator;
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("ShowGroupMembers", new {groupId});
+            try
+            {
+                var success = await groupMemberService.GiveAdminAsync(groupId, userId, userManager.GetUserId(User));
+                if (!success) return NotFound();
+                return RedirectToAction("ShowGroupMembers", new {groupId});
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
         }
 
         [HttpPost]
         public async Task<IActionResult> DemoteAdmin(int groupId, string userId)
         {
-            var currentUserId = userManager.GetUserId(User);
-
-            var isAdmin = await context.UserGroups
-                .AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId && ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            if (userId == currentUserId)
-                return Forbid();
-
-            var userGroup = await context.UserGroups
-                .FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId);
-
-            if (userGroup == null)
-                return NotFound();
-
-            userGroup.Type = MemberType.Member;
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("ShowGroupMembers", new {groupId});
+            try
+            {
+                var success = await groupMemberService.DemoteAdminAsync(groupId, userId, userManager.GetUserId(User));
+                if (!success) return NotFound();
+                return RedirectToAction("ShowGroupMembers", new {groupId});
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}    
         }
 
         [HttpPost]
         public async Task<IActionResult> KickUser(int groupId, string userId)
         {
-            var currentUserId = userManager.GetUserId(User);
-
-            var isAdmin = await context.UserGroups
-                .AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId && ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            if (userId == currentUserId)
-                return Forbid();
-
-            var userGroup = await context.UserGroups
-                .FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId);
-
-            if (userGroup == null)
-                return NotFound();
-
-            context.UserGroups.Remove(userGroup);
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("ShowGroupMembers", new { groupId });
+            try
+            {
+                var success = await groupMemberService.KickUserAsync(groupId, userId, userManager.GetUserId(User));
+                if (!success) return NotFound();
+                return RedirectToAction("ShowGroupMembers", new {groupId});
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
         }
 
         [HttpPost]
         public async Task<IActionResult> BanUser(int groupId, string userId)
         {
-            var currentUser = await userManager.GetUserAsync(User);
-
-            var isAdmin = await context.UserGroups.AnyAsync(ug =>
-                ug.ChatGroupId == groupId &&
-                ug.UserId == currentUser.Id &&
-                ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug =>
-                ug.ChatGroupId == groupId &&
-                ug.UserId == userId);
-
-            if (userGroup != null)
+            try
             {
-                userGroup.Type = MemberType.Banned;
-                await context.SaveChangesAsync();
+                var success = await groupMemberService.BanUserAsync(groupId, userId, userManager.GetUserId(User));
+                if (!success) return NotFound();
+                return RedirectToAction("ShowGroupMembers", new { groupId });
             }
-
-            return RedirectToAction("ShowGroupMembers", new { groupId });
+            catch (UnauthorizedAccessException) {return Forbid();}
         }
     }
 }

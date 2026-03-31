@@ -50,6 +50,8 @@ builder.Services.AddScoped<IAiMatchmakingService, AiMatchmakingService>();
 
 builder.Services.AddScoped<IGroupService, GroupService>();
 
+builder.Services.AddScoped<IGroupMemberService, GroupMemberService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
