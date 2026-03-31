@@ -19,19 +19,24 @@ namespace INZYNIERKA.Controllers
         private readonly GeminiService geminiService;
         private readonly IConfiguration configuration;
         private readonly IMatchmakingService matchmakingService;
+        private readonly IFriendshipService friendshipService;
         public BrowserController(
             UserManager<User> userManager, 
             INZDbContext context, 
             GeminiService geminiService, 
             IConfiguration configuration,
-            IMatchmakingService matchmakingService)
+            IMatchmakingService matchmakingService,
+            IFriendshipService friendshipService)
         {
             this.context = context;
             this.userManager = userManager;
             this.geminiService = geminiService;
             this.configuration = configuration;
             this.matchmakingService = matchmakingService;
+            this.friendshipService = friendshipService;
         }
+
+        // Matchmaking Service //
 
         public async Task<IActionResult> SearchUsersByTags()
         {
@@ -112,42 +117,14 @@ namespace INZYNIERKA.Controllers
             return RedirectToAction("ShowUser");
         }
 
+        // Friendship Service //
+
         [HttpPost]
         public async Task<IActionResult> SendFriendRequest(string userId)
         {
-            var sender = await userManager.GetUserAsync(User);
+            var currentUserId = userManager.GetUserId(User);
 
-            var receiver = await userManager.FindByIdAsync(userId);
-
-            var existingReverseRequest = await context.UserFriends.FirstOrDefaultAsync(f =>
-                f.UserId == receiver.Id &&
-                f.FriendId == sender.Id &&
-                f.Status == FriendshipStatus.Pending);
-
-            if (existingReverseRequest == null)
-            {
-
-                var notification = new Notification
-                {
-                    SenderId = sender.Id,
-                    ReceiverId = receiver.Id,
-                    Type = NotificationType.FriendRequest,
-                    CreationDate = DateTime.UtcNow
-                };
-
-                context.Notifications.Add(notification);
-
-                var FriendRequestSender = new UserFriend
-                {
-                    UserId = sender.Id,
-                    FriendId = receiver.Id,
-                    Status = FriendshipStatus.Pending
-                };
-
-                context.UserFriends.Add(FriendRequestSender);
-
-                await context.SaveChangesAsync();
-            }
+            await friendshipService.SendFriendRequestAsync(currentUserId, userId);
 
             return NextUser();
         }

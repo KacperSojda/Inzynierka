@@ -9,5 +9,6 @@ namespace INZYNIERKA.Services
         Task DeleteFriendAsync(string currentUserId, string friendId);
         Task<List<FriendViewModel>> GetRequestListAsync(string userId);
         Task DeleteRequestAsync(string currentUserId, string friendId);
+        Task SendFriendRequestAsync(string senderId, string receiverId);
     }
 }

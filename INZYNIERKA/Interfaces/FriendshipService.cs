@@ -97,5 +97,37 @@ namespace INZYNIERKA.Services
 
             await context.SaveChangesAsync();
         }
+
+        public async Task SendFriendRequestAsync(string senderId, string receiverId)
+        {
+            var existingReverseRequest = await context.UserFriends.FirstOrDefaultAsync(f =>
+                f.UserId == receiverId &&
+                f.FriendId == senderId &&
+                f.Status == FriendshipStatus.Pending);
+
+            if (existingReverseRequest == null)
+            {
+                var notification = new Notification
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Type = NotificationType.FriendRequest,
+                    CreationDate = DateTime.UtcNow
+                };
+
+                context.Notifications.Add(notification);
+
+                var friendRequestSender = new UserFriend
+                {
+                    UserId = senderId,
+                    FriendId = receiverId,
+                    Status = FriendshipStatus.Pending
+                };
+
+                context.UserFriends.Add(friendRequestSender);
+
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }
