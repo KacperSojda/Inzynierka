@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using INZYNIERKA.Services;
 
 namespace INZYNIERKA.Controllers
 {
@@ -14,11 +15,18 @@ namespace INZYNIERKA.Controllers
     {
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
-        public GroupController(UserManager<User> userManager, INZDbContext dbcontext)
+        private readonly IGroupService groupService;
+        public GroupController(
+            UserManager<User> userManager, 
+            INZDbContext dbcontext,
+            IGroupService groupService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
+            this.groupService = groupService;
         }
+
+        // Group Service //
 
         public IActionResult Index()
         {
@@ -27,73 +35,14 @@ namespace INZYNIERKA.Controllers
 
         public async Task<IActionResult> ShowAvailableGroups()
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var userGroupIds = await context.UserGroups
-                .Where(ug => ug.UserId == user.Id)
-                .Select(ug => ug.ChatGroupId)
-                .ToListAsync();
-
-            var model = await context.Groups
-                .Include(g => g.GroupTags)
-                    .ThenInclude(gt => gt.Tag)
-                .Where(g => !userGroupIds.Contains(g.Id))
-                .Select(g => new GroupItem
-                {
-                    GroupId = g.Id,
-                    Name = g.Name,
-                    Description = g.Description,
-                    Tags = g.GroupTags
-                        .Select(gt => gt.Tag.Name)
-                        .ToList()
-                })
-                .ToListAsync();
-
-            return View(new GroupViewModel { Groups = model });
+            var userId = userManager.GetUserId(User);
+            return View(await groupService.GetAvailableGroupsAsync(userId));
         }
-
 
         public async Task<IActionResult> ShowUserGroups()
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var userGroups = await context.UserGroups
-                .Include(ug => ug.ChatGroup)
-                    .ThenInclude(g => g.GroupTags)
-                        .ThenInclude(gt => gt.Tag)
-                .Where(ug => ug.UserId == user.Id)
-                .ToListAsync();
-
-            var adminGroups = userGroups
-                .Where(ug => ug.Type == MemberType.Administrator)
-                .Select(ug => new GroupItem
-                {
-                    GroupId = ug.ChatGroup.Id,
-                    Name = ug.ChatGroup.Name,
-                    Description = ug.ChatGroup.Description,
-                    Tags = ug.ChatGroup.GroupTags
-                        .Select(gt => gt.Tag.Name)
-                        .ToList()
-                })
-                .ToList();
-
-            var memberGroups = userGroups
-                .Where(ug => ug.Type == MemberType.Member)
-                .Select(ug => new GroupItem
-                {
-                    GroupId = ug.ChatGroup.Id,
-                    Name = ug.ChatGroup.Name,
-                    Tags = ug.ChatGroup.GroupTags
-                        .Select(gt => gt.Tag.Name)
-                        .ToList()
-                })
-                .ToList();
-
-            return View(new GroupViewModel
-            {
-                AdminGroups = adminGroups,
-                Groups = memberGroups
-            });
+            var userId = userManager.GetUserId(User);
+            return View(await groupService.GetUserGroupsAsync(userId));
         }
 
         public IActionResult CreateGroup()
@@ -104,67 +53,83 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGroup(string name)
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var group = new Models.Group
-            {
-                Name = name,
-                Description = "",
-                Members = new List<UserGroup>
-                {
-                    new UserGroup
-                    {
-                        UserId = user.Id,
-                        Type = MemberType.Administrator
-                    }
-                }
-            };
-
-            context.Groups.Add(group);
-            await context.SaveChangesAsync();
+            var userId = userManager.GetUserId(User);
+            await groupService.CreateGroupAsync(name, userId);
             return RedirectToAction("ShowUserGroups");
         }
 
         [HttpPost]
         public async Task<IActionResult> JoinGroup(int groupId)
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var alreadyMember = await context.UserGroups
-                .AnyAsync(ug => ug.UserId == user.Id && ug.ChatGroupId == groupId);
-
-            if (!alreadyMember)
-            {
-                var userGroup = new UserGroup
-                {
-                    UserId = user.Id,
-                    ChatGroupId = groupId,
-                    Type = MemberType.Member
-                };
-
-                context.UserGroups.Add(userGroup);
-                await context.SaveChangesAsync();
-            }
-
+            var userId = userManager.GetUserId(User);
+            await groupService.JoinGroupAsync(groupId, userId);
             return RedirectToAction("ShowUserGroups");
         }
 
         [HttpPost]
         public async Task<IActionResult> LeaveGroup(int groupId)
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var membership = await context.UserGroups
-                .FirstOrDefaultAsync(ug => ug.UserId == user.Id && ug.ChatGroupId == groupId);
-
-            if (membership != null)
-            {
-                context.UserGroups.Remove(membership);
-                await context.SaveChangesAsync();
-            }
-
+            var userId = userManager.GetUserId(User);
+            await groupService.LeaveGroupAsync(groupId, userId);
             return RedirectToAction("ShowUserGroups");
         }
+
+        public async Task<IActionResult> EditGroup(int GroupID)
+        {
+            try
+            {
+                var group = await groupService.GetGroupForEditAsync(GroupID, userManager.GetUserId(User));
+                if (group == null) return NotFound();
+                return View(group);
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditGroup(Models.Group model)
+        {
+            try
+            {
+                await groupService.UpdateGroupAsync(model, userManager.GetUserId(User));
+                return RedirectToAction("ShowUserGroups");
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteGroup(int groupId)
+        {
+            try
+            {
+                await groupService.DeleteGroupAsync(groupId, userManager.GetUserId(User));
+                return RedirectToAction("ShowUserGroups");
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
+        }
+
+        public async Task<IActionResult> SelectGroupTags(int groupID)
+        {
+            try
+            {
+                var model = await groupService.GetGroupTagsForSelectionAsync(groupID, userManager.GetUserId(User));
+                return View(model);
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SelectGroupTags(SelectGroupTagsViewModel model)
+        {
+            try
+            {
+                var selectedTagIds = model.Tags.Where(t => t.IsSelected).Select(t => t.TagId).ToList();
+                await groupService.UpdateGroupTagsAsync(model.GroupID, userManager.GetUserId(User), selectedTagIds);
+                return RedirectToAction("EditGroup", new { model.GroupID });
+            }
+            catch (UnauthorizedAccessException) {return Forbid();}
+        }
+
+        // GroupMember Service //
 
         public async Task<IActionResult> ShowGroupMembers(int groupId)
         {
@@ -281,46 +246,6 @@ namespace INZYNIERKA.Controllers
             return RedirectToAction("ShowGroupMembers", new { groupId });
         }
 
-        public async Task<IActionResult> EditGroup(int GroupID)
-        {
-            var currentUserId = userManager.GetUserId(User);
-
-            var isAdmin = await context.UserGroups
-                .AnyAsync(ug => ug.ChatGroupId == GroupID && ug.UserId == currentUserId && ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == GroupID);
-            if (group == null)
-                return NotFound();
-
-            return View(group);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> EditGroup(Models.Group model)
-        {
-            var currentUserId = userManager.GetUserId(User);
-
-            var isAdmin = await context.UserGroups
-                .AnyAsync(ug => ug.ChatGroupId == model.Id && ug.UserId == currentUserId && ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            var group = await context.Groups.FindAsync(model.Id);
-            if (group == null)
-                return NotFound();
-
-            group.Name = model.Name;
-            group.Description = model.Description;
-
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("ShowUserGroups");
-        }
-
         [HttpPost]
         public async Task<IActionResult> BanUser(int groupId, string userId)
         {
@@ -345,109 +270,6 @@ namespace INZYNIERKA.Controllers
             }
 
             return RedirectToAction("ShowGroupMembers", new { groupId });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteGroup(int groupId)
-        {
-            var currentUser = await userManager.GetUserAsync(User);
-
-            var isAdmin = await context.UserGroups.AnyAsync(ug =>
-                ug.ChatGroupId == groupId &&
-                ug.UserId == currentUser.Id &&
-                ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            var group = await context.Groups
-                .Include(g => g.Members)
-                .Include(g => g.Messages)
-                .FirstOrDefaultAsync(g => g.Id == groupId);
-
-            if (group == null)
-                return NotFound();
-
-            context.UserGroups.RemoveRange(group.Members);
-
-            if (group.Messages != null)
-                context.GroupMessages.RemoveRange(group.Messages);
-
-            context.Groups.Remove(group);
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("ShowUserGroups");
-        }
-
-        public async Task<IActionResult> SelectGroupTags(int groupID)
-        {
-            var currentUser = await userManager.GetUserAsync(User);
-
-            var isAdmin = await context.UserGroups.AnyAsync(ug =>
-                ug.ChatGroupId == groupID &&
-                ug.UserId == currentUser.Id &&
-                ug.Type == MemberType.Administrator);
-
-            if (!isAdmin)
-                return Forbid();
-
-            var GroupTagIds = await context.GroupTags
-                .Where(ut => ut.GroupId == groupID)
-                .Select(ut => ut.TagId)
-                .ToListAsync();
-
-            var tags = await context.Tags.ToListAsync();
-
-            var model = new SelectGroupTagsViewModel
-            {
-                GroupID = groupID,
-                Tags = tags.Select(t => new TagItem
-                {
-                    TagId = t.Id,
-                    TagName = t.Name,
-                    IsSelected = GroupTagIds.Contains(t.Id)
-
-                }).ToList()
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> SelectGroupTags(SelectGroupTagsViewModel model)
-        {
-            var currentUser = await userManager.GetUserAsync(User);
-
-            var isAdmin = await context.UserGroups.AnyAsync(ug =>
-                ug.ChatGroupId == model.GroupID &&
-                ug.UserId == currentUser.Id &&
-                ug.Type == MemberType.Administrator);
-
-
-            if (!isAdmin)
-                return Forbid();
-
-            var selectedTagIds = model.Tags
-                .Where(t => t.IsSelected)
-                .Select(t => t.TagId)
-                .ToList();
-
-            var existingGroupTags = await context.GroupTags
-                .Where(ut => ut.GroupId == model.GroupID)
-                .ToListAsync();
-
-            context.GroupTags.RemoveRange(existingGroupTags);
-
-            foreach (var tagId in selectedTagIds)
-            {
-                context.GroupTags.Add(new GroupTag
-                {
-                    GroupId = model.GroupID,
-                    TagId = tagId
-                });
-            }
-
-            await context.SaveChangesAsync();
-            return RedirectToAction("EditGroup", new {model.GroupID});
         }
     }
 }
