@@ -1,5 +1,3 @@
-using INZYNIERKA.Models;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace INZYNIERKA.Controllers

@@ -19,58 +19,44 @@ namespace INZYNIERKA.Controllers
         private readonly UserManager<User> userManager;
         private readonly GeminiService geminiService;
         private readonly IConfiguration configuration;
-        public ChatController(UserManager<User> userManager, INZDbContext dbcontext, GeminiService geminiService, IConfiguration configuration)
+        private readonly IChatService chatService;
+
+        public ChatController(UserManager<User> userManager, INZDbContext dbcontext, GeminiService geminiService, IConfiguration configuration, IChatService chatService)
         {
             this.userManager = userManager;
             this.context = dbcontext;
             this.geminiService = geminiService;
             this.configuration = configuration;
+            this.chatService = chatService;
         }
 
-        // Chat Prywatny //
+        // Chat Service //
 
         [HttpGet]
         public async Task<IActionResult> Chat(string friendId)
         {
-            var user = await userManager.GetUserAsync(User);
-            var friend = await userManager.FindByIdAsync(friendId);
+            var userMessage = TempData["UserMessage"]?.ToString() ?? "";
+            var geminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "";
 
-            var messages = await context.Messages
-                .Include(m => m.Sender)
-                .Include(m => m.Receiver)
-                .Where(m =>
-                    (m.SenderId == user.Id && m.ReceiverId == friendId) ||
-                    (m.SenderId == friendId && m.ReceiverId == user.Id))
-                .OrderByDescending(m => m.DateTime) 
-                .Take(30)                           
-                .ToListAsync();                     
+            var model = await chatService.GetPrivateChatAsync(userManager.GetUserId(User), friendId, userMessage, geminiAnswer);
 
-            messages.Reverse();
-
-            var modelMessages = messages.Select(m => new MessageViewModel
-            {
-                SenderId = m.SenderId,
-                SenderName = m.Sender.UserName,
-                ReceiverId = m.ReceiverId,
-                ReceiverName = m.Receiver.UserName,
-                Content = m.Content,
-                DateTime = m.DateTime
-            }).ToList();
-
-            var model = new ChatViewModel
-            {
-                FriendId = friend.Id,
-                FriendName = friend.UserName,
-                CurrentUserId = user.Id,
-                CurrentUserName = user.UserName,
-                Messages = modelMessages,
-                UserMessage = TempData["UserMessage"]?.ToString() ?? "",
-                GeminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "",
-                GeminiQuestion = "",
-            };
-
+            if (model == null) return NotFound("Nie znaleziono użytkownika.");
             return View(model);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GroupChat(int groupId)
+        {
+            var userMessage = TempData["UserMessage"]?.ToString() ?? "";
+            var geminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "";
+
+            var model = await chatService.GetGroupChatAsync(userManager.GetUserId(User), groupId, userMessage, geminiAnswer);
+
+            if (model == null) return NotFound("Nie znaleziono grupy.");
+            return View(model);
+        }
+
+        // Prywatny Chat //
 
         [HttpPost]
         public async Task<IActionResult> ResponseHelp(ChatViewModel model)
@@ -149,46 +135,6 @@ namespace INZYNIERKA.Controllers
         }
 
         // Chat Grupowy //
-
-        [HttpGet]
-        public async Task<IActionResult> GroupChat(int groupId)
-        {
-            var user = await userManager.GetUserAsync(User);
-
-            var group = await context.Groups
-                .Where(g => g.Id == groupId)
-                .Select(g => new { g.Name })
-                .FirstOrDefaultAsync();
-
-            var messages = await context.GroupMessages
-                .Include(m => m.Sender)
-                .Where(m => (m.GroupId == groupId))
-                .OrderByDescending(m => m.Timestamp)
-                .Take(30)                           
-                .ToListAsync();                      
-
-            messages.Reverse();
-
-            var modelMessages = messages.Select(m => new GroupMessageViewModel
-            {
-                SenderId = m.SenderId,
-                SenderName = m.Sender.UserName,
-                Content = m.Content,
-                DateTime = m.Timestamp
-            }).ToList();
-
-            var model = new GroupChatViewModel
-            {
-                groupID = groupId,
-                groupName = group.Name,
-                currentUserID = user.Id,
-                messages = modelMessages,
-                UserMessage = TempData["UserMessage"]?.ToString() ?? "",
-                GeminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? ""
-            };
-
-            return View(model);
-        }
 
         [HttpPost]
         public async Task<IActionResult> GroupResponseHelp(GroupChatViewModel model)

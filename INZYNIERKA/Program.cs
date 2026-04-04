@@ -52,6 +52,8 @@ builder.Services.AddScoped<IGroupService, GroupService>();
 
 builder.Services.AddScoped<IGroupMemberService, GroupMemberService>();
 
+builder.Services.AddScoped<IChatService, ChatService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
