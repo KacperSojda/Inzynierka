@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using INZYNIERKA.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,7 @@ builder.Services.AddSession();
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<GeminiService>();
+builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
 builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 

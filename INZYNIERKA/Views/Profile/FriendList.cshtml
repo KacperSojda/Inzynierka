@@ -25,10 +25,9 @@
 
                         <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="chat" title="Chat" data-bs-toggle="tooltipp"><i class="bi bi-chat-dots"></i></a>
 
-                        <form asp-action="ShowProfile" method="post" class="m-0">
-                            <input type="hidden" name="userId" value="@friend.Id" />
-                            <button type="submit" class="profile" title="Show Profile" data-bs-toggle="tooltipp"><i class="bi bi-person"></i></button>
-                        </form>
+                        <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@friend.Id" class="profile" title="Show Profile" data-bs-toggle="tooltipp">
+                            <i class="bi bi-person"></i>
+                        </a>
                     </div>
                 </li>
             }

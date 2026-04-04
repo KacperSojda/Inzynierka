@@ -6,10 +6,10 @@ namespace INZYNIERKA.Services
     public class ChatAiService : IChatAiService
     {
         private readonly INZDbContext context;
-        private readonly GeminiService geminiService;
+        private readonly IGeminiService geminiService;
         private readonly IConfiguration configuration;
 
-        public ChatAiService(INZDbContext context, GeminiService geminiService, IConfiguration configuration)
+        public ChatAiService(INZDbContext context, IGeminiService geminiService, IConfiguration configuration)
         {
             this.context = context;
             this.geminiService = geminiService;

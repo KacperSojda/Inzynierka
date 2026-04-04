@@ -11,9 +11,10 @@ namespace INZYNIERKA.Services
         private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
 
-        public ProfileService(INZDbContext context)
+        public ProfileService(INZDbContext context, UserManager<User> userManager)
         {
             this.context = context;
+            this.userManager = userManager;
         }
 
         public async Task<UserViewModel> GetUserProfileAsync(string userId)

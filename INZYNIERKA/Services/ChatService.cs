@@ -132,5 +132,50 @@ namespace INZYNIERKA.Services
                 await context.SaveChangesAsync();
             }
         }
+
+        public async Task SaveGroupMessageAsync(int groupId, string senderId, string content)
+        {
+            var group = await context.Groups
+                .Include(g => g.Members)
+                .FirstOrDefaultAsync(g => g.Id == groupId);
+
+            if (group == null) return;
+
+            var groupMessage = new GroupMessage
+            {
+                GroupId = groupId,
+                SenderId = senderId,
+                Content = content,
+                Timestamp = DateTime.UtcNow
+            };
+
+            context.GroupMessages.Add(groupMessage);
+
+            foreach (var member in group.Members)
+            {
+                if (member.UserId == senderId) continue;
+
+                var existingNotification = await context.Notifications.FirstOrDefaultAsync(n =>
+                    n.GroupId == groupId &&
+                    n.ReceiverId == member.UserId &&
+                    n.Type == NotificationType.GroupMessage);
+
+                if (existingNotification == null)
+                {
+                    var notification = new Notification
+                    {
+                        SenderId = senderId,
+                        GroupId = groupId,
+                        ReceiverId = member.UserId,
+                        Type = NotificationType.GroupMessage,
+                        CreationDate = DateTime.UtcNow
+                    };
+
+                    context.Notifications.Add(notification);
+                }
+            }
+
+            await context.SaveChangesAsync();
+        }
     }
 }

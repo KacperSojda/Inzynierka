@@ -5,17 +5,17 @@ using Microsoft.Extensions.Configuration;
 
 namespace INZYNIERKA.Services
 {
-    public class GeminiService
+    public class GeminiService : IGeminiService
     {
         private readonly IConfiguration configuration;
         private readonly string apiKey;
         private readonly HttpClient httpClient;
 
-        public GeminiService(IConfiguration configuration)
+        public GeminiService(IConfiguration configuration, HttpClient httpClient)
         {
             this.configuration = configuration;
             this.apiKey = configuration["ApiKeys:Gemini"];
-            this.httpClient = new HttpClient();
+            this.httpClient = httpClient;
         }
 
         public async Task<string> AskAsync(string question, string prompt)

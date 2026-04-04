@@ -9,10 +9,9 @@
         <div class="flex-grow-1" style="min-width: 300px;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>@Model.FriendName</h3>
-                <form asp-controller="Profile" asp-action="ShowProfile" method="post" class="m-0">
-                    <input type="hidden" name="userId" value="@Model.FriendId" />
-                    <button type="submit" class="show">Show Profile</button>
-                </form>
+                <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.FriendId" class="show">
+                    Show Profile
+                </a>
             </div>
 
             <div id="chatWindow" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: auto; background-color: #f9f9f9;">

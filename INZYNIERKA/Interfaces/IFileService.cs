@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace INZYNIERKA.Services
+﻿namespace INZYNIERKA.Services
 {
     public interface IFileService
     {

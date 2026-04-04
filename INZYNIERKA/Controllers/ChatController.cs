@@ -19,7 +19,7 @@ namespace INZYNIERKA.Controllers
         private readonly IChatService chatService;
         private readonly IChatAiService chatAiService;
 
-        public ChatController(UserManager<User> userManager, IChatService chatService, IChatAiService)
+        public ChatController(UserManager<User> userManager, IChatService chatService, IChatAiService chatAiService)
         {
             this.userManager = userManager;
             this.chatService = chatService;

@@ -7,10 +7,10 @@ namespace INZYNIERKA.Services
     public class AiMatchmakingService : IAiMatchmakingService
     {
         private readonly INZDbContext context;
-        private readonly GeminiService geminiService;
+        private readonly IGeminiService geminiService;
         private readonly IConfiguration configuration;
 
-        public AiMatchmakingService(INZDbContext context, GeminiService geminiService, IConfiguration configuration)
+        public AiMatchmakingService(INZDbContext context, IGeminiService geminiService, IConfiguration configuration)
         {
             this.context = context;
             this.geminiService = geminiService;
