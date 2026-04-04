@@ -9,5 +9,7 @@
 
         Task<string> TranslatePrivateMessageAsync(string currentUserId, string friendId, string userMessage);
         Task<string> TranslateGroupMessageAsync(int groupId, string userMessage);
+
+        Task<string> CensorMessageAsync(string message);
     }
 }

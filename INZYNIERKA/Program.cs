@@ -1,6 +1,7 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.Services;
+using INZYNIERKA.Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

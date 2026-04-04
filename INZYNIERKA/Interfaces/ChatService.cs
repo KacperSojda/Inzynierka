@@ -89,5 +89,48 @@ namespace INZYNIERKA.Services
                 GeminiAnswer = geminiAnswer
             };
         }
+
+        public async Task SavePrivateMessageAsync(string senderId, string receiverId, string content)
+        {
+            var msg = new Message
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Content = content,
+                DateTime = DateTime.UtcNow
+            };
+
+            context.Messages.Add(msg);
+
+            var existingNotification = await context.Notifications
+                .FirstOrDefaultAsync(n => n.SenderId == senderId && n.ReceiverId == receiverId && n.Type == NotificationType.Message);
+
+            if (existingNotification == null)
+            {
+                var notification = new Notification
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Type = NotificationType.Message,
+                    CreationDate = DateTime.UtcNow
+                };
+
+                context.Notifications.Add(notification);
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task ClearMessageNotificationAsync(string userId, string friendId)
+        {
+            var notification = await context.Notifications
+                .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId);
+
+            if (notification != null)
+            {
+                context.Notifications.Remove(notification);
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

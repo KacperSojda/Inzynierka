@@ -68,5 +68,11 @@ namespace INZYNIERKA.Services
 
             return await geminiService.AskAsync(userMessage, translatePrompt);
         }
+
+        public async Task<string> CensorMessageAsync(string message)
+        {
+            string cenzurePrompt = configuration["Prompts:Cenzure"];
+            return await geminiService.AskAsync(message, cenzurePrompt);
+        }
     }
 }
