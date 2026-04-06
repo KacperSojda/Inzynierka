@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using INZYNIERKA.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

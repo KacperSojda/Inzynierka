@@ -119,4 +119,3 @@ C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net8.0\refint\INZYN
 C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net8.0\INZYNIERKA.pdb
 C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net8.0\INZYNIERKA.genruntimeconfig.cache
 C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net8.0\ref\INZYNIERKA.dll
-C:\Users\Kacper\source\repos\INZYNIERKA\INZYNIERKA\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

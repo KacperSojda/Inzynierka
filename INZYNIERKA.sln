@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INZYNIERKA", "INZYNIERKA\INZYNIERKA.csproj", "{4FDB6AF1-B881-417C-A1C1-921193520E61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INZYNIERKA.Tests", "INZYNIERKA.Tests\INZYNIERKA.Tests.csproj", "{B0DF3321-189C-4EBA-B4A2-6EEAB3F33CBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{4FDB6AF1-B881-417C-A1C1-921193520E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FDB6AF1-B881-417C-A1C1-921193520E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FDB6AF1-B881-417C-A1C1-921193520E61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0DF3321-189C-4EBA-B4A2-6EEAB3F33CBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0DF3321-189C-4EBA-B4A2-6EEAB3F33CBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0DF3321-189C-4EBA-B4A2-6EEAB3F33CBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0DF3321-189C-4EBA-B4A2-6EEAB3F33CBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
