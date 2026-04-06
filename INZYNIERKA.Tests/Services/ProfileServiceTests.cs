@@ -1,14 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
-using INZYNIERKA.Data;
+﻿using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.Services;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Xunit;
 
 namespace INZYNIERKA.Tests.Services
 {
