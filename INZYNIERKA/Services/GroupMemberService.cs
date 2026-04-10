@@ -28,8 +28,8 @@ namespace INZYNIERKA.Services
                 GroupId = group.Id,
                 Name = group.Name,
                 CurrentUserId = currentUserId,
-                Admins = group.Members.Where(m => m.Type == MemberType.Administrator).Select(m => new GroupMember { UserId = m.User.Id, Name = m.User.UserName }).ToList(),
-                Members = group.Members.Where(m => m.Type == MemberType.Member).Select(m => new GroupMember { UserId = m.User.Id, Name = m.User.UserName }).ToList()
+                Admins = group.Members.Where(m => m.Type == MemberType.Administrator).Select(m => new GroupMember {UserId = m.User.Id, Name = m.User.UserName}).ToList(),
+                Members = group.Members.Where(m => m.Type == MemberType.Member).Select(m => new GroupMember {UserId = m.User.Id, Name = m.User.UserName}).ToList()
             };
         }
 
