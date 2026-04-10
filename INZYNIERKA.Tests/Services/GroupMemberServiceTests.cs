@@ -41,7 +41,7 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            var result = await service.GetGroupMembersAsync(groupId, "Grupa Testowa");
+            var result = await service.GetGroupMembersAsync(groupId, "admin");
 
             Assert.NotNull(result);
             Assert.Single(result.Admins);
