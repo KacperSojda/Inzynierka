@@ -115,8 +115,8 @@ namespace INZYNIERKA.Tests.Services
             var userId = "Ja";
 
             context.Users.AddRange(
-                new User {Id = "znajomy1", UserName = "Znajomy1", Avatar = "", PublicDescription = "", PrivateDescription = "" },
-                new User {Id = "znajomy2", UserName = "Znajomy2", Avatar = "", PublicDescription = "", PrivateDescription = "" }
+                new User {Id = "znajomy1", UserName = "Znajomy1", Avatar = "", PublicDescription = "", PrivateDescription = ""},
+                new User {Id = "znajomy2", UserName = "Znajomy2", Avatar = "", PublicDescription = "", PrivateDescription = ""}
             );
 
             context.UserFriends.AddRange(
