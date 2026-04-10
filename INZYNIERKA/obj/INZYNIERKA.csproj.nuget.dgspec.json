@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Kacper\\source\\repos\\INZYNIERKA\\INZYNIERKA\\INZYNIERKA.csproj": {}
+    "G:\\Inzynierka\\Inzynierka\\INZYNIERKA\\INZYNIERKA.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Kacper\\source\\repos\\INZYNIERKA\\INZYNIERKA\\INZYNIERKA.csproj": {
+    "G:\\Inzynierka\\Inzynierka\\INZYNIERKA\\INZYNIERKA.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Kacper\\source\\repos\\INZYNIERKA\\INZYNIERKA\\INZYNIERKA.csproj",
+        "projectUniqueName": "G:\\Inzynierka\\Inzynierka\\INZYNIERKA\\INZYNIERKA.csproj",
         "projectName": "INZYNIERKA",
-        "projectPath": "C:\\Users\\Kacper\\source\\repos\\INZYNIERKA\\INZYNIERKA\\INZYNIERKA.csproj",
-        "packagesPath": "C:\\Users\\Kacper\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Kacper\\source\\repos\\INZYNIERKA\\INZYNIERKA\\obj\\",
+        "projectPath": "G:\\Inzynierka\\Inzynierka\\INZYNIERKA\\INZYNIERKA.csproj",
+        "packagesPath": "C:\\Users\\JA\\.nuget\\packages\\",
+        "outputPath": "G:\\Inzynierka\\Inzynierka\\INZYNIERKA\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "G:\\visual\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Kacper\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\JA\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -45,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.100"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -101,7 +100,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -39,7 +39,7 @@ namespace INZYNIERKA.Services
                 .Where(u =>
                     u.Id != currentUserId &&
                     !connectedUserIds.Contains(u.Id) &&
-                    selectedTagIds.All(tagId => u.UserTags.Any(ut => ut.TagId == tagId)))
+                    u.UserTags.Any(ut => selectedTagIds.Contains(ut.TagId)))
                 .Select(u => u.Id)
                 .ToListAsync();
 

@@ -32,13 +32,13 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var userId = "test-id-123";
+            var userId = "Ja";
             var user = new User
             {
                 Id = userId,
-                UserName = "Inzynier",
-                PublicDescription = "To jest opis publiczny",
-                PrivateDescription = "To jest opis prywatny",
+                UserName = "Ja",
+                PublicDescription = "Opis Publiczny",
+                PrivateDescription = "Opis Prywatny",
                 Avatar = "avatar.jpg"
             };
 
@@ -48,9 +48,9 @@ namespace INZYNIERKA.Tests.Services
             var result = await service.GetUserProfileAsync(userId);
 
             Assert.NotNull(result);
-            Assert.Equal("Inzynier", result.UserName);
-            Assert.Equal("To jest opis publiczny", result.PublicDescription);
-            Assert.Equal("To jest opis prywatny", result.PrivateDescription);
+            Assert.Equal("Ja", result.UserName);
+            Assert.Equal("Opis Publiczny", result.PublicDescription);
+            Assert.Equal("Opis Prywatny", result.PrivateDescription);
             Assert.Equal("avatar.jpg", result.Avatar);
         }
 
@@ -61,7 +61,7 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var result = await service.GetUserProfileAsync("nieistniejace-id");
+            var result = await service.GetUserProfileAsync("nieistniejace");
 
             Assert.Null(result);
         }
@@ -75,14 +75,14 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var userId = "inny-user-id";
+            var userId = "Znajomy";
             var user = new User
             {
                 Id = userId,
-                UserName = "KtosInny",
+                UserName = "Znajomy",
                 PublicDescription = "Publiczny opis",
-                PrivateDescription = "Prywatny opis - Nie powinno sie wyswietlic",
-                Avatar = "avatar2.jpg"
+                PrivateDescription = "Prywatny opis",
+                Avatar = "avatar.jpg"
             };
 
             dbContext.Users.Add(user);
@@ -91,7 +91,7 @@ namespace INZYNIERKA.Tests.Services
             var result = await service.GetOtherUserProfileAsync(userId);
 
             Assert.NotNull(result);
-            Assert.Equal("KtosInny", result.UserName);
+            Assert.Equal("Znajomy", result.UserName);
             Assert.Equal("Publiczny opis", result.PublicDescription);
             Assert.Equal("", result.PrivateDescription);
         }
@@ -103,7 +103,7 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var result = await service.GetOtherUserProfileAsync("nieistniejacy-id-123");
+            var result = await service.GetOtherUserProfileAsync("nieistniejacy");
 
             Assert.Null(result);
         }
@@ -117,13 +117,13 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var userId = "moj-id";
+            var userId = "Ja";
             dbContext.Users.Add(new User
             {
                 Id = userId,
                 UserName = "Ja",
-                PublicDescription = "Pub",
-                PrivateDescription = "Priv",
+                PublicDescription = "Publiczny Opis",
+                PrivateDescription = "Prywatny Opis",
                 Avatar = "avatar.jpg"
             });
             await dbContext.SaveChangesAsync();
@@ -132,7 +132,7 @@ namespace INZYNIERKA.Tests.Services
 
             Assert.NotNull(result);
             Assert.Equal("Ja", result.UserName);
-            Assert.Equal("Priv", result.PrivateDescription);
+            Assert.Equal("Prywatny Opis", result.PrivateDescription);
             Assert.Empty(result.Tags);
         }
 
@@ -143,7 +143,7 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var result = await service.GetUserProfileForEditAsync("nieistniejacy-id-123");
+            var result = await service.GetUserProfileForEditAsync("nieistniejacy");
 
             Assert.Null(result);
         }
@@ -155,8 +155,8 @@ namespace INZYNIERKA.Tests.Services
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var userId = "istniejacy-id";
-            var existingUser = new User { Id = userId, UserName = "StaryLogin" };
+            var userId = "Ja";
+            var existingUser = new User {Id = userId, UserName = "Ja"};
 
             mockUserManager.Setup(m => m.FindByIdAsync(userId))
                            .ReturnsAsync(existingUser);
@@ -168,9 +168,9 @@ namespace INZYNIERKA.Tests.Services
 
             var updateModel = new UserViewModel
             {
-                Avatar = "nowy.jpg",
-                PublicDescription = "Nowy publiczny",
-                PrivateDescription = "Nowy prywatny"
+                Avatar = "Nowy avatar.jpg",
+                PublicDescription = "Nowy Opis Publiczny",
+                PrivateDescription = "Nowy Opis Prywatny"
             };
 
             var result = await service.UpdateUserProfileAsync(userId, updateModel);
@@ -178,9 +178,9 @@ namespace INZYNIERKA.Tests.Services
             Assert.True(result.IsSuccess);
             Assert.Empty(result.Errors);
 
-            Assert.Equal("nowy.jpg", existingUser.Avatar);
-            Assert.Equal("Nowy publiczny", existingUser.PublicDescription);
-            Assert.Equal("Nowy prywatny", existingUser.PrivateDescription);
+            Assert.Equal("Nowy avatar.jpg", existingUser.Avatar);
+            Assert.Equal("Nowy Opis Publiczny", existingUser.PublicDescription);
+            Assert.Equal("Nowy Opis Prywatny", existingUser.PrivateDescription);
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace INZYNIERKA.Tests.Services
             var service = new ProfileService(dbContext, mockUserManager.Object);
             var model = new UserViewModel();
 
-            var result = await service.UpdateUserProfileAsync("zly-id", model);
+            var result = await service.UpdateUserProfileAsync("Nieistniejący", model);
 
             Assert.False(result.IsSuccess);
             Assert.Contains("Nie znaleziono użytkownika.", result.Errors);

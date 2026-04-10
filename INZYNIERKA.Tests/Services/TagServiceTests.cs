@@ -71,7 +71,7 @@ namespace INZYNIERKA.Tests.Services
         public async Task GetUserTagsForSelectionAsyncTest()
         {
             var context = CreateInMemoryDbContext();
-            var userId = "test-user-id";
+            var userId = "Ja";
 
             context.Tags.Add(new Tag {Id = 1, Name = "Szachy"});
             context.Tags.Add(new Tag {Id = 2, Name = "Sport"});
@@ -99,7 +99,7 @@ namespace INZYNIERKA.Tests.Services
         public async Task UpdateUserTagsAsyncTest()
         {
             var context = CreateInMemoryDbContext();
-            var userId = "test-user-id";
+            var userId = "Ja";
 
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 1});
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 2});
@@ -123,7 +123,7 @@ namespace INZYNIERKA.Tests.Services
         public async Task UpdateUserTagsAsyncTest2()
         {
             var context = CreateInMemoryDbContext();
-            var userId = "test-user-id";
+            var userId = "Ja";
 
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 1});
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 2});
