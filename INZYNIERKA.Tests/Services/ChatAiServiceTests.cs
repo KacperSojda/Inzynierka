@@ -71,7 +71,7 @@ namespace INZYNIERKA.Tests.Services
         // TESTY DLA: Generowania podpowiedzi z historią (ResponseHelp) //
 
         [Fact]
-        public async Task GetPrivateResponseHelpAsync_FormatsHistoryAndCallsGemini()
+        public async Task GetPrivateResponseHelpAsyncTest()
         {
             var context = CreateInMemoryDbContext();
             var mockConfig = CreateMockConfiguration();
@@ -105,7 +105,7 @@ namespace INZYNIERKA.Tests.Services
         // TESTY DLA: TranslatePrivateMessageAsync //
 
         [Fact]
-        public async Task TranslatePrivateMessageAsync_DetectsLanguageBuildsPromptAndTranslates()
+        public async Task TranslatePrivateMessageAsyncTest()
         {
             var context = CreateInMemoryDbContext();
             var mockConfig = CreateMockConfiguration();
