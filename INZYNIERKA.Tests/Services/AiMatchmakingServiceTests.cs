@@ -120,8 +120,8 @@ namespace INZYNIERKA.Tests.Services
             var candidate1Id = "Nieznajomy1";
 
             context.Users.AddRange(
-                new User {Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = "" },
-                new User {Id = candidate1Id, UserName = "Nieznajomy1", Avatar = "", PublicDescription = "", PrivateDescription = "" }
+                new User {Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""},
+                new User {Id = candidate1Id, UserName = "Nieznajomy1", Avatar = "", PublicDescription = "", PrivateDescription = ""}
             );
             await context.SaveChangesAsync();
 

@@ -32,14 +32,9 @@ namespace INZYNIERKA.Tests.Services
                     ItExpr.IsAny<CancellationToken>()
                 );
 
-            if (exceptionToThrow != null)
-            {
-                setup.ThrowsAsync(exceptionToThrow);
-            }
-            else
-            {
-                setup.ReturnsAsync(responseToReturn);
-            }
+            if (exceptionToThrow != null) setup.ThrowsAsync(exceptionToThrow);
+
+            else setup.ReturnsAsync(responseToReturn);
 
             return new HttpClient(handlerMock.Object);
         }

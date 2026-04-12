@@ -1,11 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using INZYNIERKA.Services;
+﻿using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Xunit;
 
 namespace INZYNIERKA.Tests.Services
 {

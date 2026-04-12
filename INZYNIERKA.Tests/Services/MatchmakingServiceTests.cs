@@ -88,13 +88,13 @@ namespace INZYNIERKA.Tests.Services
         {
             var context = CreateInMemoryDbContext();
 
-            var currentUserId = "Ja";
+            var userId = "Ja";
             var friendId = "Znajomy";
             var userMissingTagId = "Brakuje taga";
             var perfectMatchId = "Idealny kandydat";
 
             context.Users.AddRange(
-                new User {Id = currentUserId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""},
+                new User {Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""},
                 new User {Id = friendId, UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = ""},
                 new User {Id = userMissingTagId, UserName = "Brakuje", Avatar = "", PublicDescription = "", PrivateDescription = ""},
                 new User {Id = perfectMatchId, UserName = "Idealny", Avatar = "", PublicDescription = "", PrivateDescription = ""}
@@ -104,7 +104,7 @@ namespace INZYNIERKA.Tests.Services
             var tag2 = new Tag {Id = 2, Name = "Sport"};
             context.Tags.AddRange(tag1, tag2);
 
-            context.UserFriends.Add(new UserFriend {UserId = currentUserId, FriendId = friendId});
+            context.UserFriends.Add(new UserFriend {UserId = userId, FriendId = friendId});
 
             context.UserTags.Add(new UserTag {UserId = friendId, TagId = 1});
             context.UserTags.Add(new UserTag {UserId = friendId, TagId = 2});
@@ -118,7 +118,7 @@ namespace INZYNIERKA.Tests.Services
             var service = new MatchmakingService(context);
             var searchedTags = new List<int> {1, 2};
 
-            var result = await service.GetMatchingUserIdsByTagsAsync(currentUserId, searchedTags);
+            var result = await service.GetMatchingUserIdsByTagsAsync(userId, searchedTags);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);

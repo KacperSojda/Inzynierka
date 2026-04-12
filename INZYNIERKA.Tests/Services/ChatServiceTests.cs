@@ -46,15 +46,15 @@ namespace INZYNIERKA.Tests.Services
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
 
-            var user = new User {Id = "Ja", UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = "" };
-            var friend = new User {Id = "Znajomy", UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = "" };
+            var user = new User {Id = "Ja", UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""};
+            var friend = new User {Id = "Znajomy", UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = ""};
 
             mockUserManager.Setup(um => um.FindByIdAsync("Ja")).ReturnsAsync(user);
             mockUserManager.Setup(um => um.FindByIdAsync("Znajomy")).ReturnsAsync(friend);
 
             context.Messages.AddRange(
-                new Message {Id = 1, SenderId = "Ja", ReceiverId = "Znajomy", Content = "Pierwsza", DateTime = DateTime.UtcNow, Sender = user, Receiver = friend },
-                new Message {Id = 2, SenderId = "Znajomy", ReceiverId = "Ja", Content = "Druga", DateTime = DateTime.UtcNow.AddMinutes(5), Sender = friend, Receiver = user }
+                new Message {Id = 1, SenderId = "Ja", ReceiverId = "Znajomy", Content = "Pierwsza", DateTime = DateTime.UtcNow, Sender = user, Receiver = friend},
+                new Message {Id = 2, SenderId = "Znajomy", ReceiverId = "Ja", Content = "Druga", DateTime = DateTime.UtcNow.AddMinutes(5), Sender = friend, Receiver = user}
             );
             await context.SaveChangesAsync();
 
@@ -167,7 +167,7 @@ namespace INZYNIERKA.Tests.Services
             var memberId1 = "Znajomy1";
             var memberId2 = "Znajomy2";
 
-            var group = new Group {Id = groupId, Name = "Grupa Testowa", Description = "" };
+            var group = new Group {Id = groupId, Name = "Grupa Testowa", Description = ""};
             context.Groups.Add(group);
 
             context.UserGroups.AddRange(

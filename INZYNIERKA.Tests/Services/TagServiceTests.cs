@@ -86,11 +86,11 @@ namespace INZYNIERKA.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(2, result.Tags.Count); 
 
-            var sportTag = result.Tags.First(t => t.TagId == 1);
-            var musicTag = result.Tags.First(t => t.TagId == 2);
+            var chessTag = result.Tags.First(t => t.TagId == 1);
+            var sportTag = result.Tags.First(t => t.TagId == 2);
 
-            Assert.True(sportTag.IsSelected);
-            Assert.False(musicTag.IsSelected);
+            Assert.True(chessTag.IsSelected);
+            Assert.False(sportTag.IsSelected);
         }
 
         // TESTY DLA: UpdateUserTagsAsync //
@@ -107,7 +107,7 @@ namespace INZYNIERKA.Tests.Services
 
             var service = new TagService(context);
 
-            var newTagIds = new List<int> { 2, 3 };
+            var newTagIds = new List<int> {2, 3};
 
             await service.UpdateUserTagsAsync(userId, newTagIds);
 

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using INZYNIERKA.Data;
+﻿using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.Services;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
 
 namespace INZYNIERKA.Tests.Services
 {
@@ -28,9 +24,9 @@ namespace INZYNIERKA.Tests.Services
             var userId = "ja";
             var senderId = "znajomy";
 
-            var user = new User { Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = "" };
-            var sender = new User { Id = senderId, UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = "" };
-            var group = new Group { Id = 1, Name = "Grupa Testowa", Description = "Opis testowy grupy"};
+            var user = new User {Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""};
+            var sender = new User {Id = senderId, UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = ""};
+            var group = new Group {Id = 1, Name = "Grupa Testowa", Description = "Opis testowy grupy"};
 
             context.Users.AddRange(user, sender);
             context.Groups.Add(group);

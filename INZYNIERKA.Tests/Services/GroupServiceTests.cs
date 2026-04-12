@@ -52,8 +52,8 @@ namespace INZYNIERKA.Tests.Services
 
             context.Groups.AddRange(adminGroup, memberGroup);
             context.UserGroups.AddRange(
-                new UserGroup { UserId = userId, ChatGroupId = 1, Type = MemberType.Administrator, ChatGroup = adminGroup },
-                new UserGroup { UserId = userId, ChatGroupId = 2, Type = MemberType.Member, ChatGroup = memberGroup }
+                new UserGroup {UserId = userId, ChatGroupId = 1, Type = MemberType.Administrator, ChatGroup = adminGroup},
+                new UserGroup {UserId = userId, ChatGroupId = 2, Type = MemberType.Member, ChatGroup = memberGroup}
             );
 
             await context.SaveChangesAsync();

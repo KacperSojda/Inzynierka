@@ -1,11 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using INZYNIERKA.Data;
+﻿using INZYNIERKA.Data;
 using INZYNIERKA.Models;
 using INZYNIERKA.Services;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
 
 namespace INZYNIERKA.Tests.Services
 {
@@ -29,8 +25,8 @@ namespace INZYNIERKA.Tests.Services
             var groupId = 1;
 
             var group = new Group {Id = groupId, Name = "Grupa Testowa", Description = ""};
-            var adminUser = new User {Id = "admin", UserName = "Admin", Avatar = "", PublicDescription = "", PrivateDescription = "" };
-            var memberUser = new User {Id = "member", UserName = "Członek", Avatar = "", PublicDescription = "", PrivateDescription = "" };
+            var adminUser = new User {Id = "admin", UserName = "Admin", Avatar = "", PublicDescription = "", PrivateDescription = ""};
+            var memberUser = new User {Id = "member", UserName = "Członek", Avatar = "", PublicDescription = "", PrivateDescription = ""};
 
             context.Groups.Add(group);
             context.Users.AddRange(adminUser, memberUser);
@@ -61,7 +57,6 @@ namespace INZYNIERKA.Tests.Services
             var adminId = "Admin";
             var friendId = "Znajomy";
 
-            // Dodajemy użytkownika jako zwykłego członka (nie administratora)
             context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Member});
             await context.SaveChangesAsync();
 
@@ -146,7 +141,7 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task BanUserAsynctEST()
+        public async Task BanUserAsyncTest()
         {
             var context = CreateInMemoryDbContext();
             var service = new GroupMemberService(context);

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("INZYNIERKA.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b586acc78597ed985dae1325027ba1010d20ab78")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3c5531b0c6f1178bdcf86d3ca654b43d59826a5b")]
 [assembly: System.Reflection.AssemblyProductAttribute("INZYNIERKA.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("INZYNIERKA.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

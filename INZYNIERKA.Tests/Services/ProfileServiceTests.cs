@@ -61,7 +61,7 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService(dbContext, mockUserManager.Object);
 
-            var result = await service.GetUserProfileAsync("nieistniejace");
+            var result = await service.GetUserProfileAsync("nieistniejacy");
 
             Assert.Null(result);
         }
