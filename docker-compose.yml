@@ -3,3 +3,5 @@
     build: .
     ports:
       - "8080:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=dpg-d7bsttfafjfc73f6o9vg-a.frankfurt-postgres.render.com;Port=5432;Database=inzdb_bkar;Username=postgresuser;Password=JrpWrsQaV6Jk0iDYQdKHwJT8axigWnlr

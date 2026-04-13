@@ -240,3 +240,4 @@ G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\refint\INZYNIERKA.dll
 G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\INZYNIERKA.pdb
 G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\INZYNIERKA.genruntimeconfig.cache
 G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\ref\INZYNIERKA.dll
+G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

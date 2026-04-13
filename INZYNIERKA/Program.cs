@@ -1,7 +1,8 @@
 using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.Services;
 using INZYNIERKA.Hubs;
+using INZYNIERKA.Models;
+using INZYNIERKA.Seeders;
+using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -63,6 +64,15 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+}
+
+try
+{
+    await DataSeeder.SeedAsync(app.Services);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Wyst¹pi³ b³¹d podczas seedowania bazy danych: {ex.Message}");
 }
 
 app.UseHttpsRedirection();
