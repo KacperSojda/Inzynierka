@@ -42,9 +42,9 @@ namespace INZYNIERKA.Seeders
                     {
                         UserName = name,
                         Email = $"{name}@test.com",
+                        Avatar = "",
                         PublicDescription = $"Jestem {name}. To konto wygenerowane automatycznie.",
                         PrivateDescription = $"Prywatny opis {name}.",
-                        Avatar = ""
                     };
 
                     var result = await userManager.CreateAsync(user, "1234567890!");

@@ -22,6 +22,7 @@ namespace INZYNIERKA.Controllers
         private readonly IProfileService profileService;
 
         public ProfileController(
+            INZDbContext context,
             UserManager<User> userManager, 
             IFriendshipService friendshipService,
             INotificationService notificationService,
@@ -29,6 +30,7 @@ namespace INZYNIERKA.Controllers
             IFileService fileService,
             IProfileService profileService)
         {
+            this.context = context;
             this.userManager = userManager;
             this.friendshipService = friendshipService;
             this.notificationService = notificationService;

@@ -81,7 +81,11 @@ namespace INZYNIERKA.Services
                 return (false, new[] { "Nie znaleziono użytkownika." });
             }
 
-            user.Avatar = model.Avatar;
+            if (model.Avatar != null)
+            {
+                user.Avatar = model.Avatar;
+            }
+
             user.PublicDescription = model.PublicDescription;
             user.PrivateDescription = model.PrivateDescription;
 
