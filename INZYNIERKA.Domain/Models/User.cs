@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace INZYNIERKA.Models
+namespace INZYNIERKA.Domain.Models
 {
     public class User : IdentityUser
     {

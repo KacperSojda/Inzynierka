@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using INZYNIERKA.Data;
-using INZYNIERKA.Models;
+using INZYNIERKA.Domain.Models;
 using INZYNIERKA.ViewModels;
 using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;

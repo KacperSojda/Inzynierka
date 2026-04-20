@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "INZYNIERKA/1.0.0": {
         "dependencies": {
+          "INZYNIERKA.Domain": "1.0.0",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.AspNetCore.SignalR": "1.2.0",
           "Microsoft.EntityFrameworkCore": "8.0.4",
@@ -564,6 +565,17 @@
             "fileVersion": "5.100.24.56208"
           }
         }
+      },
+      "INZYNIERKA.Domain/1.0.0": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4"
+        },
+        "runtime": {
+          "INZYNIERKA.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
@@ -845,6 +857,11 @@
       "sha512": "sha512-cVTT/Zw4JuUeX8H0tdWii0OMHsA5MY2PaFYOq/Hstw0jk479jZ+f8baCicWFNzJlCPWAe0uoNCELoB5eNmaMqA==",
       "path": "system.net.websockets.websocketprotocol/5.1.0",
       "hashPath": "system.net.websockets.websocketprotocol.5.1.0.nupkg.sha512"
+    },
+    "INZYNIERKA.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

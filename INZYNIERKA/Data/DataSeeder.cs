@@ -1,5 +1,5 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
+using INZYNIERKA.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using static System.Runtime.InteropServices.JavaScript.JSType;

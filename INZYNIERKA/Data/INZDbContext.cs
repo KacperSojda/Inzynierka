@@ -1,5 +1,5 @@
 ﻿using System.Reflection.Emit;
-using INZYNIERKA.Models;
+using INZYNIERKA.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;

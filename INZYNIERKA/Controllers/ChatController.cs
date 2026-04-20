@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text;
 using INZYNIERKA.Data;
-using INZYNIERKA.Models;
+using INZYNIERKA.Domain.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

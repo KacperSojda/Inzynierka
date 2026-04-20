@@ -1,4 +1,4 @@
-﻿using INZYNIERKA.Models;
+﻿using INZYNIERKA.Domain.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -84,7 +84,7 @@ namespace INZYNIERKA.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditGroup(Models.Group model)
+        public async Task<IActionResult> EditGroup(Domain.Models.Group model)
         {
             try
             {

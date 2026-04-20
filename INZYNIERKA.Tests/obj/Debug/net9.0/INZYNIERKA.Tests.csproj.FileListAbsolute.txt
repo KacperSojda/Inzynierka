@@ -256,3 +256,5 @@ G:\Inzynierka\Inzynierka\INZYNIERKA.Tests\obj\Debug\net9.0\refint\INZYNIERKA.Tes
 G:\Inzynierka\Inzynierka\INZYNIERKA.Tests\obj\Debug\net9.0\INZYNIERKA.Tests.pdb
 G:\Inzynierka\Inzynierka\INZYNIERKA.Tests\obj\Debug\net9.0\INZYNIERKA.Tests.genruntimeconfig.cache
 G:\Inzynierka\Inzynierka\INZYNIERKA.Tests\obj\Debug\net9.0\ref\INZYNIERKA.Tests.dll
+G:\Inzynierka\Inzynierka\INZYNIERKA.Tests\bin\Debug\net9.0\INZYNIERKA.Domain.dll
+G:\Inzynierka\Inzynierka\INZYNIERKA.Tests\bin\Debug\net9.0\INZYNIERKA.Domain.pdb

@@ -1,6 +1,6 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Hubs;
-using INZYNIERKA.Models;
+using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Seeders;
 using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;

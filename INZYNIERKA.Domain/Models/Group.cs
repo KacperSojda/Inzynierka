@@ -1,4 +1,4 @@
-﻿namespace INZYNIERKA.Models
+﻿namespace INZYNIERKA.Domain.Models
 {
     public class Group
     {

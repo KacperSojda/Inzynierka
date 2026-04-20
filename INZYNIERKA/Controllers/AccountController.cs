@@ -1,4 +1,4 @@
-﻿using INZYNIERKA.Models;
+﻿using INZYNIERKA.Domain.Models;
 using INZYNIERKA.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;

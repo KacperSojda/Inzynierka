@@ -1,4 +1,4 @@
-﻿using INZYNIERKA.Models;
+﻿using INZYNIERKA.Domain.Models;
 
 public class GroupMembersViewModel
 {

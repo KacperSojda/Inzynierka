@@ -1,5 +1,5 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
+using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
