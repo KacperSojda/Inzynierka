@@ -280,3 +280,4 @@ G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Data.dll
 G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Services.dll
 G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Services.pdb
 G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Data.pdb
+G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

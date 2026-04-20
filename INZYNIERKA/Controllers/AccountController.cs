@@ -1,6 +1,5 @@
 ﻿using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.ViewModels;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 

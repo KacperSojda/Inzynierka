@@ -1,9 +1,5 @@
-﻿using INZYNIERKA.Data;
-using INZYNIERKA.Domain.Models;
-using INZYNIERKA.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
+﻿using INZYNIERKA.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Hubs
 {

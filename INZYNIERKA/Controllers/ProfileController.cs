@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using INZYNIERKA.Data;
+﻿using INZYNIERKA.Data;
 using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.ViewModels;
 using INZYNIERKA.Services.Interfaces;

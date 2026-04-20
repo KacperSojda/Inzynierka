@@ -1,13 +1,10 @@
-﻿using INZYNIERKA.Data;
-using INZYNIERKA.Domain.Models;
+﻿using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
-using Microsoft.Extensions.Configuration;
 
 namespace INZYNIERKA.Controllers
 {
