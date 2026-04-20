@@ -3,6 +3,7 @@ using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using INZYNIERKA.Services.Interfaces;
 
 namespace INZYNIERKA.Hubs
 {

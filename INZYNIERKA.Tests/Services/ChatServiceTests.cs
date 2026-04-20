@@ -1,6 +1,7 @@
 ﻿using INZYNIERKA.Data;
 using INZYNIERKA.Domain.Models;
-using INZYNIERKA.Services;
+using INZYNIERKA.Services.Interfaces;
+using INZYNIERKA.Services.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INZYNIERKA.Domain", "INZYNI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INZYNIERKA.Services", "INZYNIERKA.Services\INZYNIERKA.Services.csproj", "{44B1115C-B7FC-4706-807B-400B876A849D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "INZYNIERKA.Data", "INZYNIERKA.Data\INZYNIERKA.Data.csproj", "{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{44B1115C-B7FC-4706-807B-400B876A849D}.Release|x64.Build.0 = Release|Any CPU
 		{44B1115C-B7FC-4706-807B-400B876A849D}.Release|x86.ActiveCfg = Release|Any CPU
 		{44B1115C-B7FC-4706-807B-400B876A849D}.Release|x86.Build.0 = Release|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Debug|x64.Build.0 = Debug|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Debug|x86.Build.0 = Debug|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Release|x64.ActiveCfg = Release|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Release|x64.Build.0 = Release|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Release|x86.ActiveCfg = Release|Any CPU
+		{EADE8F3E-A6A0-4B70-BED4-0AC6C7E25435}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

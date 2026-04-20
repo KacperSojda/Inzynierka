@@ -6,6 +6,8 @@ COPY ["INZYNIERKA/INZYNIERKA.csproj", "INZYNIERKA/"]
 COPY ["INZYNIERKA.Domain/INZYNIERKA.Domain.csproj", "INZYNIERKA.Domain/"]
 COPY ["INZYNIERKA.Tests/INZYNIERKA.Tests.csproj", "INZYNIERKA.Tests/"]
 COPY ["INZYNIERKA.E2ETests/INZYNIERKA.E2ETests.csproj", "INZYNIERKA.E2ETests/"]
+COPY ["INZYNIERKA.Services/INZYNIERKA.Services.csproj", "INZYNIERKA.Services/"]
+COPY ["INZYNIERKA.Data/INZYNIERKA.Data.csproj", "INZYNIERKA.Data/"]
 
 RUN dotnet restore
 

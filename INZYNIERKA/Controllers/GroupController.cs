@@ -1,9 +1,9 @@
 ﻿using INZYNIERKA.Domain.Models;
-using INZYNIERKA.ViewModels;
+using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using INZYNIERKA.Services;
+using INZYNIERKA.Services.Interfaces;
 
 namespace INZYNIERKA.Controllers
 {

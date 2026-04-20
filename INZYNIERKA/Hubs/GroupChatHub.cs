@@ -1,6 +1,6 @@
 ﻿using INZYNIERKA.Data;
 using INZYNIERKA.Domain.Models;
-using INZYNIERKA.Services;
+using INZYNIERKA.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;

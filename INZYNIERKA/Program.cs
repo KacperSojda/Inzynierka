@@ -1,8 +1,8 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Hubs;
 using INZYNIERKA.Domain.Models;
-using INZYNIERKA.Seeders;
-using INZYNIERKA.Services;
+using INZYNIERKA.Services.Services;
+using INZYNIERKA.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<INZDbContext>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    b => b.MigrationsAssembly("INZYNIERKA.Data")));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
