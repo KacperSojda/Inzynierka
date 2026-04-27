@@ -18,12 +18,24 @@
                 @foreach (var msg in Model.Messages)
                 {
                     <div>
-                        <strong>@msg.SenderName:</strong> @msg.Content
+                        <strong>@msg.SenderName:</strong>
+                        @if (msg.IsImage)
+                        {
+                            <br />
+                            <img src="data:@msg.ImageType;base64,@msg.ImageDataBase64" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />
+                        }
+                        else
+                        {
+                            @msg.Content
+                        }
                     </div>
                 }
             </div>
 
             <div class="input-group">
+                <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('imageInput').click()">🖼️</button>
+
                 <input type="text" id="messageInput" class="form-control"
                        placeholder="Write a message..."
                        value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
@@ -64,39 +76,126 @@
     <script>
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chathub")
+            .withAutomaticReconnect()
             .build();
 
-        async function startConnection() {
+        async function start() {
             await connection.start();
         }
 
-        startConnection();
+        start()
 
-        connection.on("ReceiveMessage", function (senderId, receiverId, message) {
+        const chatWindow = document.getElementById("chatWindow");
+
+        let loadedMessagesCount = 30;
+        let isLoadingOlder = false;
+        let hasMoreMessages = true;
+
+        chatWindow.addEventListener("scroll", async function() {
+            if (chatWindow.scrollTop === 0 && !isLoadingOlder && hasMoreMessages) {
+                isLoadingOlder = true;
+                
+                const previousScrollHeight = chatWindow.scrollHeight;
+
+                try {
+                    const response = await fetch(`/Chat/LoadOlderMessages?friendId=@Model.FriendId&skip=${loadedMessagesCount}`);
+                    if (response.ok) {
+                        const olderMessages = await response.json();
+
+                        if (olderMessages.length > 0) {
+                            loadedMessagesCount += olderMessages.length;
+                            
+                            let olderHtml = "";
+                            olderMessages.forEach(msg => {
+                                const senderName = msg.senderId === "@Model.CurrentUserId" ? "You" : "@Model.FriendName";
+                                let contentHtml = msg.isImage ? `<br/><img src="data:${msg.contentType};base64,${msg.imageDataBase64}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />` : msg.content;
+                                    
+                                olderHtml += `<div><strong>${senderName}:</strong> ${contentHtml}</div>`;
+                            });
+
+                            chatWindow.insertAdjacentHTML('afterbegin', olderHtml);
+
+                            chatWindow.scrollTop = chatWindow.scrollHeight - previousScrollHeight;
+                        }
+
+                        if (olderMessages.length < 30) {
+                            hasMoreMessages = false;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Błąd przy ładowaniu starszych wiadomości", err);
+                } finally {
+                     isLoadingOlder = false;
+                }
+            }
+        });
+
+        function appendMessage(senderId, content, isHtml) {
             const currentFriendId = "@Model.FriendId";
             const currentUserId = "@Model.CurrentUserId";
-
-            if ((senderId != currentFriendId || receiverId != currentUserId) &&
-                (senderId != currentUserId || receiverId != currentFriendId)) return;
-
+            
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
-            div.innerHTML = `<strong>${senderId === "@Model.CurrentUserId" ? "You" : "Friend"}:</strong> ${message}`;
+            const senderName = senderId === currentUserId ? "You" : "@Model.FriendName";
+            
+            if (isHtml) {
+            div.innerHTML = `<strong>${senderName}:</strong> ${content}`;
+            } else {
+            const strong = document.createElement("strong");
+            strong.textContent = senderName + ": ";
+            div.appendChild(strong);
+            const text = document.createTextNode(content);
+            div.appendChild(text);
+            }
+
             chatWindow.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        connection.on("ReceiveImage", function(senderId, receiverId, base64Data, contentType) {
+            const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />`;
+            appendMessage(senderId, imgHtml, true);
+        });
+
+        connection.on("ReceiveMessage", function(senderId, receiverId, message) {
+            appendMessage(senderId, message, false);
+        });
+
+        connection.on("ErrorNotification", function(errorMessage) {
+            alert(errorMessage);
         });
 
         document.getElementById("sendButton").addEventListener("click", function () {
-            const message = document.getElementById("messageInput").value;
-            if (!message.trim()) return;
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value;
+
+            if (!message.trim() === "");
+
             connection.invoke("SendMessage", "@Model.CurrentUserId", "@Model.FriendId", message)
                 .catch(err => console.error(err.toString()));
-            document.getElementById("messageInput").value = "";
+
+            messageInput.value = "";
+        });
+
+        document.getElementById("imageInput").addEventListener("change", function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onloadend = function() {
+            const base64Data = reader.result.split(',')[1];
+            const contentType = file.type;
+
+            connection.invoke("SendImage", "@Model.CurrentUserId", "@Model.FriendId", base64Data, contentType)
+            .catch(err => console.error(err.toString()));
+            };
+            reader.readAsDataURL(file);
+            this.value = "";
         });
 
         connection.onclose(async () => {
                     console.log("Disconnected, reconnecting...");
-            await startConnection();
+            await start();
         });
     </script>
 

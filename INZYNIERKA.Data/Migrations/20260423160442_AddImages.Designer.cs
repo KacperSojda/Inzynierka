@@ -3,6 +3,7 @@ using System;
 using INZYNIERKA.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace INZYNIERKA.Migrations
 {
     [DbContext(typeof(INZDbContext))]
-    partial class INZDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260423160442_AddImages")]
+    partial class AddImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,17 +55,11 @@ namespace INZYNIERKA.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("GroupId")
                         .HasColumnType("integer");
-
-                    b.Property<byte[]>("ImageData")
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("ImageType")
-                        .HasColumnType("text");
 
                     b.Property<string>("SenderId")
                         .IsRequired()

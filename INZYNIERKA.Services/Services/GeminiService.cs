@@ -14,7 +14,7 @@ namespace INZYNIERKA.Services.Services
         public GeminiService(IConfiguration configuration, HttpClient httpClient)
         {
             this.configuration = configuration;
-            this.apiKey = configuration["ApiKeys:Gemini"];
+            this.apiKey = configuration["ApiKeys:Gemini"] ?? throw new Exception("No API key found for Gemini.");
             this.httpClient = httpClient;
         }
 
@@ -25,7 +25,7 @@ namespace INZYNIERKA.Services.Services
                 return "The question cannot be empty.";
             }
 
-            string endpoint = configuration["EndPoints:Gemini"].Replace("{apiKey}", apiKey);
+            string endpoint = configuration["EndPoints:Gemini"].Replace("{apiKey}", apiKey) ?? throw new Exception("No endpoint configured for Gemini.");
 
             var fullPrompt = prompt + question;
 

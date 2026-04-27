@@ -36,6 +36,15 @@ namespace INZYNIERKA.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> LoadOlderMessages(string friendId, int skip)
+        {
+            var userId = userManager.GetUserId(User);
+            var olderMessages = await chatService.GetOlderPrivateMessagesAsync(userId, friendId, skip);
+
+            return Json(olderMessages);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GroupChat(int groupId)
         {
             var userMessage = TempData["UserMessage"]?.ToString() ?? "";
@@ -45,6 +54,13 @@ namespace INZYNIERKA.Controllers
 
             if (model == null) return NotFound("Nie znaleziono grupy.");
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadOlderGroupMessages(int groupId, int skip)
+        {
+            var olderMessages = await chatService.GetOlderGroupMessagesAsync(groupId, skip);
+            return Json(olderMessages);
         }
 
         // Chat AI Service //

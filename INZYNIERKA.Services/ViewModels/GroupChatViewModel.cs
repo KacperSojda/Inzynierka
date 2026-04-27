@@ -16,5 +16,8 @@
         public string SenderName { get; set; }
         public string Content { get; set; }
         public DateTime DateTime { get; set; }
+        public string? ImageDataBase64 { get; set; }
+        public string? ImageType { get; set; }
+        public bool IsImage => !string.IsNullOrEmpty(ImageDataBase64);
     }
 }

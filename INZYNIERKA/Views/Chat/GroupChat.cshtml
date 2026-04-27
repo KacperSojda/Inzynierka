@@ -7,22 +7,27 @@
 </div>
 
 <div id="chatWindow" class="border rounded p-3 mb-3 bg-light" style="height:300px; overflow-y:auto;">
-    @if (Model.messages != null && Model.messages.Any())
+    @foreach (var msg in Model.messages)
     {
-        @foreach (var msg in Model.messages)
-        {
-            <div class="mb-2">
-                <strong>@msg.SenderName:</strong> @msg.Content
-            </div>
-        }
-    }
-    else
-    {
-        <div class="text-muted">No messages yet.</div>
+        <div>
+            <strong>@(msg.SenderId == Model.currentUserID ? "You" : msg.SenderName):</strong>
+            
+            @if (msg.IsImage)
+            {
+                <br />
+                <img src="data:@msg.ImageType;base64,@msg.ImageDataBase64" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />
+            }
+            else
+            {
+                @msg.Content
+            }
+        </div>
     }
 </div>
 
 <div class="input-group">
+    <input type="file" id="groupImageInput" accept="image/*" style="display:none;" />
+    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('groupImageInput').click()">🖼️</button>
     <input type="text" id="messageInput" class="form-control"
            placeholder="Write a message..."
            value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
@@ -60,40 +65,125 @@
     <script>
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/groupchathub")
+            .withAutomaticReconnect()
             .build();
 
         const currentgroupID = "@Model.groupID";
         const currentUserId = "@Model.currentUserID";
 
-        connection.on("ReceiveGroupMessage", function (groupId, senderId, message) {
+        async function start() {
+            await connection.start();
+            await connection.invoke("JoinGroup", `group_${currentgroupID}`);
+        }
 
-            if(groupId != currentgroupID) return;
+        start();
 
-            const chatWindow = document.getElementById("chatWindow");
-            const div = document.createElement("div");
-            div.innerHTML = `<strong>${senderId === currentUserId ? "You" : senderId}:</strong> ${message}`;
-            chatWindow.appendChild(div);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+        const chatWindow = document.getElementById("chatWindow");
+
+        let loadedMessagesCount = 30;
+        let isLoadingOlder = false;
+        let hasMoreMessages = true;
+
+        chatWindow.addEventListener("scroll", async function() {
+            if (chatWindow.scrollTop === 0 && !isLoadingOlder && hasMoreMessages) {
+                isLoadingOlder = true;
+                const previousScrollHeight = chatWindow.scrollHeight;
+
+                try {
+                    const response = await fetch(`/Chat/LoadOlderGroupMessages?groupId=${currentgroupID}&skip=${loadedMessagesCount}`);
+                    if (response.ok) {
+                        const olderMessages = await response.json();
+
+                        if (olderMessages.length > 0) {
+                            loadedMessagesCount += olderMessages.length;
+                            let olderHtml = "";
+
+                            olderMessages.forEach(msg => {
+                                const senderLabel = msg.senderId === currentUserId ? "You" : msg.senderName;
+                                let contentHtml = msg.isImage ? `<br/><img src="data:${msg.imageType};base64,${msg.imageDataBase64}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />` : msg.content;
+                                    
+                                olderHtml += `<div><strong>${senderLabel}:</strong> ${contentHtml}</div>`;
+                            });
+
+                            chatWindow.insertAdjacentHTML('afterbegin', olderHtml);
+                            chatWindow.scrollTop = chatWindow.scrollHeight - previousScrollHeight;
+                        }
+
+                        if (olderMessages.length < 30) {
+                            hasMoreMessages = false;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Błąd przy ładowaniu starszych wiadomości", err);
+                } finally {
+                    isLoadingOlder = false;
+                }
+            }
         });
 
-        connection.start().then(function () {
-            connection.invoke("JoinGroup", `group_${currentgroupID}`)
-                .catch(function (err) {
-                    return console.error("JoinGroup error:", err.toString());
-                });
+        function appendGroupMessage(senderId, content, isHtml) {
+            const chatWindow = document.getElementById("chatWindow");
+            const div = document.createElement("div");
+            
+            const senderLabel = senderId === currentUserId ? "You" : senderId;
+
+            if (isHtml) {
+                div.innerHTML = `<strong>${senderLabel}:</strong> ${content}`;
+            } else {
+                const strong = document.createElement("strong");
+                strong.textContent = senderLabel + ": ";
+                div.appendChild(strong);
+                
+                const text = document.createElement("span");
+                text.textContent = content; // Zabezpieczenie przed XSS
+                div.appendChild(text);
+            }
+
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        connection.on("ReceiveGroupMessage", function(groupId, senderId, message) {
+            if (groupId != currentgroupID) return;
+            appendGroupMessage(senderId, message, false);
+        });
+
+        connection.on("ReceiveGroupImage", function(groupId, senderId, base64Data, contentType) {
+            if (groupId != currentgroupID) return;
+            const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />`;
+            appendGroupMessage(senderId, imgHtml, true);
         });
 
         document.getElementById("sendButton").addEventListener("click", function () {
-            console.log("co jest");
-            const message = document.getElementById("messageInput").value;
-            if (!message.trim()) {
-                console.log("Window Error");
-                return;
-            }
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value;
+
+            if (!message.trim()) return
 
             connection.invoke("SendMessageToGroup", currentgroupID, currentUserId, message)
                 .catch(err => console.error(err.toString()));
-            document.getElementById("messageInput").value = "";
+            
+            messageInput.value = "";
+        });
+
+        document.getElementById("groupImageInput").addEventListener("change", function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64Data = reader.result.split(',')[1];
+                const contentType = file.type;
+
+                connection.invoke("SendGroupImage", currentgroupID.toString(), currentUserId, base64Data, contentType)
+                .catch(err => console.error("Upload error:", err.toString()));
+            };
+            reader.readAsDataURL(file);
+            this.value = "";
+        });
+
+        connection.on("ErrorNotification", function(errorMessage) {
+            alert(errorMessage);
         });
     </script>
 

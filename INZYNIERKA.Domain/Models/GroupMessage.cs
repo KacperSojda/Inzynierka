@@ -1,4 +1,6 @@
-﻿namespace INZYNIERKA.Domain.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace INZYNIERKA.Domain.Models
 {
     public class GroupMessage
     {
@@ -9,7 +11,11 @@
         public string SenderId { get; set; }
         public User Sender { get; set; }
 
-        public string Content { get; set; }
+        [MaxLength(1000)]
+        public string? Content { get; set; }
+        public byte[]? ImageData { get; set; }
+        public string? ImageType { get; set; }
+
         public DateTime Timestamp { get; set; }
     }
 }

@@ -4,6 +4,8 @@ using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
+using System.Web;
 
 namespace INZYNIERKA.Services.Services
 {
@@ -49,12 +51,41 @@ namespace INZYNIERKA.Services.Services
                     ReceiverId = m.ReceiverId,
                     ReceiverName = m.Receiver.UserName,
                     Content = m.Content,
-                    DateTime = m.DateTime
+                    DateTime = m.DateTime,
+                    ImageDataBase64 = m.ImageData != null ? Convert.ToBase64String(m.ImageData) : null,
+                    ImageType = m.ImageType
                 }).ToList(),
                 UserMessage = userMessage,
                 GeminiAnswer = geminiAnswer,
                 GeminiQuestion = "",
             };
+        }
+
+        public async Task<List<MessageViewModel>> GetOlderPrivateMessagesAsync(string userId, string friendId, int skip, int take = 30)
+        {
+            var messages = await context.Messages
+                .Include(m => m.Sender)
+                .Include(m => m.Receiver)
+                .Where(m => (m.SenderId == userId && m.ReceiverId == friendId) ||
+                            (m.SenderId == friendId && m.ReceiverId == userId))
+                .OrderByDescending(m => m.DateTime)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            messages.Reverse();
+
+            return messages.Select(m => new MessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                ReceiverId = m.ReceiverId,
+                ReceiverName = m.Receiver.UserName,
+                Content = m.Content,
+                DateTime = m.DateTime,
+                ImageDataBase64 = m.ImageData != null ? Convert.ToBase64String(m.ImageData) : null,
+                ImageType = m.ImageType
+            }).ToList();
         }
 
         public async Task<GroupChatViewModel> GetGroupChatAsync(string currentUserId, int groupId, string userMessage, string geminiAnswer)
@@ -84,11 +115,36 @@ namespace INZYNIERKA.Services.Services
                     SenderId = m.SenderId,
                     SenderName = m.Sender.UserName,
                     Content = m.Content,
-                    DateTime = m.Timestamp
+                    DateTime = m.Timestamp,
+                    ImageDataBase64 = m.ImageData != null ? Convert.ToBase64String(m.ImageData) : null,
+                    ImageType = m.ImageType
                 }).ToList(),
                 UserMessage = userMessage,
                 GeminiAnswer = geminiAnswer
             };
+        }
+
+        public async Task<List<GroupMessageViewModel>> GetOlderGroupMessagesAsync(int groupId, int skip, int take = 30)
+        {
+            var messages = await context.GroupMessages
+                .Include(m => m.Sender)
+                .Where(m => m.GroupId == groupId)
+                .OrderByDescending(m => m.Timestamp)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            messages.Reverse();
+
+            return messages.Select(m => new GroupMessageViewModel
+            {
+                SenderId = m.SenderId,
+                SenderName = m.Sender.UserName,
+                Content = m.Content,
+                DateTime = m.Timestamp,
+                ImageDataBase64 = m.ImageData != null ? Convert.ToBase64String(m.ImageData) : null,
+                ImageType = m.ImageType
+            }).ToList();
         }
 
         public async Task SavePrivateMessageAsync(string senderId, string receiverId, string content)
@@ -122,20 +178,38 @@ namespace INZYNIERKA.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task ClearMessageNotificationAsync(string userId, string friendId)
+        public async Task<bool> SaveImageMessageAsync(string senderId, string receiverId, byte[] imageData, string imageType)
         {
-            var notification = await context.Notifications
-                .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId);
-
-            if (notification != null)
+            try
             {
-                context.Notifications.Remove(notification);
+                if (imageData == null || imageData.Length == 0)
+                    return false;
+
+                var message = new Message
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Content = null,
+                    ImageData = imageData,
+                    ImageType = imageType,
+                    DateTime = DateTime.UtcNow,
+
+                };
+
+                context.Messages.Add(message);
                 await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
 
         public async Task SaveGroupMessageAsync(int groupId, string senderId, string content)
         {
+
             var group = await context.Groups
                 .Include(g => g.Members)
                 .FirstOrDefaultAsync(g => g.Id == groupId);
@@ -177,6 +251,48 @@ namespace INZYNIERKA.Services.Services
             }
 
             await context.SaveChangesAsync();
+        }
+
+        public async Task<bool> SaveGroupImageMessageAsync(string senderId, int groupId, byte[] imageData, string imageType)
+        {
+            try
+            {
+                if (imageData == null || imageData.Length == 0)
+                    return false;
+
+                var message = new GroupMessage
+                {
+
+                    GroupId = groupId,
+                    SenderId = senderId,
+                    Content = null,
+                    ImageData = imageData,
+                    ImageType = imageType,
+                    Timestamp = DateTime.UtcNow,
+
+                };
+
+                context.GroupMessages.Add(message);
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task ClearMessageNotificationAsync(string userId, string friendId)
+        {
+            var notification = await context.Notifications
+                .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId);
+
+            if (notification != null)
+            {
+                context.Notifications.Remove(notification);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
