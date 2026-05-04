@@ -4,7 +4,6 @@ using INZYNIERKA.Services.ViewModels;
 using INZYNIERKA.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 
 namespace INZYNIERKA.Controllers
@@ -12,7 +11,6 @@ namespace INZYNIERKA.Controllers
     [Authorize]
     public class ProfileController : Controller
     {
-        private readonly INZDbContext context;
         private readonly UserManager<User> userManager;
         private readonly IFriendshipService friendshipService;
         private readonly INotificationService notificationService;
@@ -21,7 +19,6 @@ namespace INZYNIERKA.Controllers
         private readonly IProfileService profileService;
 
         public ProfileController(
-            INZDbContext context,
             UserManager<User> userManager, 
             IFriendshipService friendshipService,
             INotificationService notificationService,
@@ -29,7 +26,6 @@ namespace INZYNIERKA.Controllers
             IFileService fileService,
             IProfileService profileService)
         {
-            this.context = context;
             this.userManager = userManager;
             this.friendshipService = friendshipService;
             this.notificationService = notificationService;
@@ -129,7 +125,7 @@ namespace INZYNIERKA.Controllers
 
         public async Task<IActionResult> ShowTags()
         {
-            var tags = await context.Tags.ToListAsync();
+            var tags = await tagService.GetAllTagsAsync();
             return View(tags);
         }
 
