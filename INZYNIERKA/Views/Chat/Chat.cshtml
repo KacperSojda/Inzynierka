@@ -25,7 +25,7 @@
                 @foreach (var msg in Model.Messages)
                 {
                     <div class="message-container mb-2">
-                        <strong>@msg.SenderName:</strong>
+                        <strong>@(msg.SenderId == Model.CurrentUserId ? "You" : msg.SenderName):</strong>
                         @if (msg.IsImage)
                         {
                             <br />
