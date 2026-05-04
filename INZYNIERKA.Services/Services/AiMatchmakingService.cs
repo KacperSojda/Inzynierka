@@ -44,7 +44,7 @@ namespace INZYNIERKA.Services.Services
             if (user == null) return (null, startIndex);
 
             var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
-            var combinedString = $"First Description: {user.PublicDescription} {user.PrivateDescription} Hobby: {string.Join(", ", tags)}";
+            var combinedString = $"Description: {user.PublicDescription} {user.PrivateDescription} Hobby: {string.Join(", ", tags)}";
             var browserPrompt = configuration["Prompts:Browser"];
 
             int currentIndex = startIndex;
@@ -61,13 +61,15 @@ namespace INZYNIERKA.Services.Services
                 if (dbUser == null) continue;
 
                 var friendTags = dbUser.UserTags.Select(ut => ut.Tag.Name);
-                var friendCombinedString = $"Second Description: {dbUser.PublicDescription} Hobby: {string.Join(", ", friendTags)}";
+                var friendCombinedString = $"Description: {dbUser.PublicDescription} Hobby: {string.Join(", ", friendTags)}";
 
-                var promptString = combinedString + " " + friendCombinedString;
+                string finalPrompt = browserPrompt
+                    .Replace("{person1}", combinedString)
+                    .Replace("{person2}", friendCombinedString);
 
-                var geminiAns = await geminiService.AskAsync(promptString, browserPrompt);
+                var geminiAns = await geminiService.AskAsync(string.Empty, finalPrompt);
 
-                if (geminiAns.Trim().ToUpper().Contains("YES"))
+                if (!string.IsNullOrEmpty(geminiAns) && geminiAns.Trim().ToUpper() == "YES")
                 {
                     var model = new UserViewModel
                     {

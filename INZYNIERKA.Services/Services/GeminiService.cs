@@ -20,14 +20,9 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<string> AskAsync(string question, string prompt)
         {
-            if (string.IsNullOrWhiteSpace(question))
-            {
-                return "The question cannot be empty.";
-            }
-
             string endpoint = configuration["EndPoints:Gemini"].Replace("{apiKey}", apiKey) ?? throw new Exception("No endpoint configured for Gemini.");
 
-            var fullPrompt = prompt + question;
+            var fullPrompt = $"{prompt}\n{question}";
 
             var requestBody = new
             {
@@ -50,22 +45,31 @@ namespace INZYNIERKA.Services.Services
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return $"Błąd API (Status: {(int)response.StatusCode}): {errorContent}";
+                    Console.WriteLine($"[Gemini API Error] {response.StatusCode}: {errorContent}");
+                    return null;
                 }
 
                 var responseString = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(responseString);
 
-                return doc.RootElement
-                          .GetProperty("candidates")[0]
-                          .GetProperty("content")
-                          .GetProperty("parts")[0]
-                          .GetProperty("text")
-                          .GetString();
+                var root = doc.RootElement;
+                if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                {
+                    var firstCandidate = candidates[0];
+                    if (firstCandidate.TryGetProperty("content", out var contentProp) &&
+                        contentProp.TryGetProperty("parts", out var parts) &&
+                        parts.GetArrayLength() > 0)
+                    {
+                        return parts[0].GetProperty("text").GetString()?.Trim();
+                    }
+                }
+                Console.WriteLine("[Gemini Warning] Pusta odpowiedź.");
+                return null;
             }
             catch (Exception ex)
             {
-                return $"Błąd Gemini: {ex.Message}";
+                Console.WriteLine($"[Gemini Exception]: {ex.Message}");
+                return null;
             }
         }
     }
