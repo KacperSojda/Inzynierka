@@ -53,7 +53,8 @@ namespace INZYNIERKA.Services.Services
                     Content = m.Content,
                     DateTime = m.DateTime,
                     ImageDataBase64 = m.ImageData != null ? Convert.ToBase64String(m.ImageData) : null,
-                    ImageType = m.ImageType
+                    ImageType = m.ImageType,
+                    IsRead = m.IsRead
                 }).ToList(),
                 UserMessage = userMessage,
                 GeminiAnswer = geminiAnswer,
@@ -291,6 +292,22 @@ namespace INZYNIERKA.Services.Services
             if (notification != null)
             {
                 context.Notifications.Remove(notification);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task MarkMessagesAsReadAsync(string userId, string friendId)
+        {
+            var unreadMessages = await context.Messages
+                .Where(m => m.SenderId == friendId && m.ReceiverId == userId && !m.IsRead)
+                .ToListAsync();
+
+            if (unreadMessages.Any())
+            {
+                foreach (var msg in unreadMessages)
+                {
+                    msg.IsRead = true;
+                }
                 await context.SaveChangesAsync();
             }
         }

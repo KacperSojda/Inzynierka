@@ -15,7 +15,10 @@
             @foreach (var friend in Model)
             {
                 <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
-                    <strong>@friend.UserName</strong>
+                    <div class="d-flex align-items-center">
+                        <strong class="me-2">@friend.UserName</strong>
+                        <span class="statusIndicator" data-friend-id="@friend.Id" title="Offline" style="font-size: 1em; color: gray; transition: color 0.3s ease;">●</span>
+                    </div>
 
                     <div class="menu" role="group" aria-label="Opcje znajomego">
                         <form asp-action="DeleteFriend" method="post" class="m-0">
@@ -38,6 +41,51 @@
         <p>Nie masz jeszcze żadnych znajomych.</p>
     }
 </div>
+
+@section Scripts {
+    <script>
+        const connection = window.appSignalRConnection;
+
+        function setUserStatus(userId, isOnline) {
+            const dots = document.querySelectorAll('.statusIndicator');
+            
+            dots.forEach(dot => {
+                if (dot.getAttribute('data-friend-id').toLowerCase() === userId.toLowerCase()) {
+                    dot.style.color = isOnline ? "green" : "gray";
+                    dot.title = isOnline ? "Online" : "Offline";
+                }
+            });
+        }
+
+        connection.on("UserIsOnline", function(userId) {
+            setUserStatus(userId, true);
+        });
+
+        connection.on("UserIsOffline", function(userId) {
+            setUserStatus(userId, false);
+        });
+
+        async function checkAllFriendsStatus() {
+            if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                const dots = document.querySelectorAll('.statusIndicator');
+                
+                for (let dot of dots) {
+                    const friendId = dot.getAttribute('data-friend-id');
+                    try {
+                        const isOnline = await connection.invoke("CheckIfUserIsOnline", friendId);
+                        setUserStatus(friendId, isOnline);
+                    } catch (err) {
+                        console.error(`Nie udało się pobrać statusu dla ${friendId}:`, err);
+                    }
+                }
+            } else if (connection) {
+                setTimeout(checkAllFriendsStatus, 50);
+            }
+        }
+
+        checkAllFriendsStatus();
+    </script>
+}
 
 <style>
 

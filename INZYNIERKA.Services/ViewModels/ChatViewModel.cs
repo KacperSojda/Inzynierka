@@ -23,5 +23,6 @@
         public string? ImageDataBase64 { get; set; }
         public string? ImageType { get; set; }
         public bool IsImage => !string.IsNullOrEmpty(ImageDataBase64);
+        public bool IsRead { get; set; }
     }
 }

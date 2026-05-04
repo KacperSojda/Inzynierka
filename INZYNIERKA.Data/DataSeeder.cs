@@ -152,9 +152,9 @@ namespace INZYNIERKA.Data
             if (!await context.Messages.AnyAsync())
             {
                 context.Messages.AddRange(
-                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Cześć?", DateTime = DateTime.UtcNow.AddHours(-2) },
-                    new Message {SenderId = users["User2"].Id, ReceiverId = users["User1"].Id, Content = "Hej, co tam?", DateTime = DateTime.UtcNow.AddHours(-1) },
-                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Nic ciekawego, jak ci mija dzień?", DateTime = DateTime.UtcNow.AddMinutes(-30) }
+                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Cześć?", DateTime = DateTime.UtcNow.AddHours(-2), IsRead = true },
+                    new Message {SenderId = users["User2"].Id, ReceiverId = users["User1"].Id, Content = "Hej, co tam?", DateTime = DateTime.UtcNow.AddHours(-1), IsRead = true },
+                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Nic ciekawego, jak ci mija dzień?", DateTime = DateTime.UtcNow.AddMinutes(-30), IsRead = true }
                 );
                 await context.SaveChangesAsync();
             }

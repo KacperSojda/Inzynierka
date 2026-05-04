@@ -15,5 +15,6 @@ namespace INZYNIERKA.Domain.Models
         public byte[]? ImageData { get; set; }
         public string? ImageType { get; set; }
         public DateTime DateTime { get; set; }
+        public bool IsRead { get; set; } = false;
     }
 }

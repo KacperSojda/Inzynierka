@@ -31,8 +31,6 @@ namespace INZYNIERKA.Hubs
                 return;
             }
 
-            string safemessage = HttpUtility.HtmlEncode(message);
-
             if (!int.TryParse(groupIDString, out int groupID)) return;
 
             await chatService.SaveGroupMessageAsync(groupID, senderId, message);

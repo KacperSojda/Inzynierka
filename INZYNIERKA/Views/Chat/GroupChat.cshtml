@@ -28,6 +28,9 @@
 <div class="input-group">
     <input type="file" id="groupImageInput" accept="image/*" style="display:none;" />
     <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('groupImageInput').click()">🖼️</button>
+
+    <button class="btn btn-outline-secondary" type="button" id="emojiTriggerBtn">😀</button>
+
     <input type="text" id="messageInput" class="form-control"
            placeholder="Write a message..."
            value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
@@ -61,8 +64,11 @@
 
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@joeattardi/emoji-button@3.1.1/dist/index.min.js"></script>
     <script>
+
+        // Konfiguracja SignalR //
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/groupchathub")
             .withAutomaticReconnect()
@@ -79,6 +85,8 @@
         start();
 
         const chatWindow = document.getElementById("chatWindow");
+
+        // Infinite scroll //
 
         let loadedMessagesCount = 30;
         let isLoadingOlder = false;
@@ -121,6 +129,8 @@
             }
         });
 
+        // Message handling //
+
         function appendGroupMessage(senderId, content, isHtml) {
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
@@ -143,6 +153,8 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
+        // SignalR Events //
+
         connection.on("ReceiveGroupMessage", function(groupId, senderId, message) {
             if (groupId != currentgroupID) return;
             appendGroupMessage(senderId, message, false);
@@ -153,6 +165,8 @@
             const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />`;
             appendGroupMessage(senderId, imgHtml, true);
         });
+
+        // Users Interactions //
 
         document.getElementById("sendButton").addEventListener("click", function () {
             const messageInput = document.getElementById("messageInput");
@@ -185,9 +199,29 @@
         connection.on("ErrorNotification", function(errorMessage) {
             alert(errorMessage);
         });
-    </script>
 
-    <script>
+        // Emoji //
+
+        const emojiTriggerBtn = document.getElementById("emojiTriggerBtn");
+        const msgInput = document.getElementById("messageInput");
+
+        const picker = new EmojiButton({
+            position: 'top-start',
+            theme: 'light',
+            autoHide: false
+        });
+
+        picker.on('emoji', emoji => {
+            msgInput.value += emoji;
+            msgInput.focus();
+        });
+
+        emojiTriggerBtn.addEventListener('click', () => {
+            picker.togglePicker(emojiTriggerBtn);
+        });
+
+        // Forms binding //
+
         function bindMessageToForm(formId, hiddenInputId) {
             document.getElementById(formId).addEventListener("submit", function () {
                 var message = document.getElementById("messageInput").value;

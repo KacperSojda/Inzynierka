@@ -8,16 +8,23 @@
 
         <div class="flex-grow-1" style="min-width: 300px;">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>@Model.FriendName</h3>
+                <h3>
+                    @Model.FriendName
+                <span id="statusIndicator" title="Offline" style="font-size: 1.2em; color: gray; transition: color 0.3s ease; margin-left: 5px;">●</span>
+                </h3>
                 <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.FriendId" class="show">
                     Show Profile
                 </a>
             </div>
 
             <div id="chatWindow" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: auto; background-color: #f9f9f9;">
+                @{
+                    var lastSentMsg = Model.Messages.LastOrDefault(m => m.SenderId == Model.CurrentUserId);
+                }
+
                 @foreach (var msg in Model.Messages)
                 {
-                    <div>
+                    <div class="message-container mb-2">
                         <strong>@msg.SenderName:</strong>
                         @if (msg.IsImage)
                         {
@@ -28,13 +35,26 @@
                         {
                             @msg.Content
                         }
+
+                        @if (msg == lastSentMsg)
+                        {
+                            <div class="read-status-container text-muted" style="text-align: right; font-size: 0.8em; margin-top: 2px;">
+                                @(msg.IsRead ? "Wyświetlono ✓✓" : "Dostarczono ✓")
+                            </div>
+                        }
                     </div>
                 }
+            </div>
+
+            <div id="typingIndicator" class="text-muted mb-2 ms-2" style="display: none; font-size: 0.85em; font-style: italic;">
+                @Model.FriendName pisze...
             </div>
 
             <div class="input-group">
                 <input type="file" id="imageInput" accept="image/*" style="display:none;" />
                 <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('imageInput').click()">🖼️</button>
+
+                <button class="btn btn-outline-secondary" type="button" id="emojiTriggerBtn">😀</button>
 
                 <input type="text" id="messageInput" class="form-control"
                        placeholder="Write a message..."
@@ -72,20 +92,59 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@joeattardi/emoji-button@3.1.1/dist/index.min.js"></script>
     <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chathub")
-            .withAutomaticReconnect()
-            .build();
 
-        async function start() {
-            await connection.start();
+        // Konfiguracja SignalR //
+
+        const connection = window.appSignalRConnection;
+
+        function setOnlineStatus(isOnline) {
+            console.log(">>> [KROPKA] Wymuszam zmianę koloru na:", isOnline ? "ZIELONY (Online)" : "SZARY (Offline)");
+            const dot = document.getElementById("statusIndicator");
+            if (isOnline) {
+                dot.style.color = "green";
+                dot.title = "Online";
+            } else {
+                dot.style.color = "gray";
+                dot.title = "Offline";
+            }
         }
 
-        start()
+        connection.on("UserIsOnline", function(userId) {
+            console.log(">>> [ZDARZENIE ODBIORU] Ktoś wszedł na serwer! ID tej osoby to:", userId);
+            console.log(">>> [PORÓWNANIE] Czy to mój znajomy? (Moje ID znajomego to: @Model.FriendId):", userId.toLowerCase() === "@Model.FriendId".toLowerCase());
+            
+            if (userId && userId.toLowerCase() === "@Model.FriendId".toLowerCase()) {
+                setOnlineStatus(true);
+            }
+        });
+
+        connection.on("UserIsOffline", function(userId) {
+            console.log(">>> [ZDARZENIE ODBIORU] Ktoś wyszedł! ID tej osoby to:", userId);
+            if (userId && userId.toLowerCase() === "@Model.FriendId".toLowerCase()) {
+                setOnlineStatus(false);
+            }
+        });
+
+        async function checkFriendStatus() {
+            if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                try {
+                    const isOnline = await connection.invoke("CheckIfUserIsOnline", "@Model.FriendId");
+                    setOnlineStatus(isOnline);
+                } catch (err) {
+                    console.error("Nie udało się pobrać statusu:", err);
+                }
+            } else if (connection) {
+                setTimeout(checkFriendStatus, 50);
+            }
+        }
+
+        checkFriendStatus();
 
         const chatWindow = document.getElementById("chatWindow");
+
+        // Infinite scroll //
 
         let loadedMessagesCount = 30;
         let isLoadingOlder = false;
@@ -114,7 +173,6 @@
                             });
 
                             chatWindow.insertAdjacentHTML('afterbegin', olderHtml);
-
                             chatWindow.scrollTop = chatWindow.scrollHeight - previousScrollHeight;
                         }
 
@@ -130,27 +188,36 @@
             }
         });
 
+        // Message handling //
+
         function appendMessage(senderId, content, isHtml) {
-            const currentFriendId = "@Model.FriendId";
             const currentUserId = "@Model.CurrentUserId";
-            
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
+            div.className = "message-container mb-2";
             const senderName = senderId === currentUserId ? "You" : "@Model.FriendName";
+
+            let innerContent = `<strong>${senderName}:</strong> `;
             
             if (isHtml) {
-            div.innerHTML = `<strong>${senderName}:</strong> ${content}`;
+                innerContent += content;
             } else {
-            const strong = document.createElement("strong");
-            strong.textContent = senderName + ": ";
-            div.appendChild(strong);
-            const text = document.createTextNode(content);
-            div.appendChild(text);
+                const tempDiv = document.createElement("div");
+                tempDiv.innerText = content;
+                innerContent += tempDiv.innerHTML;
             }
 
+            if (senderId === currentUserId) {
+                document.querySelectorAll('.read-status-container').forEach(el => el.remove());
+                innerContent += `<div class="read-status-container text-muted" style="text-align: right; font-size: 0.8em; margin-top: 2px;">Dostarczono ✓</div>`;
+            }
+
+            div.innerHTML = innerContent;
             chatWindow.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
+
+        // SignalR events //
 
         connection.on("ReceiveImage", function(senderId, receiverId, base64Data, contentType) {
             const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />`;
@@ -165,11 +232,65 @@
             alert(errorMessage);
         });
 
+        connection.on("MessagesRead", function(readerId) {
+            if (readerId === "@Model.FriendId") {
+                document.querySelectorAll('.read-status-container').forEach(el => {
+                    el.innerText = "Wyświetlono ✓✓";
+                    el.style.color = "blue";
+                });
+            }
+        });
+
+        let hideIndicatorTimeout = null;
+        const typingIndicator = document.getElementById("typingIndicator");
+
+        connection.on("ReceiveTypingIndicator", function(senderId) {
+            if (senderId === "@Model.FriendId") {
+                typingIndicator.style.display = "block";
+                
+                clearTimeout(hideIndicatorTimeout);
+                hideIndicatorTimeout = setTimeout(function() {
+                    typingIndicator.style.display = "none";
+                }, 2000);
+            }
+        });
+
+        // Users Interactions //
+
+        function notifyMessagesRead() {
+            const currentUserId = "@Model.CurrentUserId";
+            const friendId = "@Model.FriendId";
+
+            connection.invoke("MarkAsRead", currentUserId, friendId)
+                .catch(err => console.error("MarkAsRead err:", err.toString()));
+                
+            connection.invoke("ClearNotifications", currentUserId, friendId)
+                .catch(err => console.error("ClearNotifications err:", err.toString()));
+        }
+
+        document.getElementById("messageInput").addEventListener("focus", notifyMessagesRead);
+        document.getElementById("chatWindow").addEventListener("click", notifyMessagesRead);
+
+        setTimeout(notifyMessagesRead, 1500);
+
+        let lastTypingTime = 0;
+
+        document.getElementById("messageInput").addEventListener("input", function() {
+            const now = Date.now();
+            
+            if (now - lastTypingTime > 1500) {
+                connection.invoke("SendTypingIndicator", "@Model.CurrentUserId", "@Model.FriendId")
+                    .catch(err => console.error("TypingIndicator err:", err.toString()));
+                
+                lastTypingTime = now;
+            }
+        });
+
         document.getElementById("sendButton").addEventListener("click", function () {
             const messageInput = document.getElementById("messageInput");
             const message = messageInput.value;
 
-            if (!message.trim() === "");
+            if (!message.trim()) return;
 
             connection.invoke("SendMessage", "@Model.CurrentUserId", "@Model.FriendId", message)
                 .catch(err => console.error(err.toString()));
@@ -183,23 +304,38 @@
 
             const reader = new FileReader();
             reader.onloadend = function() {
-            const base64Data = reader.result.split(',')[1];
-            const contentType = file.type;
+                const base64Data = reader.result.split(',')[1];
+                const contentType = file.type;
 
             connection.invoke("SendImage", "@Model.CurrentUserId", "@Model.FriendId", base64Data, contentType)
-            .catch(err => console.error(err.toString()));
+                .catch(err => console.error(err.toString()));
             };
             reader.readAsDataURL(file);
             this.value = "";
         });
 
-        connection.onclose(async () => {
-                    console.log("Disconnected, reconnecting...");
-            await start();
-        });
-    </script>
+        // Emoji //
 
-    <script>
+        const emojiTriggerBtn = document.getElementById("emojiTriggerBtn");
+        const msgInput = document.getElementById("messageInput");
+
+        const picker = new EmojiButton({
+            position: 'top-start',
+            theme: 'light',
+            autoHide: false
+        });
+
+        picker.on('emoji', emoji => {
+            msgInput.value += emoji; 
+            msgInput.focus();
+        });
+
+        emojiTriggerBtn.addEventListener('click', () => {
+            picker.togglePicker(emojiTriggerBtn);
+        });
+
+        // Forms binding //
+
         function bindMessageToForm(formId, hiddenInputId) {
             document.getElementById(formId).addEventListener("submit", function () {
                 var message = document.getElementById("messageInput").value;
@@ -209,13 +345,6 @@
 
         bindMessageToForm("CorrectForm", "userMessageCorrect");
         bindMessageToForm("TranslateForm", "userMessageTranslate");
-    </script>
-
-    <script>
-        document.getElementById("messageInput").addEventListener("focus", function () {
-            connection.invoke("ClearNotifications", "@Model.CurrentUserId", "@Model.FriendId")
-                .catch(err => console.error(err.toString()));
-        });
     </script>
 
     <style>

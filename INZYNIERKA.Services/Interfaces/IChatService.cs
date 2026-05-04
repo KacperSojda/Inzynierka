@@ -13,5 +13,6 @@ namespace INZYNIERKA.Services.Interfaces
         Task SaveGroupMessageAsync(int groupId, string senderId, string content);
         Task<bool> SaveGroupImageMessageAsync(string senderId, int groupId, byte[] imageData, string imageType);
         Task ClearMessageNotificationAsync(string userId, string friendId);
+        Task MarkMessagesAsReadAsync(string userId, string friendId);
     }
 }

@@ -1,9 +1,10 @@
 using INZYNIERKA.Data;
-using INZYNIERKA.Hubs;
 using INZYNIERKA.Domain.Models;
-using INZYNIERKA.Services.Services;
+using INZYNIERKA.Hubs;
 using INZYNIERKA.Services.Interfaces;
+using INZYNIERKA.Services.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +56,8 @@ builder.Services.AddScoped<IGroupMemberService, GroupMemberService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 
 builder.Services.AddScoped<IChatAiService, ChatAiService>();
+
+builder.Services.AddSingleton<PresenceTracker>();
 
 var app = builder.Build();
 
