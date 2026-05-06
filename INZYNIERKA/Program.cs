@@ -4,6 +4,7 @@ using INZYNIERKA.Hubs;
 using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,6 +57,8 @@ builder.Services.AddScoped<IGroupMemberService, GroupMemberService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 
 builder.Services.AddScoped<IChatAiService, ChatAiService>();
+
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 builder.Services.AddSingleton<PresenceTracker>();
 
