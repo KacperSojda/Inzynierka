@@ -40,69 +40,109 @@ namespace INZYNIERKA.Controllers
             var userId = userManager.GetUserId(User);
             var model = await profileService.GetUserProfileAsync(userId);
 
-            if (model == null) return NotFound();
+            if (model == null) return NotFound("Cannot find the user profile.");
 
             return View(model);
         }
 
         public async Task<IActionResult> EditProfile()
         {
-            var userId = userManager.GetUserId(User);
-            var model = await profileService.GetUserProfileForEditAsync(userId);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await profileService.GetUserProfileForEditAsync(userId);
 
-            if (model == null) return NotFound();
+                if (model == null) return NotFound("Cannot find the user profile for editing.");
 
-            return View(model);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
+
         }
 
         [HttpPost]
         public async Task<IActionResult> EditProfile(UserViewModel model)
         {
+            if (model == null) return RedirectToAction("Index");
             if (!ModelState.IsValid) return View(model);
 
-            var userId = userManager.GetUserId(User);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var (isSuccess, errors) = await profileService.UpdateUserProfileAsync(userId, model);
 
-            var (isSuccess, errors) = await profileService.UpdateUserProfileAsync(userId, model);
+                if (isSuccess) return RedirectToAction("Index");
 
-            if (isSuccess) return RedirectToAction("Index");
-
-            return View(model);
+                ModelState.AddModelError("", "Cannot update the user profile.");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return View(model);
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> ShowProfile(string userId)
         {
-            var model = await profileService.GetOtherUserProfileAsync(userId);
+            if (string.IsNullOrWhiteSpace(userId)) return RedirectToAction("Index", "Home");
 
-            if (model == null) return NotFound();
+            try
+            {
+                var model = await profileService.GetOtherUserProfileAsync(userId);
 
-            return View(model);
+                if (model == null) return NotFound("Cannot find the user profile.");
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // Tag Service //
 
         public async Task<IActionResult> SelectTags()
         {
-            var userId = userManager.GetUserId(User);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await tagService.GetUserTagsForSelectionAsync(userId);
 
-            var model = await tagService.GetUserTagsForSelectionAsync(userId);
-
-            return View(model);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> SelectTags(SelectTagsViewModel model)
         {
-            var userId = userManager.GetUserId(User);
+            if (model == null) return RedirectToAction("Index");
 
-            var selectedTagIds = model.Tags
-                .Where(t => t.IsSelected)
-                .Select(t => t.TagId)
-                .ToList();
+            try
+            {
+                var userId = userManager.GetUserId(User);
 
-            await tagService.UpdateUserTagsAsync(userId, selectedTagIds);
+                var selectedTagIds = model.Tags
+                    .Where(t => t.IsSelected)
+                    .Select(t => t.TagId)
+                    .ToList();
 
-            return RedirectToAction("Index", "Profile");
+                await tagService.UpdateUserTagsAsync(userId, selectedTagIds);
+
+                return RedirectToAction("Index", "Profile");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         public IActionResult AddTag()
@@ -113,46 +153,68 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTag(TagViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (model == null || !ModelState.IsValid) return View(model);
+
+            try
             {
+                await tagService.AddNewTagAsync(model.TagName);
+                return RedirectToAction("Index", "Profile");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Cannot add the new tag.");
                 return View(model);
             }
-
-            await tagService.AddNewTagAsync(model.TagName);
-
-            return RedirectToAction("Index", "Profile");
         }
 
         public async Task<IActionResult> ShowTags()
         {
-            var tags = await tagService.GetAllTagsAsync();
-            return View(tags);
+            try
+            {
+                var tags = await tagService.GetAllTagsAsync();
+                return View(tags);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         // Notification Service //
 
         public async Task<IActionResult> Notifications()
         {
-            var userId = userManager.GetUserId(User);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await notificationService.GetNotificationsAsync(userId);
 
-            var model = await notificationService.GetNotificationsAsync(userId);
-
-            return View(model);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteNotification(int notificationId)
         {
-            var userId = userManager.GetUserId(User);
+            if (notificationId <= 0) return RedirectToAction("Notifications");
 
-            var success = await notificationService.DeleteNotificationAsync(userId, notificationId);
-
-            if (!success)
+            try
             {
-                return NotFound();
-            }
+                var userId = userManager.GetUserId(User);
+                var success = await notificationService.DeleteNotificationAsync(userId, notificationId);
 
-            return RedirectToAction("Notifications");
+                if (!success) return NotFound("Cannot delete the notification.");
+
+                return RedirectToAction("Notifications");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Notifications");
+            }
         }
 
         // Friendship Service //
@@ -160,52 +222,88 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> FriendRequestAccept(int notificationId)
         {
-            var userId = userManager.GetUserId(User);
-            var result = await friendshipService.AcceptFriendRequestAsync(userId, notificationId);
+            if (notificationId <= 0) return RedirectToAction("Notifications");
 
-            if (!result)
+            try
             {
-                return NotFound();
-            }
+                var userId = userManager.GetUserId(User);
+                var result = await friendshipService.AcceptFriendRequestAsync(userId, notificationId);
 
-            return RedirectToAction("Notifications");
+                if (!result) return NotFound("Cannot accept the friend request.");
+
+                return RedirectToAction("Notifications");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Notifications");
+            }
         }
 
         public async Task<IActionResult> FriendList()
         {
-            var userId = userManager.GetUserId(User);
-            var model = await friendshipService.GetFriendListAsync(userId);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await friendshipService.GetFriendListAsync(userId);
 
-            return View("FriendList", model);
+                return View("FriendList", model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteFriend(string friendId)
         {
-            var userId = userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(friendId)) return RedirectToAction("FriendList");
 
-            await friendshipService.DeleteFriendAsync(userId, friendId);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                await friendshipService.DeleteFriendAsync(userId, friendId);
 
-            return RedirectToAction("FriendList");
+                return RedirectToAction("FriendList");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("FriendList");
+            }
         }
 
         public async Task<IActionResult> RequestList()
         {
-            var userId = userManager.GetUserId(User);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await friendshipService.GetRequestListAsync(userId);
 
-            var model = await friendshipService.GetRequestListAsync(userId);
+                return View("RequestList", model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index");
+            }
 
-            return View("RequestList", model);
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteRequest(string friendId)
         {
-            var userId = userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(friendId)) return RedirectToAction("RequestList");
+            try
+            {
+                var userId = userManager.GetUserId(User);
 
-            await friendshipService.DeleteRequestAsync(userId, friendId);
+                await friendshipService.DeleteRequestAsync(userId, friendId);
 
-            return RedirectToAction("RequestList");
+                return RedirectToAction("RequestList");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("RequestList");
+            }
         }
 
         // File Service // 
@@ -218,20 +316,35 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> EditAvatar(IFormFile AvatarFile)
         {
-            var user = await userManager.GetUserAsync(User);
-
-            var uploadResult = await fileService.UploadAvatarAsync(AvatarFile);
-
-            if (!uploadResult.IsSuccess)
+            if (AvatarFile == null || AvatarFile.Length == 0)
             {
-                ModelState.AddModelError("", uploadResult.Result);
+                ModelState.AddModelError("", "Choose a file before saving.");
                 return View();
             }
 
-            user.Avatar = uploadResult.Result;
-            await userManager.UpdateAsync(user);
+            try
+            {
+                var user = await userManager.GetUserAsync(User);
+                if (user == null) return NotFound("User not found.");
 
-            return RedirectToAction("Index");
+                var uploadResult = await fileService.UploadAvatarAsync(AvatarFile);
+
+                if (!uploadResult.IsSuccess)
+                {
+                    ModelState.AddModelError("", uploadResult.Result);
+                    return View();
+                }
+
+                user.Avatar = uploadResult.Result;
+                await userManager.UpdateAsync(user);
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Cannot upload the avatar.");
+                return View();
+            }
         }
     }
 }

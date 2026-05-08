@@ -14,31 +14,40 @@ namespace INZYNIERKA.Services.Services
             this.configuration = configuration;
         }
 
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public async Task<bool> SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            var host = configuration["EmailConfiguration:SmtpServer"];
-            var port = int.Parse(configuration["EmailConfiguration:SmtpPort"]);
-            var mail = configuration["EmailConfiguration:SmtpUsername"];
-            var pw = configuration["EmailConfiguration:SmtpPassword"];
-
-            var client = new SmtpClient("smtp.gmail.com", 587)
+            try
             {
-                EnableSsl = true,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(mail, pw)
-            };
+                var host = configuration["EmailConfiguration:SmtpServer"];
+                var port = int.Parse(configuration["EmailConfiguration:SmtpPort"]);
+                var mail = configuration["EmailConfiguration:SmtpUsername"];
+                var pw = configuration["EmailConfiguration:SmtpPassword"];
 
-            var mailMessage = new MailMessage(
-                from: mail,
-                to: email,
-                subject,
-                htmlMessage
-            )
-            { 
-                IsBodyHtml = true 
-            };
+                using var client = new SmtpClient(host, port)
+                {
+                    EnableSsl = true,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(mail, pw)
+                };
 
-            await client.SendMailAsync(mailMessage);
+                var mailMessage = new MailMessage(
+                    from: mail,
+                    to: email,
+                    subject,
+                    htmlMessage
+                )
+                {
+                    IsBodyHtml = true
+                };
+
+                await client.SendMailAsync(mailMessage);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
         }
     }
 }

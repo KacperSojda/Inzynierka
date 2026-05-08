@@ -4,8 +4,6 @@ using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
-using System.Web;
 
 namespace INZYNIERKA.Services.Services
 {
@@ -95,7 +93,8 @@ namespace INZYNIERKA.Services.Services
             if (group == null) return null;
 
             var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
-            if (!isMember) throw new UnauthorizedAccessException("Nie należysz do tej grupy.");
+
+            if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
             var messages = await context.GroupMessages
                 .Include(m => m.Sender)
@@ -181,31 +180,24 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<bool> SaveImageMessageAsync(string senderId, string receiverId, byte[] imageData, string imageType)
         {
-            try
-            {
-                if (imageData == null || imageData.Length == 0)
-                    return false;
-
-                var message = new Message
-                {
-                    SenderId = senderId,
-                    ReceiverId = receiverId,
-                    Content = null,
-                    ImageData = imageData,
-                    ImageType = imageType,
-                    DateTime = DateTime.UtcNow,
-
-                };
-
-                context.Messages.Add(message);
-                await context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
+            if (imageData == null || imageData.Length == 0)
                 return false;
-            }
+
+            var message = new Message
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Content = null,
+                ImageData = imageData,
+                ImageType = imageType,
+                DateTime = DateTime.UtcNow,
+
+            };
+
+            context.Messages.Add(message);
+            await context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task SaveGroupMessageAsync(int groupId, string senderId, string content)
@@ -256,38 +248,31 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<bool> SaveGroupImageMessageAsync(string senderId, int groupId, byte[] imageData, string imageType)
         {
-            try
-            {
-                if (imageData == null || imageData.Length == 0)
-                    return false;
-
-                var message = new GroupMessage
-                {
-
-                    GroupId = groupId,
-                    SenderId = senderId,
-                    Content = null,
-                    ImageData = imageData,
-                    ImageType = imageType,
-                    Timestamp = DateTime.UtcNow,
-
-                };
-
-                context.GroupMessages.Add(message);
-                await context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
+            if (imageData == null || imageData.Length == 0)
                 return false;
-            }
+
+            var message = new GroupMessage
+            {
+
+                GroupId = groupId,
+                SenderId = senderId,
+                Content = null,
+                ImageData = imageData,
+                ImageType = imageType,
+                Timestamp = DateTime.UtcNow,
+
+            };
+
+            context.GroupMessages.Add(message);
+            await context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task ClearMessageNotificationAsync(string userId, string friendId)
         {
             var notification = await context.Notifications
-                .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId);
+                .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId && n.Type == NotificationType.Message);
 
             if (notification != null)
             {

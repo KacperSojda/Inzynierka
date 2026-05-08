@@ -20,10 +20,7 @@ namespace INZYNIERKA.Services.Services
             var notification = await context.Notifications
                 .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == currentUserId && n.Type == NotificationType.FriendRequest);
 
-            if (notification == null)
-            {
-                return false;
-            }
+            if (notification == null) return false;
 
             var existingRecord = await context.UserFriends.FirstOrDefaultAsync(f =>
                 (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
@@ -101,34 +98,34 @@ namespace INZYNIERKA.Services.Services
 
         public async Task SendFriendRequestAsync(string senderId, string receiverId)
         {
-            var existingReverseRequest = await context.UserFriends.FirstOrDefaultAsync(f =>
-                f.UserId == receiverId &&
-                f.FriendId == senderId &&
-                f.Status == FriendshipStatus.Pending);
+            if (senderId == receiverId) return;
 
-            if (existingReverseRequest == null)
+            var existingFriendship = await context.UserFriends.FirstOrDefaultAsync(f =>
+                (f.UserId == receiverId && f.FriendId == senderId) ||
+                (f.UserId == senderId && f.FriendId == receiverId));
+
+            if (existingFriendship != null) return;
+
+            var notification = new Notification
             {
-                var notification = new Notification
-                {
-                    SenderId = senderId,
-                    ReceiverId = receiverId,
-                    Type = NotificationType.FriendRequest,
-                    CreationDate = DateTime.UtcNow
-                };
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Type = NotificationType.FriendRequest,
+                CreationDate = DateTime.UtcNow
+            };
 
-                context.Notifications.Add(notification);
+            context.Notifications.Add(notification);
 
-                var friendRequestSender = new UserFriend
-                {
-                    UserId = senderId,
-                    FriendId = receiverId,
-                    Status = FriendshipStatus.Pending
-                };
+            var friendRequestSender = new UserFriend
+            {
+                UserId = senderId,
+                FriendId = receiverId,
+                Status = FriendshipStatus.Pending
+            };
 
-                context.UserFriends.Add(friendRequestSender);
+            context.UserFriends.Add(friendRequestSender);
 
-                await context.SaveChangesAsync();
-            }
+            await context.SaveChangesAsync();
         }
     }
 }

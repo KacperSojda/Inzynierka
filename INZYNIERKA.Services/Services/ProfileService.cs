@@ -20,13 +20,14 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<UserViewModel> GetUserProfileAsync(string userId)
         {
-            var user = await context.Users.FindAsync(userId);
-            if (user == null) return null;
+            if (string.IsNullOrWhiteSpace(userId)) return null;
 
-            var userTags = await context.UserTags
-                .Where(ut => ut.UserId == userId)
-                .Include(ut => ut.Tag)
-                .ToListAsync();
+            var user = await context.Users
+                .Include(u => u.UserTags)
+                    .ThenInclude(ut => ut.Tag)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return null;
 
             return new UserViewModel
             {
@@ -34,12 +35,14 @@ namespace INZYNIERKA.Services.Services
                 PublicDescription = user.PublicDescription,
                 UserName = user.UserName,
                 Avatar = user.Avatar,
-                Tags = userTags.Select(ut => ut.Tag.Name).ToList(),
+                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList()
             };
         }
 
         public async Task<UserViewModel> GetUserProfileForEditAsync(string userId)
         {
+            if (string.IsNullOrWhiteSpace(userId)) return null;
+
             var user = await context.Users.FindAsync(userId);
             if (user == null) return null;
 
@@ -48,19 +51,20 @@ namespace INZYNIERKA.Services.Services
                 PrivateDescription = user.PrivateDescription,
                 PublicDescription = user.PublicDescription,
                 UserName = user.UserName,
-                Avatar = user.Avatar,
+                Avatar = user.Avatar
             };
         }
 
         public async Task<UserViewModel> GetOtherUserProfileAsync(string targetUserId)
         {
-            var user = await context.Users.FindAsync(targetUserId);
-            if (user == null) return null;
+            if (string.IsNullOrWhiteSpace(targetUserId)) return null;
 
-            var userTags = await context.UserTags
-                .Where(t => t.UserId == targetUserId)
-                .Select(t => t.Tag.Name)
-                .ToListAsync();
+            var user = await context.Users
+                .Include(u => u.UserTags)
+                    .ThenInclude(ut => ut.Tag)
+                .FirstOrDefaultAsync(u => u.Id == targetUserId);
+
+            if (user == null) return null;
 
             return new UserViewModel
             {
@@ -69,17 +73,20 @@ namespace INZYNIERKA.Services.Services
                 UserName = user.UserName,
                 PublicDescription = user.PublicDescription,
                 PrivateDescription = "",
-                Tags = userTags
+                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList()
             };
         }
 
         public async Task<(bool IsSuccess, IEnumerable<string> Errors)> UpdateUserProfileAsync(string userId, UserViewModel model)
         {
+            if (string.IsNullOrWhiteSpace(userId)) return (false, new[] {"Authorization error."});
+            if (model == null) return (false, new[] {"Empty data sended"});
+
             var user = await userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
-                return (false, new[] { "Nie znaleziono użytkownika." });
+                return (false, new[] { "User not found" });
             }
 
             if (model.Avatar != null)

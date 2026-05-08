@@ -41,28 +41,37 @@ namespace INZYNIERKA.Services.Services
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
 
-            userGroup.Type = MemberType.Administrator;
-            await context.SaveChangesAsync();
+            if (userGroup.Type == MemberType.Banned) return false;
+
+            if (userGroup.Type != MemberType.Administrator)
+            {
+                userGroup.Type = MemberType.Administrator;
+                await context.SaveChangesAsync();
+            }
+
             return true;
         }
 
         public async Task<bool> DemoteAdminAsync(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
-            if (targetUserId == currentUserId) throw new UnauthorizedAccessException("Nie możesz zdegradować sam siebie.");
+            if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot demote yourself.");
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
 
-            userGroup.Type = MemberType.Member;
-            await context.SaveChangesAsync();
+            if (userGroup.Type != MemberType.Member)
+            {
+                userGroup.Type = MemberType.Member;
+                await context.SaveChangesAsync();
+            }
             return true;
         }
 
         public async Task<bool> KickUserAsync(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
-            if (targetUserId == currentUserId) throw new UnauthorizedAccessException("Nie możesz wyrzucić sam siebie.");
+            if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot kick yourself.");
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
@@ -75,12 +84,16 @@ namespace INZYNIERKA.Services.Services
         public async Task<bool> BanUserAsync(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
+            if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot ban yourself.");
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
 
-            userGroup.Type = MemberType.Banned;
-            await context.SaveChangesAsync();
+            if (userGroup.Type != MemberType.Banned)
+            {
+                userGroup.Type = MemberType.Banned;
+                await context.SaveChangesAsync();
+            }
             return true;
         }
 
@@ -91,7 +104,7 @@ namespace INZYNIERKA.Services.Services
 
             if (!isAdmin)
             {
-                throw new UnauthorizedAccessException("Brak uprawnień administratora grupy.");
+                throw new UnauthorizedAccessException("You do not have administrator privileges for this group.");
             }
         }
     }

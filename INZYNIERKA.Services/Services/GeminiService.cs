@@ -20,6 +20,11 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<string> AskAsync(string question, string prompt)
         {
+            if (string.IsNullOrWhiteSpace(prompt) && string.IsNullOrWhiteSpace(question))
+            {
+                return string.Empty;
+            }
+
             string endpoint = configuration["EndPoints:Gemini"].Replace("{apiKey}", apiKey) ?? throw new Exception("No endpoint configured for Gemini.");
 
             var fullPrompt = $"{prompt}\n{question}";
@@ -63,13 +68,11 @@ namespace INZYNIERKA.Services.Services
                         return parts[0].GetProperty("text").GetString()?.Trim();
                     }
                 }
-                Console.WriteLine("[Gemini Warning] Pusta odpowiedź.");
                 return null;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Gemini Exception]: {ex.Message}");
-                return null;
+            catch (Exception ex) 
+            { 
+                return null; 
             }
         }
     }

@@ -6,19 +6,18 @@ namespace INZYNIERKA.Controllers
     {
         public IActionResult Index()
         {
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            try
             {
-                ViewBag.UserName = User.Identity.Name;
+                if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    ViewBag.UserName = User.Identity.Name;
+                }
+                return View();
             }
-            return View();
+            catch (Exception ex)
+            {
+                return RedirectToAction("Error");
+            }
         }
-        /*
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
-
-            return View(new ErrorViewModel {RequestId = requestId});
-        }*/
     }
 }

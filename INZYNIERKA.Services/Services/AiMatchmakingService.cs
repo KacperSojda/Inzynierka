@@ -69,7 +69,7 @@ namespace INZYNIERKA.Services.Services
 
                 var geminiAns = await geminiService.AskAsync(string.Empty, finalPrompt);
 
-                if (!string.IsNullOrEmpty(geminiAns) && geminiAns.Trim().ToUpper() == "YES")
+                if (!string.IsNullOrWhiteSpace(geminiAns) && geminiAns.Trim().ToUpper().Contains("YES"))
                 {
                     var model = new UserViewModel
                     {
@@ -82,8 +82,6 @@ namespace INZYNIERKA.Services.Services
 
                     return (model, currentIndex);
                 }
-
-                await Task.Delay(15);
             }
 
             return (null, currentIndex);

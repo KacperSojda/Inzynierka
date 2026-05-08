@@ -17,44 +17,40 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<NotificationListViewModel> GetNotificationsAsync(string userId)
         {
-            var user = await context.Users
-                .Include(u => u.ReceivedNotifications)
-                    .ThenInclude(n => n.Sender)
-                .Include(u => u.ReceivedNotifications)
-                    .ThenInclude(n => n.Group)
-                .FirstOrDefaultAsync(u => u.Id == userId);
-
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return new NotificationListViewModel { Notifications = new List<NotificationViewModel>() };
             }
 
+            var notifications = await context.Notifications
+                .Include(n => n.Sender)
+                .Include(n => n.Group)
+                .Where(n => n.ReceiverId == userId)
+                .OrderByDescending(n => n.CreationDate)
+                .ToListAsync();
+
             return new NotificationListViewModel
             {
-                Notifications = user.ReceivedNotifications.Select(n => new NotificationViewModel
+                Notifications = notifications.Select(n => new NotificationViewModel
                 {
                     Id = n.Id,
                     SenderUserName = n.Sender != null ? n.Sender.UserName : "System",
-                    GroupName = n.Group != null ? n.Group.Name : "Error",
+                    GroupName = n.Group != null ? n.Group.Name : "None",
                     NotificationType = n.Type,
                     CreationDate = n.CreationDate
-                }).OrderByDescending(n => n.CreationDate).ToList()
+                }).ToList()
             };
         }
 
         public async Task<bool> DeleteNotificationAsync(string currentUserId, int notificationId)
         {
+            if (string.IsNullOrWhiteSpace(currentUserId) || notificationId <= 0) return false;
+
             var notification = await context.Notifications
-                .Include(n => n.Sender)
-                .Include(n => n.Receiver)
                 .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == currentUserId);
 
-            if (notification == null)
-            {
-                return false;
-            }
+            if (notification == null) return false;
 
-            // Jeśli to było zaproszenie do znajomych, usuwamy relację Pending
             if (notification.Type == NotificationType.FriendRequest)
             {
                 var record = await context.UserFriends.FirstOrDefaultAsync(f =>

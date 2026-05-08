@@ -1,7 +1,9 @@
 ﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace INZYNIERKA.Controllers
 {
@@ -9,11 +11,15 @@ namespace INZYNIERKA.Controllers
     {
         private readonly SignInManager<User> signInManager;
         private readonly UserManager<User> userManager;
+        private readonly IEmailService emailService;
+        private readonly IMemoryCache cache;
 
-        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager)
+        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, IEmailService emailService, IMemoryCache cache)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
+            this.emailService = emailService;
+            this.cache = cache;
         }
 
         [HttpGet]
@@ -30,21 +36,25 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
-            {
+            if (!ModelState.IsValid) return View(model);
+
+            try {
                 var result = await signInManager.PasswordSignInAsync(model.Name, model.Password, model.RememberMe, false);
 
                 if (result.Succeeded)
                 {
                     return RedirectToAction("Index", "Home");
                 }
-                else
-                {
-                    ModelState.AddModelError("", "Name or password incorrect");
-                    return View(model);
-                }
+
+                ModelState.AddModelError("", "Name or password incorrect");
+                return View(model);
             }
-            return View(model);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Serwer Error");
+                return View(model);
+            }
+
         }
 
         [HttpGet]
@@ -61,7 +71,9 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+
+            try
             {
                 User user = new User
                 {
@@ -77,17 +89,20 @@ namespace INZYNIERKA.Controllers
                 {
                     return RedirectToAction("Login", "Account");
                 }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
 
-                    return View(model);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
                 }
+
+                return View(model);
+
             }
-            return View(model);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Serwer Error");
+                return View(model);
+            }
         }
         public IActionResult VerifyEmail()
         {
@@ -97,75 +112,117 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> VerifyEmail(VerifyEmailViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+
+            try
             {
                 var user = await userManager.FindByEmailAsync(model.Email);
 
                 if (user == null)
                 {
-                        ModelState.AddModelError("", "Wrong Email");
-                        return View(model);
+                    ModelState.AddModelError("", "Wrong Email");
                 }
                 else
                 {
-                    return RedirectToAction("ChangePassword", "Account", new {username = model.Email});
+                    var otp = new Random().Next(100000, 999999).ToString();
+
+                    cache.Set($"ResetOTP_{model.Email}", otp, TimeSpan.FromMinutes(10));
+
+                    bool isSent = await emailService.SendEmailAsync(
+                        model.Email,
+                        "Password Reset",
+                        $"Your OTP code is: <strong>{otp}</strong>. The code is valid for 10 minutes."
+                    );
+
+                    if (!isSent)
+                    {
+                        ModelState.AddModelError("", "Failed to send email. Please try again later.");
+                        return View(model);
+                    }
                 }
 
-                
+                return RedirectToAction("ChangePassword", "Account", new { email = model.Email });
+
             }
-            return View();
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Serwer Error");
+                return View(model);
+            }
         }
 
-        public IActionResult ChangePassword(string username)
+        public IActionResult ChangePassword(string email)
         {
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("VerifyEmail", "Account");
             }
-            return View(new ChangePasswordViewModel {Email = username});
+            return View(new ChangePasswordViewModel {Email = email});
         }
 
         [HttpPost]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                var user = await userManager.FindByEmailAsync(model.Email);
-                if (user != null)
-                {
-                    var result = await userManager.RemovePasswordAsync(user);
-                    if (result.Succeeded)
-                    {
-                        result = await userManager.AddPasswordAsync(user, model.NewPassword);
-                        return RedirectToAction("Login", "Account");
-                    }
-                    else
-                    {
-                        foreach (var error in result.Errors)
-                        {
-                            ModelState.AddModelError("", error.Description);
-                        }
+            if (!ModelState.IsValid) return View(model);
 
-                        return View(model);
-                    }
+            try
+            {
+
+                if (!cache.TryGetValue($"ResetOTP_{model.Email}", out string savedOtp))
+                {
+                    ModelState.AddModelError("", "OTP code expired or not found");
+                    return View(model);
                 }
-                else
+
+                if (savedOtp != model.OtpCode)
+                {
+                    ModelState.AddModelError("", "Invalid OTP code");
+                    return View(model);
+                }
+
+                var user = await userManager.FindByEmailAsync(model.Email);
+                if (user == null)
                 {
                     ModelState.AddModelError("", "Email not Found");
                     return View(model);
                 }
 
-            }
-            else
-            {
-                ModelState.AddModelError("", "Error");
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await userManager.ResetPasswordAsync(user, token, model.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    cache.Remove($"ResetOTP_{model.Email}");
+
+                    return RedirectToAction("Login", "Account");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
                 return View(model);
             }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Serwer Error");
+                return View(model);
+            }
+
         }
 
         public async Task<IActionResult> Logout()
         {
-            await signInManager.SignOutAsync();
+            try
+            {
+                await signInManager.SignOutAsync();
+            }
+            catch (Exception ex)
+            {
+                
+            }
+
             return RedirectToAction("Index", "Home");
         }
     }

@@ -30,6 +30,10 @@ namespace INZYNIERKA.Services.Services{
 
         public async Task<List<string>> GetMatchingUserIdsByTagsAsync(string currentUserId, List<int> selectedTagIds)
         {
+            if (string.IsNullOrWhiteSpace(currentUserId)) return new List<string>();
+
+            if (selectedTagIds == null || !selectedTagIds.Any()) return new List<string>();
+
             var connectedUserIds = await context.UserFriends
                 .Where(f => f.UserId == currentUserId || f.FriendId == currentUserId)
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
@@ -49,6 +53,8 @@ namespace INZYNIERKA.Services.Services{
 
         public async Task<UserViewModel> GetUserForBrowserAsync(string targetUserId)
         {
+            if (string.IsNullOrWhiteSpace(targetUserId)) return null;
+
             var user = await context.Users
                 .Include(u => u.UserTags)
                     .ThenInclude(ut => ut.Tag)

@@ -130,7 +130,8 @@ namespace INZYNIERKA.Services.Services
             }
 
             string censorPrompt = configuration["Prompts:Censor"];
-            return await geminiService.AskAsync(message, censorPrompt);
+            var censoredMessage = await geminiService.AskAsync(message, censorPrompt);
+            return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
         }
     }
 }

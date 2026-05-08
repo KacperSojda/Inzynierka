@@ -31,71 +31,97 @@ namespace INZYNIERKA.Controllers
 
         public async Task<IActionResult> SearchUsersByTags()
         {
-            var viewModel = await matchmakingService.GetTagsForSearchAsync();
+            try
+            {
+                var viewModel = await matchmakingService.GetTagsForSearchAsync();
 
-            return View(viewModel);
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("SearchUsersByTags");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> SearchUsersByTags(SearchByTagsViewModel model)
         {
-            var userId = userManager.GetUserId(User);
+            try
+            {
+                var userId = userManager.GetUserId(User);
 
-            var selectedTagIds = model.AvailableTags
-                .Where(t => t.IsSelected)
-                .Select(t => t.TagId)
-                .ToList();
+                var selectedTagIds = model.AvailableTags
+                    .Where(t => t.IsSelected)
+                    .Select(t => t.TagId)
+                    .ToList();
 
-            if (selectedTagIds.Count == 0) return View("NoSelectedTags");
+                if (selectedTagIds.Count == 0) return View("NoSelectedTags");
 
-            var matchedUserIds = await matchmakingService.GetMatchingUserIdsByTagsAsync(userId, selectedTagIds);
+                var matchedUserIds = await matchmakingService.GetMatchingUserIdsByTagsAsync(userId, selectedTagIds);
 
-            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchedUserIds));
-            HttpContext.Session.SetInt32("CurrentIndex", matchedUserIds.Any() ? 0 : -1);
+                HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchedUserIds));
+                HttpContext.Session.SetInt32("CurrentIndex", matchedUserIds.Any() ? 0 : -1);
 
-            return RedirectToAction("ShowUser", "Browser");
+                return RedirectToAction("ShowUser", "Browser");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("SearchUsersByTags");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> ShowUser()
         {
-            var usersJson = HttpContext.Session.GetString("MatchingUsers");
+            try
+            {
+                var usersJson = HttpContext.Session.GetString("MatchingUsers");
+                if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
 
-            if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
+                var usersIds = JsonConvert.DeserializeObject<List<string>>(usersJson);
+                if(usersIds == null || usersIds.Count == 0) return View("NoSearchResults");
 
-            var usersIds = JsonConvert.DeserializeObject<List<string>>(usersJson);
+                int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
 
-            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+                if (currentIndex == -1 || currentIndex >= usersIds.Count) return View("NoSearchResults");
 
-            if (currentIndex == -1 || currentIndex >= usersIds.Count) return View("NoSearchResults");
+                var targetUserId = usersIds[currentIndex];
+                var model = await matchmakingService.GetUserForBrowserAsync(targetUserId);
 
-            var targetUserId = usersIds[currentIndex];
+                if (model == null) return View("NoSearchResults");
 
-            var model = await matchmakingService.GetUserForBrowserAsync(targetUserId);
-
-            if (model == null) return View("NoSearchResults");
-
-            return View("SearchResults", model);
+                return View("SearchResults", model);
+            }
+            catch (Exception ex)
+            {
+                return View("NoSearchResults");
+            }
         }
 
         [HttpPost]
         public IActionResult NextUser()
         {
-            var usersJson = HttpContext.Session.GetString("MatchingUsers");
+            try
+            {
+                var usersJson = HttpContext.Session.GetString("MatchingUsers");
+                if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
 
-            if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
+                var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
+                if (users == null || users.Count == 0) return RedirectToAction("SearchUsersByTags");
 
-            var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
+                int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+                currentIndex++;
 
-            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+                if (currentIndex >= users.Count) currentIndex = -1;
 
-            currentIndex++;
+                HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
 
-            if (currentIndex >= users.Count) currentIndex = -1;
-
-            HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
-
-            return RedirectToAction("ShowUser");
+                return RedirectToAction("ShowUser");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("SearchUsersByTags");
+            }
         }
 
         // Friendship Service //
@@ -103,9 +129,14 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> SendFriendRequest(string userId)
         {
-            var currentUserId = userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(userId)) return NextUser();
 
-            await friendshipService.SendFriendRequestAsync(currentUserId, userId);
+            try
+            {
+                var currentUserId = userManager.GetUserId(User);
+                await friendshipService.SendFriendRequestAsync(currentUserId, userId);
+            }
+            catch (Exception ex){}
 
             return NextUser();
         }
@@ -115,40 +146,54 @@ namespace INZYNIERKA.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchWithAI()
         {
-            var userId = userManager.GetUserId(User);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var matchingUsers = await aiMatchmakingService.GetPotentialMatchesForAiAsync(userId);
 
-            var matchingUsers = await aiMatchmakingService.GetPotentialMatchesForAiAsync(userId);
+                HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUsers));
+                HttpContext.Session.SetInt32("CurrentIndex", matchingUsers.Any() ? 0 : -1);
 
-            HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUsers));
-            HttpContext.Session.SetInt32("CurrentIndex", matchingUsers.Any() ? 0 : -1);
-
-            return RedirectToAction("ShowUserWithAI");
+                return RedirectToAction("ShowUserWithAI");
+            }
+            catch (Exception ex)
+            {
+                return View("NoSearchResults");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> ShowUserWithAI()
         {
-            var usersJson = HttpContext.Session.GetString("MatchingUsers");
-
-            if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
-
-            var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
-            int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
-
-            if (currentIndex == -1 || currentIndex >= users.Count) return View("NoSearchResults");
-
-            var currentUserId = userManager.GetUserId(User);
-
-            var (matchedUser, newIndex) = await aiMatchmakingService.FindNextAiMatchAsync(currentUserId, users, currentIndex);
-
-            if (matchedUser != null)
+            try
             {
-                HttpContext.Session.SetInt32("CurrentIndex", newIndex);
-                return View("SearchAiResults", matchedUser);
-            }
+                var usersJson = HttpContext.Session.GetString("MatchingUsers");
+                if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
 
-            HttpContext.Session.SetInt32("CurrentIndex", -1);
-            return View("NoSearchResults");
+                var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
+                if (users == null || users.Count == 0) return View("NoSearchResults");  
+
+                int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+
+                if (currentIndex == -1 || currentIndex >= users.Count) return View("NoSearchResults");
+
+                var currentUserId = userManager.GetUserId(User);
+
+                var (matchedUser, newIndex) = await aiMatchmakingService.FindNextAiMatchAsync(currentUserId, users, currentIndex);
+
+                if (matchedUser != null)
+                {
+                    HttpContext.Session.SetInt32("CurrentIndex", newIndex);
+                    return View("SearchAiResults", matchedUser);
+                }
+
+                HttpContext.Session.SetInt32("CurrentIndex", -1);
+                return View("NoSearchResults");
+            }
+            catch (Exception ex)
+            {
+                return View("NoSearchResults");
+            }
         }
     }
 }

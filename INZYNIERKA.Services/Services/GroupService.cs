@@ -53,6 +53,8 @@ namespace INZYNIERKA.Services.Services
 
         public async Task CreateGroupAsync(string name, string creatorUserId)
         {
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Group name cannot be empty.");
+
             var group = new Group
             {
                 Name = name,
@@ -66,8 +68,9 @@ namespace INZYNIERKA.Services.Services
 
         public async Task JoinGroupAsync(int groupId, string userId)
         {
-            var alreadyMember = await context.UserGroups.AnyAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
-            if (!alreadyMember)
+            var alreadyMember = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
+
+            if (alreadyMember == null)
             {
                 context.UserGroups.Add(new UserGroup { UserId = userId, ChatGroupId = groupId, Type = MemberType.Member });
                 await context.SaveChangesAsync();
@@ -77,11 +80,19 @@ namespace INZYNIERKA.Services.Services
         public async Task LeaveGroupAsync(int groupId, string userId)
         {
             var membership = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
-            if (membership != null)
+            if (membership == null) return;
+
+            if (membership.Type == MemberType.Administrator)
             {
-                context.UserGroups.Remove(membership);
-                await context.SaveChangesAsync();
+                var adminCount = await context.UserGroups.CountAsync(ug => ug.ChatGroupId == groupId && ug.Type == MemberType.Administrator);
+                if (adminCount <= 1)
+                {
+                    throw new InvalidOperationException("You cannot leave the group as the last administrator. Please transfer admin rights or delete the group.");
+                }
             }
+
+            context.UserGroups.Remove(membership);
+            await context.SaveChangesAsync();
         }
 
         public async Task<Group> GetGroupForEditAsync(int groupId, string currentUserId)
@@ -92,6 +103,7 @@ namespace INZYNIERKA.Services.Services
 
         public async Task UpdateGroupAsync(Group model, string currentUserId)
         {
+            if (model == null) return;
             if (!await IsAdminAsync(model.Id, currentUserId)) throw new UnauthorizedAccessException();
 
             var group = await context.Groups.FindAsync(model.Id);
@@ -108,10 +120,9 @@ namespace INZYNIERKA.Services.Services
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
             var group = await context.Groups.Include(g => g.Members).Include(g => g.Messages).FirstOrDefaultAsync(g => g.Id == groupId);
+
             if (group != null)
             {
-                context.UserGroups.RemoveRange(group.Members);
-                if (group.Messages != null) context.GroupMessages.RemoveRange(group.Messages);
                 context.Groups.Remove(group);
                 await context.SaveChangesAsync();
             }
