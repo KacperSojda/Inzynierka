@@ -11,5 +11,6 @@
         Task<string> TranslateGroupMessageAsync(int groupId, string userMessage);
 
         Task<string> CensorMessageAsync(string message);
+        Task<string> SummarizePrivateChatAsync(string currentUserId, string friendId, int daysBack);
     }
 }

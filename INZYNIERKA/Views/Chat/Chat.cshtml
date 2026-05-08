@@ -65,8 +65,9 @@
 
         @if (!string.IsNullOrEmpty(Model.GeminiAnswer))
         {
-            <div class="mt-3 p-3 bg-light rounded border">
-                <strong>Gemini:</strong> @Model.GeminiAnswer
+            <div class="mt-3 p-3 bg-light rounded border" style="white-space: pre-wrap;">
+                <strong>Gemini:</strong>
+                @Model.GeminiAnswer
             </div>
         }
 
@@ -86,6 +87,11 @@
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
                 <input type="hidden" id="userMessageTranslate" name="UserMessage" value="" />
                 <button type="submit" class="mybtn">Translate</button>
+            </form>
+
+            <form method="post" asp-action="SummarizeChat">
+                <input type="hidden" name="FriendId" value="@Model.FriendId" />
+                <button type="submit" class="mybtn">Summarize last 7 days</button>
             </form>
         </div>
     

@@ -117,6 +117,7 @@ namespace INZYNIERKA.Controllers
             catch (Exception ex)
             {
                 TempData["UserMessage"] = model.UserMessage;
+                TempData["GeminiAnswer"] = "Error occurs during helping with response.";
             }
 
             return RedirectToAction("Chat", new { friendId = model.FriendId });
@@ -171,6 +172,7 @@ namespace INZYNIERKA.Controllers
             catch (Exception ex)
             {
                 TempData["UserMessage"] = model.UserMessage;
+                TempData["GeminiAnswer"] = "Error occurs during helping with response.";
             }
 
             return RedirectToAction("GroupChat", new {groupId = model.groupID});
@@ -208,6 +210,25 @@ namespace INZYNIERKA.Controllers
             }
 
             return RedirectToAction("GroupChat", new { groupId = model.groupID });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SummarizeChat(ChatViewModel model, int days = 7)
+        {
+            if (model == null || string.IsNullOrEmpty(model.FriendId)) return RedirectToAction("Index", "Home");
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+
+                TempData["GeminiAnswer"] = await chatAiService.SummarizePrivateChatAsync(userId, model.FriendId, days);
+            }
+            catch (Exception ex)
+            {
+                TempData["GeminiAnswer"] = "Error occurs during summarizing chat.";
+            }
+
+            return RedirectToAction("Chat", new { friendId = model.FriendId });
         }
     }
 }

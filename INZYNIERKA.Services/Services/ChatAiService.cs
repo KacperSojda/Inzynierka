@@ -133,5 +133,43 @@ namespace INZYNIERKA.Services.Services
             var censoredMessage = await geminiService.AskAsync(message, censorPrompt);
             return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
         }
+
+        public async Task<string> SummarizePrivateChatAsync(string currentUserId, string friendId, int daysBack)
+        {
+            var sinceDate = DateTime.UtcNow.AddDays(-daysBack);
+
+            var messages = await context.Messages.Include(m => m.Sender)
+                .Where(m => ((m.SenderId == currentUserId && m.ReceiverId == friendId) ||
+                             (m.SenderId == friendId && m.ReceiverId == currentUserId))
+                             && m.DateTime >= sinceDate)
+                .OrderByDescending(m => m.DateTime)
+                .Take(30)
+                .ToListAsync();
+
+            if (!messages.Any())
+            {
+                return "No messages to summarize from the selected period.";
+            }
+
+            messages.Reverse();
+
+            var historyBuilder = new StringBuilder();
+            foreach (var msg in messages)
+            {
+                string senderLabel = msg.SenderId == currentUserId ? "User" : "Friend";
+
+                if (!string.IsNullOrWhiteSpace(msg.Content))
+                {
+                    historyBuilder.AppendLine($"{senderLabel}: {msg.Content}");
+                }
+            }
+
+            if (historyBuilder.Length == 0) return "In the selected period, mainly files and images were sent.";
+
+            var prompt = configuration["Prompts:SummarizeChat"];
+            var summary = await geminiService.AskAsync(historyBuilder.ToString(), prompt);
+
+            return string.IsNullOrEmpty(summary) ? "Failed to generate summary." : summary;
+        }
     }
 }
