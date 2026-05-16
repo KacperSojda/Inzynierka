@@ -1,45 +1,80 @@
 ﻿@model INZYNIERKA.Services.ViewModels.UserViewModel
 
-<h3>@Model.UserName</h3>
-<p> @Model.PublicDescription</p>
-<ul class="list-inline">
-    @foreach (var tag in Model.Tags)
-    {
-        <li class="list-inline-item badge bg-primary mx-1">@tag</li>
-    }
-</ul>
+@{
+    ViewData["Title"] = "Wynik wyszukiwania";
+}
 
-<div class="buttons-wrapper">
-    <form asp-action="SendFriendRequest" method="post" style="display:inline;">
-        <input type="hidden" name="userId" value="@Model.Id" />
-        <button type="submit" class="add-friend" title="Send friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-add fs-4"></i></button>
-    </form>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="result-card text-center p-5">
+        
+        <div class="mb-3">
+            <i class="bi bi-person-circle" style="font-size: 4rem; color: #552459;"></i>
+        </div>
 
-    <form asp-action="NextUser" method="post" style="display:inline;">
-        <button type="submit" class="next">Next →</button>
-    </form>
+        <h3 class="fw-bold mb-3" style="color: #111827;">@Model.UserName</h3>
+        
+        <p class="text-muted mb-4" style="font-size: 1.1rem;">
+            @Model.PublicDescription
+        </p>
 
-    <form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
-        <input type="hidden" name="userId" value="@Model.Id" />
-        <button type="submit" class="show-profile">Show Profile</button>
-    </form>
+        <div class="tags-wrapper mb-5">
+            @foreach (var tag in Model.Tags)
+            {
+                <span class="badge custom-badge mx-1 mb-2">@tag</span>
+            }
+        </div>
+
+        <div class="buttons-wrapper d-flex justify-content-center gap-3 flex-wrap">
+            <form asp-action="SendFriendRequest" method="post" style="display:inline;">
+                <input type="hidden" name="userId" value="@Model.Id" />
+                <button type="submit" class="action-btn add-friend" title="Send friend requests" data-bs-toggle="tooltip">
+                    <i class="bi bi-person-add"></i> Dodaj
+                </button>
+            </form>
+
+            <form asp-action="NextUser" method="post" style="display:inline;">
+                <button type="submit" class="action-btn next">Next &rarr;</button>
+            </form>
+
+            <form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
+                <input type="hidden" name="userId" value="@Model.Id" />
+                <button type="submit" class="action-btn show-profile">Profile</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
-
-    .buttons-wrapper {
-        text-align: center;
+    .result-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 600px;
     }
 
-    .next, .add-friend, .show-profile {
-        display: inline-block;
-        text-align: center;
-        padding: 5px 0;
+    .custom-badge {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 4px 10px rgba(174, 46, 184, 0.2);
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 25px;
         border-radius: 15px;
-        width: 150px;
-        height: 60px;
+        min-width: 140px;
+        height: 50px;
         text-decoration: none;
         color: white;
+        font-weight: bold;
+        border: none;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
@@ -53,14 +88,12 @@
     }
 
     .show-profile {
-        background: linear-gradient(135deg, #757009, #cfc61d);
+        background: linear-gradient(135deg, #1b3480, #4565c4);
     }
 
-
-        .save:hover, .add-tag:hover, .show-frofile {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        color: white;
+    }
 </style>

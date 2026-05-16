@@ -4,65 +4,124 @@
     ViewData["Title"] = "Edit Profile";
 }
 
-<div class="container py-5" style="max-width: 600px;">
-    <h2 class="text-center mb-4">Edit Profile, @Model.UserName</h2>
+<div class="container py-5 d-flex justify-content-center">
+    <div class="edit-card p-5 w-100" style="max-width: 700px;">
+        <h2 class="text-center fw-bold mb-4" style="color: #111827;">Edit Profile, @Model.UserName</h2>
 
-    <form asp-action="EditProfile" method="post" novalidate>
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <form asp-action="EditProfile" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-        <div class="mb-3">
-            <label asp-for="Avatar" class="form-label"></label>
-            <input asp-for="Avatar" class="form-control" readonly />
-        </div>
+            <input type="hidden" asp-for="Avatar" />
+            <input type="hidden" asp-for="UserName" />
 
-        <div class="mb-3">
-            <label asp-for="UserName" class="form-label"></label>
-            <input asp-for="UserName" class="form-control" readonly />
-        </div>
+            <div class="mb-4">
+                <label asp-for="PublicDescription" class="form-label fw-bold text-muted">Public Description</label>
+                <input asp-for="PublicDescription" class="form-control custom-input" placeholder="Opis widoczny dla wszystkich..." />
+                <span asp-validation-for="PublicDescription" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label asp-for="PublicDescription" class="form-label"></label>
-            <input asp-for="PublicDescription" class="form-control" />
-            <span asp-validation-for="PublicDescription" class="text-danger"></span>
-        </div>
+            <div class="mb-4">
+                <label asp-for="PrivateDescription" class="form-label fw-bold text-muted">Private Description</label>
+                <input asp-for="PrivateDescription" class="form-control custom-input" placeholder="Opis widoczny dla znajomych..." />
+                <span asp-validation-for="PrivateDescription" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label asp-for="PrivateDescription" class="form-label"></label>
-            <input asp-for="PrivateDescription" class="form-control" />
-            <span asp-validation-for="PrivateDescription" class="text-danger"></span>
-        </div>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label asp-for="DateOfBirth" class="form-label fw-bold text-muted">Date of Birth</label>
+                    <input asp-for="DateOfBirth" class="form-control custom-input" type="date" />
+                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label asp-for="Zodiac" class="form-label fw-bold text-muted">Zodiac Sign</label>
+                    <select asp-for="Zodiac" class="form-select custom-input"
+                            asp-items="Html.GetEnumSelectList<INZYNIERKA.Domain.Models.ZodiacSign>()">
+                        <option value="">Choose sign...</option>
+                    </select>
+                    <span asp-validation-for="Zodiac" class="text-danger"></span>
+                </div>
+            </div>
 
-        <button type="submit" class="home-edit">Save changes</button>
-    </form>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label asp-for="City" class="form-label fw-bold text-muted">City</label>
+                    <input asp-for="City" class="form-control custom-input" placeholder="e.g. Warsaw" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label asp-for="Country" class="form-label fw-bold text-muted">Country</label>
+                    <input asp-for="Country" class="form-control custom-input" placeholder="e.g. Poland" />
+                    <span asp-validation-for="Country" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="CustomStatus" class="form-label fw-bold text-muted">Custom Status</label>
+                <input asp-for="CustomStatus" class="form-control custom-input" placeholder="What's on your mind?" />
+                <span asp-validation-for="CustomStatus" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="PreferredLanguages" class="form-label fw-bold text-muted">Preferred Languages</label>
+                <input asp-for="PreferredLanguages" class="form-control custom-input" placeholder="e.g. Polish, English" />
+                <span asp-validation-for="PreferredLanguages" class="text-danger"></span>
+            </div>
+
+            <div class="mb-5">
+                <label asp-for="SocialMediaUrl" class="form-label fw-bold text-muted">Social Media (URL)</label>
+                <input asp-for="SocialMediaUrl" class="form-control custom-input" placeholder="https://instagram.com/..." />
+                <span asp-validation-for="SocialMediaUrl" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="action-btn btn-save w-100 shadow-sm">Save changes</button>
+        </form>
+    </div>
 </div>
 
 <style>
-    .home-edit {
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 576px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    .edit-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
-        .home-edit:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+    .custom-input {
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 1px solid #ced4da;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .custom-input:focus {
+            border-color: #ae2eb8;
+            box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.25);
+            outline: none;
         }
 
-        .home-edit i {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-        }
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 0;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-decoration: none;
+        color: white;
+        border: none;
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-        .home-edit h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(174, 46, 184, 0.3);
+            color: white;
         }
 </style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

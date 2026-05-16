@@ -96,6 +96,13 @@ namespace INZYNIERKA.Services.Services
 
             user.PublicDescription = model.PublicDescription;
             user.PrivateDescription = model.PrivateDescription;
+            user.DateOfBirth = model.DateOfBirth;
+            user.City = model.City;
+            user.Country = model.Country;
+            user.CustomStatus = model.CustomStatus;
+            user.Zodiac = model.Zodiac;
+            user.SocialMediaUrl = model.SocialMediaUrl;
+            user.PreferredLanguages = model.PreferredLanguages;
 
             var result = await userManager.UpdateAsync(user);
 

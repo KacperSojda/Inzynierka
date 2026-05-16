@@ -1,5 +1,4 @@
-﻿using INZYNIERKA.Data;
-using INZYNIERKA.Domain.Models;
+﻿using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.ViewModels;
 using INZYNIERKA.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;

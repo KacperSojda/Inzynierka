@@ -2,40 +2,72 @@
     ViewData["Title"] = "Create Group";
 }
 
-<div class="row mb-3">
-    <div class="col">
-        <p class="display-4">Create New Group</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
+
+<div class="container py-5 d-flex justify-content-center">
+    <div class="form-card p-5 w-100" style="max-width: 500px;">
+        
+        <div class="text-center mb-4">
+            <i class="bi bi-collection-fill" style="font-size: 3rem; color: #552459;"></i>
+            <h2 class="fw-bold mt-3" style="color: #111827;">Create New Group</h2>
+            <p class="text-muted">Start a new community and invite others</p>
+        </div>
+
+        <form asp-action="CreateGroup" method="post">
+            <div class="mb-4">
+                <label for="groupName" class="form-label fw-bold text-muted">Group Name:</label>
+                <input type="text" class="form-control custom-input" id="groupName" name="name" placeholder="np. Fani Gwiezdnych Wojen..." required />
+            </div>
+
+            <button type="submit" class="action-btn btn-main w-100">
+                <i class="bi bi-plus-circle me-2"></i> Create Group
+            </button>
+        </form>
+
     </div>
 </div>
 
-<form asp-action="CreateGroup" method="post">
-    <div class="form-group mb-3">
-        <label for="groupName">Group Name:</label>
-        <input type="text" class="form-control" id="groupName" name="name" required />
-    </div>
-
-    <div class="d-flex flex-wrap justify-content-left gap-3">
-        <button type="submit" class="create">Create Group</button>
-    </div>
-</form>
-
 <style>
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
 
-    .create {
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        text-align: center;
-        padding: 5px 0px;
+    .custom-input {
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 1px solid #ced4da;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .custom-input:focus {
+        border-color: #ae2eb8;
+        box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.25);
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 0;
         border-radius: 15px;
-        width: 150px;
+        font-size: 1.1rem;
+        font-weight: bold;
         text-decoration: none;
+        color: white;
+        border: none;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-        .create:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
+    .btn-main {
+        background: linear-gradient(135deg, #552459, #ae2eb8);
+    }
 
+    .action-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        color: white;
+    }
 </style>

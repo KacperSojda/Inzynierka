@@ -4,83 +4,85 @@
     ViewData["Title"] = "User profile";
 }
 
-<div class="container py-5" style="max-width: 600px;">
-    <div class="text-center mb-4">
-        <img src="@Model.Avatar" alt="Avatar" class="img-fluid rounded-circle mb-3" style="max-width:150px; height:auto;" />
-        <h2>@Model.UserName</h2>
-        <p class="lead">@Model.PublicDescription</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
 
-        <h5 class="mt-4">User tags:</h5>
-        <ul class="list-inline">
+<div class="container py-5 d-flex justify-content-center">
+    
+    <div class="profile-card p-5 w-100 text-center" style="max-width: 600px;">
+        
+        <div class="mb-4">
+            <img src="@Model.Avatar" alt="Avatar" class="profile-avatar rounded-circle shadow-sm" />
+        </div>
+        
+        <h2 class="fw-bold mb-2" style="color: #111827;">@Model.UserName</h2>
+        <p class="text-muted fs-5 mb-4">@Model.PublicDescription</p>
+
+        <h5 class="fw-bold mb-3" style="color: #111827;">User tags:</h5>
+        
+        <div class="tags-wrapper d-flex justify-content-center flex-wrap gap-2 mb-5">
             @foreach (var tag in Model.Tags)
             {
-                <li class="list-inline-item badge">@tag</li>
+                <span class="badge custom-badge">@tag</span>
             }
-        </ul>
+        </div>
 
-        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap menu">
-            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="chat">
-                Chat
+        <div class="d-flex justify-content-center">
+            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="action-btn btn-chat" title="Napisz wiadomość" data-bs-toggle="tooltip">
+                <i class="bi bi-chat-dots fs-5"></i> <span>Chat</span>
             </a>
         </div>
+        
     </div>
 </div>
 
 <style>
-
-    .menu {
-        display: flex;
-        justify-content: flex-start;
-        gap: 1rem;
-        flex-wrap: wrap;
-        padding: 10px 0px;
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
-    .chat {
-        background: linear-gradient(135deg, #1b3480, #4565c4);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border: 4px solid #f8f9fa;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
 
-        .chat:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-
-    .delete {
-        background: linear-gradient(135deg, #8c144c, #d43780);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .delete:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-    .list-inline-item.badge {
+    .custom-badge {
         background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 4px 10px rgba(174, 46, 184, 0.2);
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 30px;
         border-radius: 15px;
-        width: 100px;
+        min-width: 160px;
         text-decoration: none;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+        border: none;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
+    .btn-chat {
+        background: linear-gradient(135deg, #1b3480, #4565c4);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        color: white;
+    }
 </style>

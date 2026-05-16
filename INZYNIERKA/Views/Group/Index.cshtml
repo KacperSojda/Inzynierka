@@ -1,54 +1,67 @@
-﻿        
-<div class="group-menu">
-    <a asp-controller="Group" asp-action="ShowUserGroups" class="group-card">
-        <i class="fas fa-users"></i>
-        <h3>Your Groups</h3>
-    </a>
-    <a asp-controller="Group" asp-action="ShowAvailableGroups" class="group-card">
-        <i class="fas fa-search"></i>
-        <h3>Search for Groups</h3>
-    </a>
-    <a asp-controller="Group" asp-action="CreateGroup" class="group-card">
-        <i class="fas fa-plus-circle"></i>
-        <h3>Create Group</h3>
-    </a>
+﻿@{
+    ViewData["Title"] = "Groups Hub";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
+
+<div class="container py-5 d-flex flex-column align-items-center">
+
+    <div class="text-center mb-5 mt-4">
+        <h1 class="display-4 fw-bold" style="color: #111827;">Groups Hub</h1>
+        <p class="lead text-muted mt-3">Manage your communities, find new ones, or create your own</p>
+    </div>
+
+    <div class="d-flex justify-content-center gap-4 flex-wrap w-100" style="max-width: 900px;">
+        
+        <a asp-controller="Group" asp-action="ShowUserGroups" class="group-card">
+            <i class="bi bi-people-fill"></i>
+            <h3>Your Groups</h3>
+        </a>
+        
+        <a asp-controller="Group" asp-action="ShowAvailableGroups" class="group-card">
+            <i class="bi bi-search"></i>
+            <h3>Search Groups</h3>
+        </a>
+        
+        <a asp-controller="Group" asp-action="CreateGroup" class="group-card">
+            <i class="bi bi-plus-circle-fill"></i>
+            <h3>Create Group</h3>
+        </a>
+
+    </div>
 </div>
 
 <style>
-    .group-menu {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        flex-wrap: wrap;
-        margin-top: 40px;
-    }
-
     .group-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         background: linear-gradient(135deg, #552459, #ae2eb8);
         color: white;
-        text-align: center;
-        padding: 30px 20px;
-        border-radius: 15px;
-        width: 250px;
+        padding: 40px 20px;
+        border-radius: 20px;
+        width: 260px;
         text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
         .group-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(174, 46, 184, 0.3);
+            color: white;
         }
 
         .group-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            display: block;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
         }
 
         .group-card h3 {
             margin: 0;
-            font-size: 1.3rem;
-            font-weight: bold;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 </style>

@@ -4,45 +4,81 @@
     ViewData["Title"] = "Twoje zaproszenia";
 }
 
-<div class="container py-4">
-    <h2 class="mb-4">List of invited people</h2>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold display-5" style="color: #111827;">List of invited people</h2>
+        <p class="text-muted">Manage your pending friend requests</p>
+    </div>
 
     @if (Model.Any())
     {
-        <ul class="list-group">
+        <div class="d-flex flex-column align-items-center gap-3">
             @foreach (var friend in Model)
             {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <strong>@friend.UserName</strong>
+                <div class="list-card d-flex justify-content-between align-items-center p-3 px-4 w-100" style="max-width: 600px;">
+                    <strong class="fs-5" style="color: #111827;">@friend.UserName</strong>
+                    
                     <form asp-action="DeleteRequest" method="post" class="m-0">
                         <input type="hidden" name="friendId" value="@friend.Id" />
-                        <button type="submit" class="delete" title="Delete" data-bs-toggle="tooltipp"><i class="bi bi-trash3"></i></button>
+                        <button type="submit" class="action-btn btn-delete" title="Delete" data-bs-toggle="tooltip">
+                            <i class="bi bi-trash3"></i>
+                        </button>
                     </form>
-                </li>
+                </div>
             }
-        </ul>
+        </div>
     }
     else
     {
-        <p class="text-muted">No invitations sent</p>
+        <div class="text-center mt-5">
+            <i class="bi bi-envelope-paper text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">No invitations sent</h4>
+        </div>
     }
 </div>
 
 <style>
-    .delete {
-        background: linear-gradient(135deg, #8c144c, #d43780);
-        color: white;
-        text-align: center;
-        padding: 10px 10px;
+    .list-card {
+        background: white;
         border-radius: 15px;
-        width: 100px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .delete:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        .list-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        border-radius: 12px;
+        width: 60px;
+        height: 45px;
+        text-decoration: none;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .action-btn i {
+            font-size: 1.2rem;
+        }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #8c144c, #d43780);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        color: white;
+    }
 </style>

@@ -1,104 +1,119 @@
 ﻿@model INZYNIERKA.Services.ViewModels.GroupViewModel
 
-<div class="row mb-3">
-    <div class="col">
-        <p class="display-4">Available Groups</p>
+@{
+    ViewData["Title"] = "Dostępne Grupy";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold display-5" style="color: #111827;">Available Groups</h2>
+        <p class="text-muted">Discover and join new communities matching your interests</p>
     </div>
+
+    @if (Model.Groups != null && Model.Groups.Any())
+    {
+        <div class="row justify-content-center">
+            <div class="col-12" style="max-width: 900px;">
+                <div class="d-flex flex-column gap-4">
+                    @foreach (var group in Model.Groups)
+                    {
+                        <div class="group-list-card p-4">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                                <h3 class="fw-bold mb-3 mb-md-0" style="color: #111827;">@group.Name</h3>
+                                
+                                <div class="action-menu gap-2">
+                                    <form asp-action="JoinGroup" method="post" class="m-0">
+                                        <input type="hidden" name="groupId" value="@group.GroupId" />
+                                        <button type="submit" class="action-btn btn-join" title="Join Group"><i class="bi bi-person-plus-fill me-1"></i> Join</button>
+                                    </form>
+                                    <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                                        <input type="hidden" name="groupId" value="@group.GroupId" />
+                                        <button type="submit" class="action-btn btn-show" title="Show Members"><i class="bi bi-people"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <p class="text-secondary mb-3">@group.Description</p>
+
+                            @if (group.Tags != null && group.Tags.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var tag in group.Tags)
+                                    {
+                                        <span class="badge custom-badge">@tag</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center mt-5">
+            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">No groups available.</h4>
+            <p class="text-secondary">Be the first to create a new community!</p>
+            <a asp-controller="Group" asp-action="CreateGroup" class="action-btn btn-join mt-3"><i class="bi bi-plus-circle me-2"></i>Create Group</a>
+        </div>
+    }
 </div>
 
-@if (Model.Groups != null && Model.Groups.Any())
-{
-    <ul class="list-unstyled">
-        @foreach (var group in Model.Groups)
-        {
-            <li class="mb-4">
-                <div class="row">
-                    <div class="col-3">
-                        <p class="display-6">@group.Name</p>
-                        <ul class="list-inline">
-                            @foreach (var tag in group.Tags)
-                            {
-                                <li class="list-inline-item badge">@tag</li>
-                            }
-                        </ul>
-                        <p class="lead">@group.Description</p>
-                    </div>
-                    <div class="col">
-                        <div class="menu">
-                            <form asp-action="JoinGroup" method="post" class="m-0">
-                                <input type="hidden" name="groupId" value="@group.GroupId" />
-                                <button type="submit" class="join">Join</button>
-                            </form>
-                            <form asp-action="ShowGroupMembers" method="post" class="m-0">
-                                <input type="hidden" name="groupId" value="@group.GroupId" />
-                                <button type="submit" class="show">Show Members</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </li>
-        }
-    </ul>
-}
-else
-{
-    <p class="text-muted">No groups available.</p>
-}
-
 <style>
+    .group-list-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-    .menu {
+    .group-list-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .action-menu {
         display: flex;
-        justify-content: flex-start;
-        gap: 1rem;
         flex-wrap: wrap;
-        padding: 10px 0px;
     }
 
-    .show {
-        background: linear-gradient(135deg, #757009, #cfc61d);
-        color: white;
-        text-align: center;
-        padding: 5px 0px;
-        border-radius: 15px;
-        width: 150px;
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        border-radius: 12px;
+        height: 40px;
         text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .show:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-    .join {
-        background: linear-gradient(135deg, #1c7a15, #32b528);
         color: white;
-        text-align: center;
-        padding: 5px 0px;
-        border-radius: 15px;
-        width: 150px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        font-weight: bold;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .join:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        color: white;
+    }
 
-    .list-inline-item.badge {
+    .btn-join { background: linear-gradient(135deg, #1c7a15, #32b528); min-width: 100px; }
+    
+    .btn-show { background: linear-gradient(135deg, #757009, #cfc61d); width: 50px; padding: 10px; }
+    .btn-show i { font-size: 1.1rem; }
+
+    .custom-badge {
         background: linear-gradient(135deg, #552459, #ae2eb8);
         color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 100px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-weight: 500;
+        box-shadow: 0 4px 10px rgba(174, 46, 184, 0.2);
     }
-
 </style>

@@ -4,114 +4,128 @@
     ViewData["Title"] = "Chat";
 }
 
-<div class="container py-4">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
 
-        <div class="flex-grow-1" style="min-width: 300px;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>
-                    @Model.FriendName
-                <span id="statusIndicator" title="Offline" style="font-size: 1.2em; color: gray; transition: color 0.3s ease; margin-left: 5px;">●</span>
-                </h3>
-                <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.FriendId" class="show">
-                    Show Profile
-                </a>
-            </div>
+<div class="container py-4 d-flex justify-content-center">
+    <div class="chat-card p-4 w-100" style="max-width: 900px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+            <h3 class="mb-0 d-flex align-items-center fw-bold" style="color: #111827;">
+                <i class="bi bi-person-circle me-2" style="color: #552459;"></i>
+                @Model.FriendName
+                <span id="statusIndicator" title="Offline" style="font-size: 0.6em; color: gray; transition: color 0.3s ease; margin-left: 10px;">●</span>
+            </h3>
+            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.FriendId" class="action-btn btn-profile" style="min-width: 130px; height: 40px; padding: 5px 15px; font-size: 0.95rem;">
+                <i class="bi bi-person me-1"></i> Profile
+            </a>
+        </div>
 
-            <div id="chatWindow" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: auto; background-color: #f9f9f9;">
-                @{
-                    var lastSentMsg = Model.Messages.LastOrDefault(m => m.SenderId == Model.CurrentUserId);
-                }
+        <div id="chatWindow" class="chat-window-container p-3 mb-2">
+            @{
+                var lastSentMsg = Model.Messages.LastOrDefault(m => m.SenderId == Model.CurrentUserId);
+            }
 
-                @foreach (var msg in Model.Messages)
-                {
-                    <div class="message-container mb-2">
-                        <strong>@(msg.SenderId == Model.CurrentUserId ? "You" : msg.SenderName):</strong>
-                        @if (msg.IsImage)
-                        {
-                            <br />
-                            <img src="data:@msg.ImageType;base64,@msg.ImageDataBase64" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />
-                        }
-                        else
-                        {
-                            @msg.Content
-                        }
+            @foreach (var msg in Model.Messages)
+            {
+                <div class="message-container mb-3">
+                    <strong style="color: @(msg.SenderId == Model.CurrentUserId ? "#ae2eb8" : "#111827");">
+                        @(msg.SenderId == Model.CurrentUserId ? "You" : msg.SenderName):
+                    </strong>
+                    
+                    @if (msg.IsImage)
+                    {
+                        <br />
+                        <img src="data:@msg.ImageType;base64,@msg.ImageDataBase64" class="chat-image" />
+                    }
+                    else
+                    {
+                        <span class="ms-1">@msg.Content</span>
+                    }
 
-                        @if (msg == lastSentMsg)
-                        {
-                            <div class="read-status-container text-muted" style="text-align: right; font-size: 0.8em; margin-top: 2px;">
-                                @(msg.IsRead ? "Wyświetlono ✓✓" : "Dostarczono ✓")
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
+                    @if (msg == lastSentMsg)
+                    {
+                        <div class="read-status-container text-muted mt-1" style="text-align: right; font-size: 0.75em;">
+                            @(msg.IsRead ? "Wyświetlono ✓✓" : "Dostarczono ✓")
+                        </div>
+                    }
+                </div>
+            }
+        </div>
 
-            <div id="typingIndicator" class="text-muted mb-2 ms-2" style="display: none; font-size: 0.85em; font-style: italic;">
-                @Model.FriendName pisze...
-            </div>
+        <div id="typingIndicator" class="text-muted mb-3 ms-2" style="display: none; font-size: 0.85em; font-style: italic;">
+            <i class="bi bi-pencil-fill me-1" style="font-size: 0.75em;"></i> @Model.FriendName pisze...
+        </div>
 
-            <div class="input-group">
-                <input type="file" id="imageInput" accept="image/*" style="display:none;" />
-                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('imageInput').click()">🖼️</button>
+        <div class="input-group mb-4 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+            <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+            <button class="btn btn-light border" type="button" onclick="document.getElementById('imageInput').click()" title="Wyślij zdjęcie">
+                <i class="bi bi-image" style="color: #552459; font-size: 1.2rem;"></i>
+            </button>
 
-                <button class="btn btn-outline-secondary" type="button" id="emojiTriggerBtn">😀</button>
+            <button class="btn btn-light border" type="button" id="emojiTriggerBtn" title="Wstaw Emoji">
+                <i class="bi bi-emoji-smile" style="color: #552459; font-size: 1.2rem;"></i>
+            </button>
 
-                <input type="text" id="messageInput" class="form-control"
-                       placeholder="Write a message..."
-                       value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
-                <button id="sendButton" class="btn btn-primary bg">Send</button>
-            </div>
+            <input type="text" id="messageInput" class="form-control custom-chat-input border-start-0 border-end-0"
+                   placeholder="Write a message..."
+                   value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
+            
+            <button id="sendButton" class="action-btn btn-send" style="border-radius: 0; min-width: 100px;">
+                <i class="bi bi-send-fill me-1"></i> Send
+            </button>
         </div>
 
         @if (!string.IsNullOrEmpty(Model.GeminiAnswer))
         {
-            <div class="mt-3 p-3 bg-light rounded border" style="white-space: pre-wrap;">
-                <strong>Gemini:</strong>
-                @Model.GeminiAnswer
+            <div class="gemini-box p-3 mb-4 d-flex gap-3">
+                <i class="bi bi-robot" style="font-size: 2rem; color: #ae2eb8;"></i>
+                <div style="white-space: pre-wrap; line-height: 1.5;">
+                    <strong style="color: #552459; font-size: 1.1rem;">Gemini AI:</strong><br />
+                    @Model.GeminiAnswer
+                </div>
             </div>
         }
 
-        <div class="menu">
-            <form method="post" asp-action="ResponseHelp">
+        <div class="menu-ai gap-3">
+            <form method="post" asp-action="ResponseHelp" class="flex-grow-1">
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
-                <button type="submit" class="mybtn">Help with response</button>
+                <button type="submit" class="action-btn btn-ai w-100"><i class="bi bi-lightbulb me-1"></i> Help with response</button>
             </form>
 
-            <form id="CorrectForm" method="post" asp-action="CorrectMessage">
+            <form id="CorrectForm" method="post" asp-action="CorrectMessage" class="flex-grow-1">
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
                 <input type="hidden" id="userMessageCorrect" name="UserMessage" value="" />
-                <button type="submit" class="mybtn">Correct my message</button>
+                <button type="submit" class="action-btn btn-ai w-100"><i class="bi bi-spellcheck me-1"></i> Correct message</button>
             </form>
 
-            <form id="TranslateForm" method="post" asp-action="TranslateMessage">
+            <form id="TranslateForm" method="post" asp-action="TranslateMessage" class="flex-grow-1">
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
                 <input type="hidden" id="userMessageTranslate" name="UserMessage" value="" />
-                <button type="submit" class="mybtn">Translate</button>
+                <button type="submit" class="action-btn btn-ai w-100"><i class="bi bi-translate me-1"></i> Translate</button>
             </form>
 
-            <form method="post" asp-action="SummarizeChat">
+            <form method="post" asp-action="SummarizeChat" class="flex-grow-1">
                 <input type="hidden" name="FriendId" value="@Model.FriendId" />
-                <button type="submit" class="mybtn">Summarize last 7 days</button>
+                <button type="submit" class="action-btn btn-ai-special w-100"><i class="bi bi-stars me-1"></i> Summarize last 7 days</button>
             </form>
         </div>
-    
+    </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/@@joeattardi/emoji-button@3.1.1/dist/index.min.js"></script>
     <script>
-
         // Konfiguracja SignalR //
-
         const connection = window.appSignalRConnection;
 
         function setOnlineStatus(isOnline) {
             console.log(">>> [KROPKA] Wymuszam zmianę koloru na:", isOnline ? "ZIELONY (Online)" : "SZARY (Offline)");
             const dot = document.getElementById("statusIndicator");
             if (isOnline) {
-                dot.style.color = "green";
+                dot.style.color = "#32b528";
                 dot.title = "Online";
-            } else {
+            } 
+            else {
                 dot.style.color = "gray";
                 dot.title = "Offline";
             }
@@ -138,10 +152,14 @@
                 try {
                     const isOnline = await connection.invoke("CheckIfUserIsOnline", "@Model.FriendId");
                     setOnlineStatus(isOnline);
-                } catch (err) {
+                } 
+                catch (err) 
+                {
                     console.error("Nie udało się pobrać statusu:", err);
                 }
-            } else if (connection) {
+            } 
+            else if (connection)
+            {
                 setTimeout(checkFriendStatus, 50);
             }
         }
@@ -151,7 +169,6 @@
         const chatWindow = document.getElementById("chatWindow");
 
         // Infinite scroll //
-
         let loadedMessagesCount = 30;
         let isLoadingOlder = false;
         let hasMoreMessages = true;
@@ -159,7 +176,6 @@
         chatWindow.addEventListener("scroll", async function() {
             if (chatWindow.scrollTop === 0 && !isLoadingOlder && hasMoreMessages) {
                 isLoadingOlder = true;
-                
                 const previousScrollHeight = chatWindow.scrollHeight;
 
                 try {
@@ -169,53 +185,64 @@
 
                         if (olderMessages.length > 0) {
                             loadedMessagesCount += olderMessages.length;
-                            
                             let olderHtml = "";
+        
                             olderMessages.forEach(msg => {
                                 const senderName = msg.senderId === "@Model.CurrentUserId" ? "You" : "@Model.FriendName";
-                                let contentHtml = msg.isImage ? `<br/><img src="data:${msg.contentType};base64,${msg.imageDataBase64}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />` : msg.content;
+                                const colorStyle = msg.senderId === "@Model.CurrentUserId" ? "color: #ae2eb8;" : "color: #111827;";
+                                let contentHtml = msg.isImage ?
+                                `<br/><img src="data:${msg.contentType};base64,${msg.imageDataBase64}" class="chat-image" />` :
+                                `<span class="ms-1">${msg.content}</span>`;
                                     
-                                olderHtml += `<div><strong>${senderName}:</strong> ${contentHtml}</div>`;
+                                olderHtml += `<div class="message-container mb-3"><strong style="${colorStyle}">${senderName}:</strong> ${contentHtml}</div>`;
                             });
 
                             chatWindow.insertAdjacentHTML('afterbegin', olderHtml);
                             chatWindow.scrollTop = chatWindow.scrollHeight - previousScrollHeight;
                         }
 
-                        if (olderMessages.length < 30) {
+                        if (olderMessages.length < 30) 
+                        {
                             hasMoreMessages = false;
                         }
                     }
-                } catch (err) {
+                } 
+                catch (err) 
+                {
                     console.error("Błąd przy ładowaniu starszych wiadomości", err);
-                } finally {
-                     isLoadingOlder = false;
+                } 
+                finally 
+                {
+                    isLoadingOlder = false;
                 }
             }
         });
 
         // Message handling //
-
         function appendMessage(senderId, content, isHtml) {
             const currentUserId = "@Model.CurrentUserId";
             const chatWindow = document.getElementById("chatWindow");
             const div = document.createElement("div");
-            div.className = "message-container mb-2";
+            div.className = "message-container mb-3";
             const senderName = senderId === currentUserId ? "You" : "@Model.FriendName";
-
-            let innerContent = `<strong>${senderName}:</strong> `;
+            const colorStyle = senderId === currentUserId ? "color: #ae2eb8;" : "color: #111827;";
             
-            if (isHtml) {
-                innerContent += content;
-            } else {
+            let innerContent = `<strong style="${colorStyle}">${senderName}:</strong> `;
+            
+            if (isHtml) 
+            {
+            innerContent += content;
+            } 
+            else 
+            {
                 const tempDiv = document.createElement("div");
                 tempDiv.innerText = content;
-                innerContent += tempDiv.innerHTML;
+                innerContent += `<span class="ms-1">${tempDiv.innerHTML}</span>`;
             }
 
             if (senderId === currentUserId) {
                 document.querySelectorAll('.read-status-container').forEach(el => el.remove());
-                innerContent += `<div class="read-status-container text-muted" style="text-align: right; font-size: 0.8em; margin-top: 2px;">Dostarczono ✓</div>`;
+                innerContent += `<div class="read-status-container text-muted mt-1" style="text-align: right; font-size: 0.75em;">Dostarczono ✓</div>`;
             }
 
             div.innerHTML = innerContent;
@@ -224,9 +251,8 @@
         }
 
         // SignalR events //
-
         connection.on("ReceiveImage", function(senderId, receiverId, base64Data, contentType) {
-            const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;" />`;
+            const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" class="chat-image" />`;
             appendMessage(senderId, imgHtml, true);
         });
 
@@ -242,7 +268,7 @@
             if (readerId === "@Model.FriendId") {
                 document.querySelectorAll('.read-status-container').forEach(el => {
                     el.innerText = "Wyświetlono ✓✓";
-                    el.style.color = "blue";
+                    el.style.color = "#3b82f6";
                 });
             }
         });
@@ -262,16 +288,15 @@
         });
 
         // Users Interactions //
-
         function notifyMessagesRead() {
             const currentUserId = "@Model.CurrentUserId";
             const friendId = "@Model.FriendId";
 
             connection.invoke("MarkAsRead", currentUserId, friendId)
-                .catch(err => console.error("MarkAsRead err:", err.toString()));
-                
+            .catch(err => console.error("MarkAsRead err:", err.toString()));
+
             connection.invoke("ClearNotifications", currentUserId, friendId)
-                .catch(err => console.error("ClearNotifications err:", err.toString()));
+            .catch(err => console.error("ClearNotifications err:", err.toString()));
         }
 
         document.getElementById("messageInput").addEventListener("focus", notifyMessagesRead);
@@ -280,29 +305,28 @@
         setTimeout(notifyMessagesRead, 1500);
 
         let lastTypingTime = 0;
-
         document.getElementById("messageInput").addEventListener("input", function() {
             const now = Date.now();
             
             if (now - lastTypingTime > 1500) {
                 connection.invoke("SendTypingIndicator", "@Model.CurrentUserId", "@Model.FriendId")
-                    .catch(err => console.error("TypingIndicator err:", err.toString()));
+                .catch(err => console.error("TypingIndicator err:", err.toString()));
                 
                 lastTypingTime = now;
             }
         });
 
-        document.getElementById("sendButton").addEventListener("click", function () {
+        document.getElementById("sendButton").addEventListener("click", function() {
             const messageInput = document.getElementById("messageInput");
             const message = messageInput.value;
 
             if (!message.trim()) return;
 
-            connection.invoke("SendMessage", "@Model.CurrentUserId", "@Model.FriendId", message)
+                connection.invoke("SendMessage", "@Model.CurrentUserId", "@Model.FriendId", message)
                 .catch(err => console.error(err.toString()));
 
-            messageInput.value = "";
-        });
+                messageInput.value = "";
+            });
 
         document.getElementById("imageInput").addEventListener("change", function() {
             const file = this.files[0];
@@ -313,7 +337,7 @@
                 const base64Data = reader.result.split(',')[1];
                 const contentType = file.type;
 
-            connection.invoke("SendImage", "@Model.CurrentUserId", "@Model.FriendId", base64Data, contentType)
+                connection.invoke("SendImage", "@Model.CurrentUserId", "@Model.FriendId", base64Data, contentType)
                 .catch(err => console.error(err.toString()));
             };
             reader.readAsDataURL(file);
@@ -321,7 +345,6 @@
         });
 
         // Emoji //
-
         const emojiTriggerBtn = document.getElementById("emojiTriggerBtn");
         const msgInput = document.getElementById("messageInput");
 
@@ -332,7 +355,7 @@
         });
 
         picker.on('emoji', emoji => {
-            msgInput.value += emoji; 
+            msgInput.value += emoji;
             msgInput.focus();
         });
 
@@ -341,9 +364,8 @@
         });
 
         // Forms binding //
-
         function bindMessageToForm(formId, hiddenInputId) {
-            document.getElementById(formId).addEventListener("submit", function () {
+            document.getElementById(formId).addEventListener("submit", function() {
                 var message = document.getElementById("messageInput").value;
                 document.getElementById(hiddenInputId).value = message;
             });
@@ -354,50 +376,103 @@
     </script>
 
     <style>
-        .menu {
+        .chat-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .chat-window-container {
+            height: 400px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .chat-window-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-window-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .chat-window-container::-webkit-scrollbar-thumb {
+            background: #c4c0c4;
+            border-radius: 10px;
+        }
+
+        .chat-window-container::-webkit-scrollbar-thumb:hover {
+            background: #ae2eb8;
+        }
+
+        .chat-image {
+            max-width: 250px;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .custom-chat-input {
+            box-shadow: none !important;
+            border-color: #dee2e6;
+        }
+
+        .custom-chat-input:focus {
+            background-color: #fcf8fd;
+        }
+
+        .gemini-box {
+            background: linear-gradient(to right, #fdfbfe, #f4e8f6);
+            border-left: 5px solid #ae2eb8;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(174, 46, 184, 0.08);
+        }
+
+        .menu-ai {
             display: flex;
-            justify-content: center;
-            gap: 2rem;
             flex-wrap: wrap;
-            margin-top: 20px;
+            justify-content: center;
         }
 
-        .mybtn {
-            background: linear-gradient(135deg, #ae2eb8, #3b82f6);
-            color: white;
-            text-align: center;
-            padding: 10px 0px;
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
             border-radius: 15px;
-            width: 300px;
+            font-weight: bold;
             text-decoration: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-            .mybtn:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-            }
-
-        .show {
-            background: linear-gradient(135deg, #757009, #cfc61d);
             color: white;
-            text-align: center;
-            padding: 10px 0px;
-            border-radius: 15px;
-            width: 200px;
-            text-decoration: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border: none;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             transition: transform 0.25s ease, box-shadow 0.25s ease;
+            cursor: pointer;
         }
 
-            .show:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-            }
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
 
-        .bg {
+        .btn-send {
             background: linear-gradient(135deg, #552459, #ae2eb8);
+        }
+
+        .btn-profile {
+            background: linear-gradient(135deg, #757009, #cfc61d);
+        }
+
+        .btn-ai {
+            background: linear-gradient(135deg, #1b3480, #4565c4);
+        }
+
+        .btn-ai-special {
+            background: linear-gradient(135deg, #ae2eb8, #3b82f6);
         }
     </style>
 }
