@@ -12,15 +12,43 @@
         <p class="text-muted">Manage your friends and start chatting</p>
     </div>
 
-    @if (Model.Any())
-    {
-        <div class="d-flex flex-column align-items-center gap-3">
+    <div class="d-flex flex-column align-items-center gap-3">
+        <form method="get" asp-action="FriendList" class="mb-4 w-100" style="max-width: 800px;">
+            <div class="input-group shadow-sm" style="border-radius: 15px; border: 1px solid #f0f0f0; overflow: hidden;">
+                
+                <input type="text" name="searchQuery" value="@Context.Request.Query["searchQuery"]" class="form-control border-0 py-2 shadow-none" placeholder="Szukaj znajomego po nazwie...">
+                
+                <button type="submit" class="btn px-4 border-0" style="background: linear-gradient(135deg, #552459, #ae2eb8); color: white;">
+                    <i class="bi bi-search me-1"></i> Szukaj
+                </button>
+                
+                @if (!string.IsNullOrEmpty(Context.Request.Query["searchQuery"]))
+                {
+                    <a asp-action="FriendList" class="btn btn-light px-3 border-start d-flex align-items-center" title="Wyczyść wyszukiwanie">
+                        <i class="bi bi-x-lg text-danger"></i>
+                    </a>
+                }
+            </div>
+        </form>
+
+        @if (Model.Any())
+        {
             @foreach (var friend in Model)
             {
-                <div class="list-card d-flex align-items-center justify-content-between p-3 px-4 w-100" style="max-width: 800px;">
+                <div class="list-card d-flex align-items-center justify-content-between friend-item p-3 px-4 w-100" style="max-width: 800px;" data-name="@friend.UserName.ToLower()">
                     <div class="d-flex align-items-center">
-                        <strong class="fs-5 me-2" style="color: #111827;">@friend.UserName</strong>
-                        <span class="statusIndicator" data-friend-id="@friend.Id" title="Offline" style="font-size: 1em; color: gray; transition: color 0.3s ease;">●</span>
+                        <strong class="fs-5 me-2" style="color: @(friend.IsDeleted ? "#6c757d" : "#111827"); text-decoration: @(friend.IsDeleted ? "line-through" : "none");">
+                            @friend.UserName
+                        </strong>
+                        
+                        @if (friend.IsDeleted)
+                        {
+                            <span class="badge bg-danger ms-2" style="font-size: 0.75rem;">[deleted]</span>
+                        }
+                        else
+                        {
+                            <span class="statusIndicator ms-1" data-friend-id="@friend.Id" title="Offline" style="font-size: 1em; color: gray; transition: color 0.3s ease;">●</span>
+                        }
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 justify-content-center mt-3 mt-md-0">
@@ -31,30 +59,78 @@
                             </button>
                         </form>
 
-                        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="action-btn btn-chat" title="Chat" data-bs-toggle="tooltip">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
+                        @if (!friend.IsDeleted)
+                        {
+                            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="action-btn btn-chat" title="Chat" data-bs-toggle="tooltip">
+                                <i class="bi bi-chat-dots"></i>
+                            </a>
 
-                        <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@friend.Id" class="action-btn btn-profile" title="Show Profile" data-bs-toggle="tooltip">
-                             <i class="bi bi-person"></i>
-                        </a>
+                            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@friend.Id" class="action-btn btn-profile" title="Show Profile" data-bs-toggle="tooltip">
+                                    <i class="bi bi-person"></i>
+                            </a>
+                        }
                     </div>
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        <div class="text-center mt-5">
-            <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
-            <h4 class="mt-3 text-muted">Nie masz jeszcze żadnych znajomych.</h4>
-        </div>
-    }
+            int currentPage = ViewBag.CurrentPage ?? 1;
+            int totalPages = ViewBag.TotalPages ?? 1;
+            string currentSearch = Context.Request.Query["searchQuery"];
+
+            @if (totalPages > 1)
+            {
+                <div class="d-flex justify-content-center mt-4 w-100" style="max-width: 800px;">
+                    <nav aria-label="Nawigacja stron znajomych">
+                        <ul class="pagination pagination-sm shadow-sm" style="border-radius: 10px;">
+                            
+                            <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                <a class="page-link text-dark" asp-action="FriendList" asp-route-searchQuery="@currentSearch" asp-route-page="@(currentPage - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(currentPage == i ? "active" : "")">
+                                    <a class="page-link @(currentPage == i ? "text-white" : "text-dark")" 
+                                       style="@(currentPage == i ? "background: linear-gradient(135deg, #552459, #ae2eb8); border-color: #ae2eb8;" : "")"
+                                       asp-action="FriendList" 
+                                       asp-route-searchQuery="@currentSearch" 
+                                       asp-route-page="@i">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                <a class="page-link text-dark" asp-action="FriendList" asp-route-searchQuery="@currentSearch" asp-route-page="@(currentPage + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center mt-5 w-100">
+                <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+                @if (!string.IsNullOrEmpty(Context.Request.Query["searchQuery"]))
+                {
+                    <h4 class="mt-3 text-muted">Nie znaleziono znajomych o takiej nazwie.</h4>
+                }
+                else
+                {
+                    <h4 class="mt-3 text-muted">Nie masz jeszcze żadnych znajomych.</h4>
+                }
+            </div>
+        }
+    </div>
 </div>
 
 @section Scripts {
     <script>
         const connection = window.appSignalRConnection;
+
         function setUserStatus(userId, isOnline) {
             const dots = document.querySelectorAll('.statusIndicator');
             dots.forEach(dot => {
@@ -65,11 +141,11 @@
             });
         }
 
-        connection.on("UserIsOnline", function(userId) {
+        connection.on("Online", function(userId) {
             setUserStatus(userId, true);
         });
         
-        connection.on("UserIsOffline", function(userId) {
+        connection.on("Offline", function(userId) {
             setUserStatus(userId, false);
         });
         
@@ -79,7 +155,7 @@
                 for (let dot of dots) {
                     const friendId = dot.getAttribute('data-friend-id');
                     try {
-                        const isOnline = await connection.invoke("CheckIfUserIsOnline", friendId);
+                        const isOnline = await connection.invoke("CheckStatus", friendId);
                         setUserStatus(friendId, isOnline);
                     } catch (err) {
                         console.error(`Nie udało się pobrać statusu dla ${friendId}:`, err);

@@ -25,16 +25,16 @@
                         {
                             <i class="bi bi-person-plus-fill me-3" style="font-size: 2rem; color: #1c7a15;"></i>
                             <div>
-                                <span class="fw-bold text-dark fs-5">@notification.SenderUserName</span> sent you a friend request.
-                                <br /><small class="text-muted"><i class="bi bi-clock me-1"></i>@notification.CreationDate.ToString("g")</small>
+                                <span class="fw-bold text-dark fs-5">@notification.SenderName</span> sent you a friend request.
+                                <br /><small class="text-muted"><i class="bi bi-clock me-1"></i>@notification.Timestamp.ToString("g")</small>
                             </div>
                         }
                         else if (notification.NotificationType == NotificationType.Message)
                         {
                             <i class="bi bi-chat-dots-fill me-3" style="font-size: 2rem; color: #1b3480;"></i>
                             <div>
-                                New message from <span class="fw-bold text-dark fs-5">@notification.SenderUserName</span>.
-                                <br /><small class="text-muted"><i class="bi bi-clock me-1"></i>@notification.CreationDate.ToString("g")</small>
+                                New message from <span class="fw-bold text-dark fs-5">@notification.SenderName</span>.
+                                <br /><small class="text-muted"><i class="bi bi-clock me-1"></i>@notification.Timestamp.ToString("g")</small>
                             </div>
                         }
                         else if (notification.NotificationType == NotificationType.GroupMessage)
@@ -42,21 +42,34 @@
                             <i class="bi bi-people-fill me-3" style="font-size: 2rem; color: #ae2eb8;"></i>
                             <div>
                                 New message in group <span class="fw-bold text-dark fs-5">@notification.GroupName</span>.
-                                <br /><small class="text-muted"><i class="bi bi-clock me-1"></i>@notification.CreationDate.ToString("g")</small>
+                                <br /><small class="text-muted"><i class="bi bi-clock me-1"></i>@notification.Timestamp.ToString("g")</small>
                             </div>
                         }
                     </div>
 
                     <div class="action-menu gap-2">
+
                         @if (notification.NotificationType == NotificationType.FriendRequest)
                         {
                             <form asp-action="FriendRequestAccept" method="post" class="m-0">
                                 <input type="hidden" name="notificationId" value="@notification.Id" />
-                                <input type="hidden" name="senderUserName" value="@notification.SenderUserName" />
+                                <input type="hidden" name="senderUserName" value="@notification.SenderName" />
                                 <button type="submit" class="action-btn btn-accept" title="Accept Request">
                                     <i class="bi bi-check-circle"></i> Accept
                                 </button>
                             </form>
+                        }
+                        else if (notification.NotificationType == NotificationType.Message)
+                        {
+                            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@notification.SenderId" class="action-btn btn-chat" title="Go to Chat">
+                                <i class="bi bi-chat-dots"></i> Chat
+                            </a>
+                        }
+                        else if (notification.NotificationType == NotificationType.GroupMessage)
+                        {
+                            <a asp-controller="Chat" asp-action="GroupChat" asp-route-groupId="@notification.GroupId" class="action-btn btn-chat" title="Go to Group">
+                                <i class="bi bi-people"></i> Chat
+                            </a>
                         }
 
                         <form asp-action="DeleteNotification" method="post" class="m-0">
@@ -70,6 +83,42 @@
                 </div>
             }
         </div>
+
+        int currentPage = ViewBag.CurrentPage ?? 1;
+        int totalPages = ViewBag.TotalPages ?? 1;
+
+        @if (totalPages > 1)
+        {
+            <div class="d-flex justify-content-center mt-4 w-100">
+                <nav aria-label="Nawigacja stron powiadomień">
+                    <ul class="pagination pagination-sm shadow-sm" style="border-radius: 10px;">
+                        
+                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                            <a class="page-link text-dark" asp-action="Notifications" asp-route-page="@(currentPage - 1)">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(currentPage == i ? "active" : "")">
+                                <a class="page-link @(currentPage == i ? "text-white" : "text-dark")" 
+                                   style="@(currentPage == i ? "background: linear-gradient(135deg, #552459, #ae2eb8); border-color: #ae2eb8;" : "")"
+                                   asp-action="Notifications" 
+                                   asp-route-page="@i">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                            <a class="page-link text-dark" asp-action="Notifications" asp-route-page="@(currentPage + 1)">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        }
     }
     else
     {
@@ -130,6 +179,12 @@
     .btn-accept {
         background: linear-gradient(135deg, #1c7a15, #32b528);
         min-width: 100px;
+        gap: 5px;
+    }
+
+    .btn-chat {
+        background: linear-gradient(135deg, #1b3480, #4565c4);
+        min-width: 90px;
         gap: 5px;
     }
 </style>

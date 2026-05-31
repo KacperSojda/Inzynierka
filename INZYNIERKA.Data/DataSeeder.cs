@@ -110,7 +110,7 @@ namespace INZYNIERKA.Data
                     SenderId = users["User5"].Id,
                     ReceiverId = users["User4"].Id,
                     Type = NotificationType.FriendRequest,
-                    CreationDate = DateTime.UtcNow
+                    Timestamp = DateTime.UtcNow
                 });
 
                 await context.SaveChangesAsync();
@@ -152,9 +152,9 @@ namespace INZYNIERKA.Data
             if (!await context.Messages.AnyAsync())
             {
                 context.Messages.AddRange(
-                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Cześć?", DateTime = DateTime.UtcNow.AddHours(-2), IsRead = true },
-                    new Message {SenderId = users["User2"].Id, ReceiverId = users["User1"].Id, Content = "Hej, co tam?", DateTime = DateTime.UtcNow.AddHours(-1), IsRead = true },
-                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Nic ciekawego, jak ci mija dzień?", DateTime = DateTime.UtcNow.AddMinutes(-30), IsRead = true }
+                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Cześć?", Timestamp = DateTime.UtcNow.AddHours(-2), Readed = true },
+                    new Message {SenderId = users["User2"].Id, ReceiverId = users["User1"].Id, Content = "Hej, co tam?", Timestamp = DateTime.UtcNow.AddHours(-1), Readed = true },
+                    new Message {SenderId = users["User1"].Id, ReceiverId = users["User2"].Id, Content = "Nic ciekawego, jak ci mija dzień?", Timestamp = DateTime.UtcNow.AddMinutes(-30), Readed = true }
                 );
                 await context.SaveChangesAsync();
             }

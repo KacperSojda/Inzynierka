@@ -1,16 +1,25 @@
-﻿namespace INZYNIERKA.Services.Interfaces
+﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.ViewModels;
+
+namespace INZYNIERKA.Services.Interfaces
 {
-    public interface IChatAiService
+    public interface IChatAiService<TUser> where TUser : User
     {
-        Task<string> GetPrivateResponseHelpAsync(string currentUserId, string friendId);
-        Task<string> GetGroupResponseHelpAsync(string currentUserId, int groupId);
+        Task<string> ResponseHelp(string currentUserId, string friendId);
+        Task SaveSRSettings(string currentUserId, string friendId, string tone, string custom, bool auto);
+        Task<string> SummarizeChat(string currentUserId, string friendId, DateTime startDate, DateTime endDate);
 
-        Task<string> CorrectMessageAsync(string userMessage);
 
-        Task<string> TranslatePrivateMessageAsync(string currentUserId, string friendId, string userMessage);
-        Task<string> TranslateGroupMessageAsync(int groupId, string userMessage);
+        Task<string> GroupResponseHelp(string currentUserId, int groupId);
+        Task SaveGroupSRSettings(string currentUserId, int groupId, string tone, string custom, bool auto);
+        Task<string> SummarizeGroupChat(string currentUserId, int groupId, DateTime startDate, DateTime endDate);
 
-        Task<string> CensorMessageAsync(string message);
-        Task<string> SummarizePrivateChatAsync(string currentUserId, string friendId, int daysBack);
+        Task<string> CensorMessage(string message);
+        Task<string> CorrectMessage(string userMessage);
+        Task<string> AutoTranslateToUserLanguage(string targetUserId, string message);
+        Task<string> TranslateMessage(string currentUserId, string friendId, string userMessage);
+        Task<string> TranslateGroupMessage(int groupId, string userMessage);
+
+        
     }
 }

@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class FriendshipService : IFriendshipService
+    public class FriendshipService<TUser> : IFriendshipService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
+        private readonly INZDbContext<TUser> context;
 
-        public FriendshipService(INZDbContext context)
+        public FriendshipService(INZDbContext<TUser> context)
         {
             this.context = context;
         }
 
-        public async Task<bool> AcceptFriendRequestAsync(string currentUserId, int notificationId)
+        public async Task<bool> AcceptRequest(string currentUserId, int notificationId)
         {
             var notification = await context.Notifications
                 .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == currentUserId && n.Type == NotificationType.FriendRequest);
@@ -40,19 +40,37 @@ namespace INZYNIERKA.Services.Services
 
             return true;
         }
-        public async Task<List<FriendViewModel>> GetFriendListAsync(string userId)
+        public async Task<(List<FriendViewModel> Friends, int TotalCount)> FriendList(string userId, string? searchQuery, int page, int pageSize)
         {
-            return await context.UserFriends
-                .Where(f => f.UserId == userId && f.Status == FriendshipStatus.Accepted)
-                .Select(f => new FriendViewModel
-                {
-                    Id = f.Friend.Id,
-                    UserName = f.Friend.UserName
-                })
+            var friends = context.UserFriends
+                .Include(f => f.Friend)
+                .Where(f => f.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                searchQuery = searchQuery.Trim().ToLower();
+
+                friends = friends.Where(f => f.Friend.UserName.Trim().ToLower().Contains(searchQuery));
+            }
+
+            int totalCount = await friends.CountAsync();
+
+            var result = await friends
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            var model = result.Select(f => new FriendViewModel
+            {
+                Id = f.Friend.Id,
+                UserName = f.Friend.UserName,
+                IsDeleted = f.Friend.LockoutEnd.HasValue
+            }).ToList();
+
+            return (model, totalCount);
         }
 
-        public async Task DeleteFriendAsync(string currentUserId, string friendId)
+        public async Task DeleteFriend(string currentUserId, string friendId)
         {
             var friendship1 = await context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
@@ -66,19 +84,28 @@ namespace INZYNIERKA.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<List<FriendViewModel>> GetRequestListAsync(string userId)
+        public async Task<(List<FriendViewModel> Requests, int TotalCount)> RequestList(string userId, int page, int pageSize)
         {
-            return await context.UserFriends
-                .Where(f => f.UserId == userId && f.Status == FriendshipStatus.Pending)
+            var query = context.UserFriends
+                .Where(f => f.UserId == userId && f.Status == FriendshipStatus.Pending);
+
+            int totalCount = await query.CountAsync();
+
+            var requests = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(f => new FriendViewModel
                 {
                     Id = f.Friend.Id,
-                    UserName = f.Friend.UserName
+                    UserName = f.Friend.UserName,
+                    IsDeleted = f.Friend.LockoutEnd.HasValue
                 })
                 .ToListAsync();
+
+            return (requests, totalCount);
         }
 
-        public async Task DeleteRequestAsync(string currentUserId, string friendId)
+        public async Task DeleteRequest(string currentUserId, string friendId)
         {
             var friendship = await context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
@@ -96,7 +123,7 @@ namespace INZYNIERKA.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task SendFriendRequestAsync(string senderId, string receiverId)
+        public async Task SendRequest(string senderId, string receiverId)
         {
             if (senderId == receiverId) return;
 
@@ -111,7 +138,7 @@ namespace INZYNIERKA.Services.Services
                 SenderId = senderId,
                 ReceiverId = receiverId,
                 Type = NotificationType.FriendRequest,
-                CreationDate = DateTime.UtcNow
+                Timestamp = DateTime.UtcNow
             };
 
             context.Notifications.Add(notification);

@@ -15,17 +15,17 @@ namespace INZYNIERKA.Tests.Services
             return new INZDbContext(options);
         }
 
-        // TESTY DLA: SendFriendRequestAsync //
+        // TESTY DLA: SendRequest //
 
         [Fact]
-        public async Task SendFriendRequestAsyncTest()
+        public async Task SendRequestTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
             var senderId = "Ja";
             var receiverId = "Znajomy";
 
-            await service.SendFriendRequestAsync(senderId, receiverId);
+            await service.SendRequest(senderId, receiverId);
 
             var pendingFriendship = await context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == senderId && f.FriendId == receiverId);
@@ -39,17 +39,17 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task SendFriendRequestAsyncTest2()
+        public async Task SendRequestTest2()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
             var senderId = "Ja";
             var receiverId = "Znajomy";
 
             context.UserFriends.Add(new UserFriend { UserId = receiverId, FriendId = senderId, Status = FriendshipStatus.Pending });
             await context.SaveChangesAsync();
 
-            await service.SendFriendRequestAsync(senderId, receiverId);
+            await service.SendRequest(senderId, receiverId);
 
             var newFriendship = await context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == senderId && f.FriendId == receiverId);
@@ -57,24 +57,24 @@ namespace INZYNIERKA.Tests.Services
             Assert.Null(newFriendship);
         }
 
-        // TESTY DLA: AcceptFriendRequestAsync //
+        // TESTY DLA: AcceptRequest //
 
         [Fact]
-        public async Task AcceptFriendRequestAsyncTest()
+        public async Task AcceptRequestTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
 
-            var result = await service.AcceptFriendRequestAsync("Ja", 999);
+            var result = await service.AcceptRequest("Ja", 999);
 
             Assert.False(result);
         }
 
         [Fact]
-        public async Task AcceptFriendRequestAsyncTest2()
+        public async Task AcceptRequestTest2()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
 
             var senderId = "Ja";
             var receiverId = "Znajomy";
@@ -89,7 +89,7 @@ namespace INZYNIERKA.Tests.Services
             });
             await context.SaveChangesAsync();
 
-            var result = await service.AcceptFriendRequestAsync(receiverId, notificationId);
+            var result = await service.AcceptRequest(receiverId, notificationId);
 
             var friendship1 = await context.UserFriends.FirstOrDefaultAsync(f => f.UserId == senderId && f.FriendId == receiverId);
             var friendship2 = await context.UserFriends.FirstOrDefaultAsync(f => f.UserId == receiverId && f.FriendId == senderId);
@@ -105,13 +105,13 @@ namespace INZYNIERKA.Tests.Services
             Assert.False(notificationStillExists);
         }
 
-        // TESTY DLA: GetFriendListAsync //
+        // TESTY DLA: FriendList //
 
         [Fact]
-        public async Task GetFriendListAsyncTest()
+        public async Task FriendListTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
             var userId = "Ja";
 
             context.Users.AddRange(
@@ -125,20 +125,20 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            var result = await service.GetFriendListAsync(userId);
+            var result = await service.FriendList(userId, "");
 
             Assert.Single(result);
             Assert.Equal("znajomy1", result.First().Id);
             Assert.Equal("Znajomy1", result.First().UserName);
         }
 
-        // TESTY DLA: GetRequestListAsync //
+        // TESTY DLA: RequestList //
 
         [Fact]
-        public async Task GetRequestListAsyncTest()
+        public async Task RequestListTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
             var userId = "Ja";
 
             context.Users.AddRange(
@@ -152,20 +152,20 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            var result = await service.GetRequestListAsync(userId);
+            var result = await service.RequestList(userId);
 
             Assert.Single(result);
             Assert.Equal("znajomy2", result.First().Id);
             Assert.Equal("Znajomy2", result.First().UserName);
         }
 
-        // TESTY DLA: DeleteFriendAsync //
+        // TESTY DLA: DeleteFriend //
 
         [Fact]
-        public async Task DeleteFriendAsyncTest()
+        public async Task DeleteFriendTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
             var userId = "Ja";
             var friendId = "Znajomy";
 
@@ -175,19 +175,19 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            await service.DeleteFriendAsync(userId, friendId);
+            await service.DeleteFriend(userId, friendId);
 
             var friendshipsLeft = await context.UserFriends.CountAsync();
             Assert.Equal(0, friendshipsLeft);
         }
 
-        // TESTY DLA: DeleteRequestAsync //
+        // TESTY DLA: DeleteRequest //
 
         [Fact]
-        public async Task DeleteRequestAsyncTest()
+        public async Task DeleteRequestTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new FriendshipService(context);
+            var service = new FriendshipService<User>(context);
             var senderId = "Ja";
             var receiverId = "Znajomy";
 
@@ -195,7 +195,7 @@ namespace INZYNIERKA.Tests.Services
             context.Notifications.Add(new Notification {SenderId = senderId, ReceiverId = receiverId, Type = NotificationType.FriendRequest});
             await context.SaveChangesAsync();
 
-            await service.DeleteRequestAsync(senderId, receiverId);
+            await service.DeleteRequest(senderId, receiverId);
 
             var friendshipsLeft = await context.UserFriends.CountAsync();
             var notificationsLeft = await context.Notifications.CountAsync();

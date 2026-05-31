@@ -15,11 +15,20 @@
     <div class="row justify-content-center">
         <div class="col-12" style="max-width: 800px;">
             
+            <div class="mb-4 w-100">
+                <div class="input-group shadow-sm" style="border-radius: 15px; overflow: hidden; border: 1px solid #f0f0f0;">
+                    <span class="input-group-text bg-white border-0 px-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" id="memberSearchInput" class="form-control border-0 py-2 shadow-none" placeholder="Szukaj członka po nazwie..." onkeyup="filterMembers()">
+                </div>
+            </div>
+
             <h4 class="fw-bold mb-3" style="color: #552459;"><i class="bi bi-shield-lock-fill me-2"></i>Administrators</h4>
             <div class="d-flex flex-column gap-3 mb-5">
                 @foreach (var admin in Model.Admins)
                 {
-                    <div class="list-card d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3 px-4 w-100">
+                    <div class="list-card d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3 px-4 w-100 member-item" data-name="@admin.Name.ToLower()">
                         <strong class="fs-5 mb-3 mb-md-0" style="color: #111827;">@admin.Name</strong>
                         
                         <div class="action-menu gap-2">
@@ -58,7 +67,7 @@
             <div class="d-flex flex-column gap-3">
                 @foreach (var member in Model.Members)
                 {
-                    <div class="list-card d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3 px-4 w-100">
+                    <div class="list-card d-flex flex-column flex-md-row justify-content-between align-items-md-center p-3 px-4 w-100 member-item" data-name="@member.Name.ToLower()">
                         <strong class="fs-5 mb-3 mb-md-0" style="color: #111827;">@member.Name</strong>
                         
                         <div class="action-menu gap-2">
@@ -83,10 +92,9 @@
 
                             @if (member.UserId != Model.CurrentUserId)
                             {
-                                <form asp-action="ShowProfile" asp-controller="Profile" method="post" class="m-0">
-                                    <input type="hidden" name="userId" value="@member.UserId" />
-                                    <button type="submit" class="action-btn btn-profile" title="Show Profile"><i class="bi bi-person"></i></button>
-                                </form>
+                                <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@member.UserId" class="action-btn btn-profile" title="Show Profile" data-bs-toggle="tooltip">
+                                     <i class="bi bi-person"></i>
+                                </a>
                             }
                         </div>
                     </div>
@@ -96,6 +104,27 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function filterMembers() {
+            const searchString = document.getElementById('memberSearchInput').value.toLowerCase();
+            const memberItems = document.querySelectorAll('.member-item');
+
+            memberItems.forEach(item => {
+                const memberName = item.getAttribute('data-name');
+                
+                if (memberName.includes(searchString)) {
+                    item.classList.remove('d-none');
+                    item.classList.add('d-flex');
+                } else {
+                    item.classList.remove('d-flex');
+                    item.classList.add('d-none');
+                }
+            });
+        }
+    </script>
+}
 
 <style>
     .list-card {

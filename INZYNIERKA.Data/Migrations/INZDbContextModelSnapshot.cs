@@ -107,16 +107,13 @@ namespace INZYNIERKA.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<byte[]>("ImageData")
                         .HasColumnType("bytea");
 
                     b.Property<string>("ImageType")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsRead")
+                    b.Property<bool>("Readed")
                         .HasColumnType("boolean");
 
                     b.Property<string>("ReceiverId")
@@ -126,6 +123,9 @@ namespace INZYNIERKA.Migrations
                     b.Property<string>("SenderId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -144,9 +144,6 @@ namespace INZYNIERKA.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int?>("GroupId")
                         .HasColumnType("integer");
 
@@ -157,6 +154,9 @@ namespace INZYNIERKA.Migrations
                     b.Property<string>("SenderId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -201,8 +201,22 @@ namespace INZYNIERKA.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Cover")
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
@@ -211,6 +225,9 @@ namespace INZYNIERKA.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastActive")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -235,6 +252,10 @@ namespace INZYNIERKA.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("PreferredLanguages")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<string>("PrivateDescription")
                         .IsRequired()
                         .HasColumnType("text");
@@ -246,12 +267,22 @@ namespace INZYNIERKA.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
+                    b.Property<string>("SocialMedia")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<int?>("Zodiac")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -273,8 +304,18 @@ namespace INZYNIERKA.Migrations
                     b.Property<string>("FriendId")
                         .HasColumnType("text");
 
+                    b.Property<string>("Custom")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("SmartReplies")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Tone")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "FriendId");
 
@@ -290,6 +331,16 @@ namespace INZYNIERKA.Migrations
 
                     b.Property<int>("ChatGroupId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Custom")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("SmartReplies")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Tone")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");

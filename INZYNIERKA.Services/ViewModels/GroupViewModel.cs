@@ -2,7 +2,6 @@
 {
     public class GroupViewModel
     {
-        public List<GroupItem> AdminGroups { get; set; } = new();
         public List<GroupItem> Groups { get; set; } = new();
     }
 
@@ -12,5 +11,6 @@
         public string Name { get; set; }
         public string Description { get; set; }
         public List<string> Tags { get; set; } = new List<String>();
+        public bool IsAdmin { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace INZYNIERKA.Services.Services
 {
     public class FileService : IFileService
     {
-        public async Task<(bool IsSuccess, string Result)> UploadAvatarAsync(IFormFile avatarFile)
+        public async Task<(bool IsSuccess, string Result)> UploadAvatar(IFormFile avatarFile)
         {
             if (avatarFile == null || avatarFile.Length == 0)
             {
@@ -25,18 +25,23 @@ namespace INZYNIERKA.Services.Services
                 return (false, "Plik jest zbyt duży. Maksymalny rozmiar to 2MB.");
             }
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
-            Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                await avatarFile.CopyToAsync(stream);
-            }
+                using (var memoryStream = new MemoryStream())
+                {
+                    await avatarFile.CopyToAsync(memoryStream);
 
-            return (true, $"/uploads/avatars/{fileName}");
+                    byte[] fileBytes = memoryStream.ToArray();
+                    string base64String = Convert.ToBase64String(fileBytes);
+                    string dataUrl = $"data:{avatarFile.ContentType};base64,{base64String}";
+
+                    return (true, dataUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Błąd przetwarzania pliku: {ex.Message}");
+            }
         }
     }
 }

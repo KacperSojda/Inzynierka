@@ -28,6 +28,43 @@
                     </form>
                 </div>
             }
+            @{
+                int currentPage = ViewBag.CurrentPage ?? 1;
+                int totalPages = ViewBag.TotalPages ?? 1;
+            }
+
+            @if (totalPages > 1)
+            {
+                <div class="d-flex justify-content-center mt-4 w-100" style="max-width: 600px;">
+                    <nav aria-label="Nawigacja stron zaproszeń">
+                        <ul class="pagination pagination-sm shadow-sm" style="border-radius: 10px;">
+                            
+                            <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                <a class="page-link text-dark" asp-action="RequestList" asp-route-page="@(currentPage - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(currentPage == i ? "active" : "")">
+                                    <a class="page-link @(currentPage == i ? "text-white" : "text-dark")"
+                                       style="@(currentPage == i ? "background: linear-gradient(135deg, #552459, #ae2eb8); border-color: #ae2eb8;" : "")"
+                                       asp-action="RequestList"
+                                       asp-route-page="@i">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                <a class="page-link text-dark" asp-action="RequestList" asp-route-page="@(currentPage + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
+            }
         </div>
     }
     else

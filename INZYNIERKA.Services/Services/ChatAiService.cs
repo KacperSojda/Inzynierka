@@ -7,43 +7,94 @@ using System.Text;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class ChatAiService : IChatAiService
+    public class ChatAiService<TUser> : IChatAiService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
+        private readonly INZDbContext<TUser> context;
         private readonly IGeminiService geminiService;
         private readonly IConfiguration configuration;
 
-        public ChatAiService(INZDbContext context, IGeminiService geminiService, IConfiguration configuration)
+        public ChatAiService(INZDbContext<TUser> context, IGeminiService geminiService, IConfiguration configuration)
         {
             this.context = context;
             this.geminiService = geminiService;
             this.configuration = configuration;
         }
 
-        public async Task<string> GetPrivateResponseHelpAsync(string currentUserId, string friendId)
+        public async Task<string> ResponseHelp(string currentUserId, string friendId)
         {
+            var relation = await context.UserFriends
+                .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
+
+            string tone = relation?.Tone ?? "casual";
+            string? custom = relation?.Custom;
+
             var messages = await context.Messages.Include(m => m.Sender)
-                .Where(m => (m.SenderId == currentUserId && m.ReceiverId == friendId) || (m.SenderId == friendId && m.ReceiverId == currentUserId))
-                .OrderByDescending(m => m.DateTime).Take(30).ToListAsync();
+                .Where(m => (m.SenderId == currentUserId && m.ReceiverId == friendId) ||
+                            (m.SenderId == friendId && m.ReceiverId == currentUserId))
+                .OrderByDescending(m => m.Timestamp)
+                .Take(30)
+                .ToListAsync();
 
             messages.Reverse();
 
             var historyBuilder = new StringBuilder();
-            foreach (var msg in messages.OrderBy(m => m.DateTime))
+            foreach (var msg in messages.OrderBy(m => m.Timestamp))
             {
                 string senderLabel = msg.SenderId == currentUserId ? "User" : "Friend";
                 historyBuilder.AppendLine($"{senderLabel}: {msg.Content}");
             }
-
             string chatHistory = historyBuilder.ToString();
 
-            var ans =  await geminiService.AskAsync(chatHistory, configuration["Prompts:ResponseHelp"]);
+            string styleInstruction = "Match the language and general style of the conversation.";
+
+            if (tone == "custom" && !string.IsNullOrWhiteSpace(custom))
+            {
+                styleInstruction = $"Apply the following custom style strictly as described by the user: '{custom}'.";
+            }
+            else if (tone == "casual")
+            {
+                styleInstruction = "Reply in a very casual, relaxed, and friendly tone (use emojis if appropriate).";
+            }
+            else if (tone == "formal")
+            {
+                styleInstruction = "Reply in a formal, polite, and highly professional tone. Avoid slang and emojis.";
+            }
+            else if (tone == "funny")
+            {
+                styleInstruction = "Reply in a funny, humorous, sarcastic, or playful tone.";
+            }
+
+            string basePrompt = configuration["Prompts:ResponseHelp"];
+            string fullSystemPrompt = $"{basePrompt}{styleInstruction}\n\nCHAT HISTORY:";
+
+            var ans = await geminiService.AskAsync(chatHistory, fullSystemPrompt);
 
             return string.IsNullOrEmpty(ans) ? string.Empty : ans;
         }
 
-        public async Task<string> GetGroupResponseHelpAsync(string currentUserId, int groupId)
+        public async Task SaveSRSettings(string currentUserId, string friendId, string tone, string custom, bool auto)
         {
+            var relation = await context.UserFriends
+                .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
+
+            if (relation != null)
+            {
+                relation.Tone = tone;
+                relation.Custom = custom;
+                relation.SmartReplies = auto;
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<string> GroupResponseHelp(string currentUserId, int groupId)
+        {
+            var relation = await context.UserGroups
+                .FirstOrDefaultAsync(ug => ug.UserId == currentUserId && ug.ChatGroupId == groupId);
+
+            string tone = relation?.Tone ?? "casual";
+            string? custom = relation?.Custom;
+
             var messages = await context.GroupMessages.Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId)
                 .OrderByDescending(m => m.Timestamp)
@@ -61,12 +112,33 @@ namespace INZYNIERKA.Services.Services
 
             string chatHistory = historyBuilder.ToString();
 
-            var ans = await geminiService.AskAsync(chatHistory, configuration["Prompts:ResponseHelp"]);
+            string styleInstruction = "Match the language and general style of the conversation.";
+            if (tone == "custom" && !string.IsNullOrWhiteSpace(custom))
+            {
+                styleInstruction = $"Apply the following custom style strictly as described by the user: '{custom}'.";
+            }
+            else if (tone == "casual")
+            {
+                styleInstruction = "Reply in a very casual, relaxed, and friendly tone (use emojis if appropriate).";
+            }
+            else if (tone == "formal")
+            {
+                styleInstruction = "Reply in a formal, polite, and highly professional tone. Avoid slang and emojis.";
+            }
+            else if (tone == "funny")
+            {
+                styleInstruction = "Reply in a funny, humorous, sarcastic, or playful tone.";
+            }
+
+            string basePrompt = configuration["Prompts:ResponseHelp"];
+            string fullSystemPrompt = $"{basePrompt}{styleInstruction}\n\nCHAT HISTORY:";
+
+            var ans = await geminiService.AskAsync(chatHistory, fullSystemPrompt);
 
             return string.IsNullOrEmpty(ans) ? string.Empty : ans;
         }
 
-        public async Task<string> CorrectMessageAsync(string userMessage)
+        public async Task<string> CorrectMessage(string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
 
@@ -76,13 +148,13 @@ namespace INZYNIERKA.Services.Services
 
         }
 
-        public async Task<string> TranslatePrivateMessageAsync(string currentUserId, string friendId, string userMessage)
+        public async Task<string> TranslateMessage(string currentUserId, string friendId, string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
 
             var messages = await context.Messages
                 .Where(m => (m.SenderId == currentUserId && m.ReceiverId == friendId) || (m.SenderId == friendId && m.ReceiverId == currentUserId))
-                .OrderByDescending(m => m.DateTime).Take(30).Select(m => m.Content).ToListAsync();
+                .OrderByDescending(m => m.Timestamp).Take(30).Select(m => m.Content).ToListAsync();
 
             messages.Reverse();
             string language = "English";
@@ -99,7 +171,24 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(translatedResult) ? userMessage : translatedResult;
         }
 
-        public async Task<string> TranslateGroupMessageAsync(int groupId, string userMessage)
+        public async Task<string> AutoTranslateToUserLanguage(string targetUserId, string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return message;
+
+            var targetUser = await context.Users.FirstOrDefaultAsync(u => u.Id == targetUserId);
+
+            string targetLanguage = string.IsNullOrWhiteSpace(targetUser?.PreferredLanguages)
+                ? "English"
+                : targetUser.PreferredLanguages;
+
+            string translatePrompt = configuration["Prompts:Translate"].Replace("{language}", targetLanguage);
+
+            var translatedResult = await geminiService.AskAsync(message, translatePrompt);
+
+            return string.IsNullOrEmpty(translatedResult) ? message : translatedResult;
+        }
+
+        public async Task<string> TranslateGroupMessage(int groupId, string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
 
@@ -122,7 +211,7 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(translatedResult) ? userMessage : translatedResult;
         }
 
-        public async Task<string> CensorMessageAsync(string message)
+        public async Task<string> CensorMessage(string message)
         {
             if (string.IsNullOrWhiteSpace(message))
             {
@@ -134,42 +223,71 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
         }
 
-        public async Task<string> SummarizePrivateChatAsync(string currentUserId, string friendId, int daysBack)
+        public async Task<string> SummarizeChat(string currentUserId, string friendId, DateTime startDate, DateTime endDate)
         {
-            var sinceDate = DateTime.UtcNow.AddDays(-daysBack);
-
             var messages = await context.Messages.Include(m => m.Sender)
                 .Where(m => ((m.SenderId == currentUserId && m.ReceiverId == friendId) ||
                              (m.SenderId == friendId && m.ReceiverId == currentUserId))
-                             && m.DateTime >= sinceDate)
-                .OrderByDescending(m => m.DateTime)
-                .Take(30)
+                             && m.Timestamp.Date >= startDate.Date
+                             && m.Timestamp.Date <= endDate.Date)
+                .OrderBy(m => m.Timestamp)
                 .ToListAsync();
 
-            if (!messages.Any())
-            {
-                return "No messages to summarize from the selected period.";
-            }
-
-            messages.Reverse();
+            if (!messages.Any()) return "No messages in the selected period.";
 
             var historyBuilder = new StringBuilder();
             foreach (var msg in messages)
             {
                 string senderLabel = msg.SenderId == currentUserId ? "User" : "Friend";
-
                 if (!string.IsNullOrWhiteSpace(msg.Content))
-                {
                     historyBuilder.AppendLine($"{senderLabel}: {msg.Content}");
-                }
             }
-
-            if (historyBuilder.Length == 0) return "In the selected period, mainly files and images were sent.";
 
             var prompt = configuration["Prompts:SummarizeChat"];
             var summary = await geminiService.AskAsync(historyBuilder.ToString(), prompt);
 
-            return string.IsNullOrEmpty(summary) ? "Failed to generate summary." : summary;
+            return string.IsNullOrEmpty(summary) ? "AI was unable to generate a summary." : summary;
+        }
+
+        public async Task<string> SummarizeGroupChat(string currentUserId, int groupId, DateTime startDate, DateTime endDate)
+        {
+            var messages = await context.GroupMessages.Include(m => m.Sender)
+                .Where(m => m.GroupId == groupId
+                             && m.Timestamp.Date >= startDate.Date
+                             && m.Timestamp.Date <= endDate.Date)
+                .OrderBy(m => m.Timestamp)
+                .ToListAsync();
+
+            if (!messages.Any()) return "Brak wiadomości w wybranym okresie czasu.";
+
+            var historyBuilder = new StringBuilder();
+            foreach (var msg in messages)
+            {
+                string senderLabel = msg.SenderId == currentUserId ? "User" : msg.Sender.UserName;
+
+                if (!string.IsNullOrWhiteSpace(msg.Content))
+                    historyBuilder.AppendLine($"{senderLabel}: {msg.Content}");
+            }
+
+            var prompt = configuration["Prompts:SummarizeChat"];
+            var summary = await geminiService.AskAsync(historyBuilder.ToString(), prompt);
+
+            return string.IsNullOrEmpty(summary) ? "Sztuczna inteligencja nie mogła wygenerować podsumowania." : summary;
+        }
+
+        public async Task SaveGroupSRSettings(string currentUserId, int groupId, string tone, string custom, bool auto)
+        {
+            var relation = await context.UserGroups
+                .FirstOrDefaultAsync(ug => ug.UserId == currentUserId && ug.ChatGroupId == groupId);
+
+            if (relation != null)
+            {
+                relation.Tone = tone;
+                relation.Custom = custom;
+                relation.SmartReplies = auto;
+
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

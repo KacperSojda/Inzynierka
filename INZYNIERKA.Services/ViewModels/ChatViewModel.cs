@@ -10,6 +10,9 @@
         public string UserMessage { get; set;  }
         public string GeminiQuestion { get; set; }
         public string GeminiAnswer { get; set; }
+        public string Tone { get; set; } = "casual";
+        public string? Custom { get; set; }
+        public bool Auto { get; set; } = true;
     }
 
     public class MessageViewModel
@@ -19,10 +22,10 @@
         public string ReceiverId { get; set; }
         public string ReceiverName { get; set; }
         public string Content { get; set; }
-        public DateTime DateTime { get; set; }
-        public string? ImageDataBase64 { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? ImageData { get; set; }
         public string? ImageType { get; set; }
-        public bool IsImage => !string.IsNullOrEmpty(ImageDataBase64);
-        public bool IsRead { get; set; }
+        public bool IsImage => !string.IsNullOrEmpty(ImageData);
+        public bool Readed { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using INZYNIERKA.Data;
+using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.ViewModels;
 using INZYNIERKA.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -6,20 +7,20 @@ using Microsoft.Extensions.Configuration;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class AiMatchmakingService : IAiMatchmakingService
+    public class AiMatchmakingService<TUser> : IAiMatchmakingService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
+        private readonly INZDbContext<TUser> context;
         private readonly IGeminiService geminiService;
         private readonly IConfiguration configuration;
 
-        public AiMatchmakingService(INZDbContext context, IGeminiService geminiService, IConfiguration configuration)
+        public AiMatchmakingService(INZDbContext<TUser> context, IGeminiService geminiService, IConfiguration configuration)
         {
             this.context = context;
-            this.geminiService = geminiService;
+            this.geminiService = geminiService; 
             this.configuration = configuration;
         }
 
-        public async Task<List<string>> GetPotentialMatchesForAiAsync(string currentUserId)
+        public async Task<List<string>> AiMatches(string currentUserId)
         {
             var connectedUserIds = await context.UserFriends
                 .Where(f => f.UserId == currentUserId || f.FriendId == currentUserId)
@@ -35,7 +36,7 @@ namespace INZYNIERKA.Services.Services
             return matchingUsers;
         }
 
-        public async Task<(UserViewModel MatchedUser, int LastProcessedIndex)> FindNextAiMatchAsync(string currentUserId, List<string> userIds, int startIndex)
+        public async Task<(UserViewModel MatchedUser, int LastProcessedIndex)> AiNext(string currentUserId, List<string> userIds, int startIndex)
         {
             var user = await context.Users
                 .Include(u => u.UserTags).ThenInclude(ut => ut.Tag)

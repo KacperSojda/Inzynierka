@@ -4,6 +4,6 @@ namespace INZYNIERKA.Services.Interfaces
 {
     public interface IFileService
     {
-        Task<(bool IsSuccess, string Result)> UploadAvatarAsync(IFormFile avatarFile);
+        Task<(bool IsSuccess, string Result)> UploadAvatar(IFormFile avatarFile);
     }
 }

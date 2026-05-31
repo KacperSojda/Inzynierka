@@ -10,7 +10,7 @@
         public int? GroupId { get; set; } = null;
         public Group Group { get; set; }
         public NotificationType Type { get; set; }
-        public DateTime CreationDate { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
     public enum NotificationType
     {

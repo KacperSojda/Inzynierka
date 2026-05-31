@@ -1,26 +1,32 @@
-﻿using INZYNIERKA.Services.Interfaces;
+﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+
 
 namespace INZYNIERKA.Hubs
 {
     [Authorize]
-    public class ChatHub : Hub
+    public class ChatHub<TUser> : Hub where TUser : User
     {
-        private readonly IChatService chatService;
-        private readonly IChatAiService chatAiService;
+        private readonly IChatService<TUser> chatService;
+        private readonly IChatAiService<TUser> chatAiService;
         private readonly PresenceTracker tracker;
 
-        public ChatHub(IChatService chatService, IChatAiService chatAiService, PresenceTracker tracker)
+        public ChatHub(IChatService<TUser> chatService, IChatAiService<TUser> chatAiService, PresenceTracker tracker)
         {
             this.chatAiService = chatAiService;
             this.chatService = chatService;
             this.tracker = tracker;
         }
 
-        public async Task SendMessage(string senderId, string receiverId, string message)
+        public async Task SendMessage(string senderId, string receiverId, string message, bool autoTranslate = false)
         {
-            if (senderId != Context.UserIdentifier){ return; }
+            var userId = Context.UserIdentifier;
+            if (senderId != userId)
+            { 
+                return;
+            }
             if (string.IsNullOrWhiteSpace(message))
             {
                 await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty.");
@@ -36,14 +42,30 @@ namespace INZYNIERKA.Hubs
             try
             {
                 string finalMessage = message;
+
+                if (autoTranslate)
+                {
+                    var translated = await chatAiService.AutoTranslateToUserLanguage(receiverId, finalMessage);
+                    if (!string.IsNullOrWhiteSpace(translated))
+                    {
+                        finalMessage = translated;
+                    }
+                }
+
                 try
                 {
-                    var censored = ""; //await chatAiService.CensorMessageAsync(finalMessage);
-                    if (!string.IsNullOrEmpty(censored)) finalMessage = censored;
+                    var censored = ""; //await chatAiService.CensorMessage(finalMessage);
+                    if (!string.IsNullOrEmpty(censored))
+                    {
+                        finalMessage = censored;
+                    }
                 }
-                catch (Exception ex) { }
+                catch (Exception ex)
+                {
+                    
+                }
 
-                await chatService.SavePrivateMessageAsync(senderId, receiverId, finalMessage);
+                await chatService.SaveMessage(senderId, receiverId, finalMessage);
                 await Clients.Users(senderId, receiverId).SendAsync("ReceiveMessage", senderId, receiverId, finalMessage);
 
             }
@@ -53,30 +75,32 @@ namespace INZYNIERKA.Hubs
             }
         }
 
-        public async Task SendImage(string senderId, string receiverId, string base64Image, string imageType)
+        public async Task SendImage(string senderId, string receiverId, string image, string imageType)
         {
-            if (senderId != Context.UserIdentifier) return;
-            if (string.IsNullOrEmpty(base64Image)) return;
+            if (senderId != Context.UserIdentifier || string.IsNullOrEmpty(image))
+            {
+                return;
+            }
 
             try
             {
-                if (base64Image.Length > 2 * 1024 * 1024)
+                if (image.Length > 2 * 1024 * 1024)
                 {
                     await Clients.Caller.SendAsync("ErrorNotification", "File is too large.");
                     return;
                 }
 
-                byte[] imageBytes = Convert.FromBase64String(base64Image);
+                byte[] imageBytes = Convert.FromBase64String(image);
 
-                var success = await chatService.SaveImageMessageAsync(senderId, receiverId, imageBytes, imageType);
+                var result = await chatService.SaveImage(senderId, receiverId, imageBytes, imageType);
 
-                if (!success)
+                if (!result)
                 {
                     await Clients.Caller.SendAsync("ErrorNotification", "Failed to send image.");
                     return;
                 }
 
-                await Clients.Users(senderId, receiverId).SendAsync("ReceiveImage", senderId, receiverId, base64Image, imageType);
+                await Clients.Users(senderId, receiverId).SendAsync("ReceiveImage", senderId, receiverId, image, imageType);
             }
             catch (Exception ex)
             {
@@ -84,31 +108,103 @@ namespace INZYNIERKA.Hubs
             }
         }
 
-        public async Task ClearNotifications(string userId, string friendId)
+        public async Task<List<string>> SmartReply(string friendId)
         {
-            if (userId != Context.UserIdentifier) return;
+            if (Context.UserIdentifier == null)
+            {
+                return new List<string>();
+            }
 
             try
             {
-                await chatService.ClearMessageNotificationAsync(userId, friendId);
+                var userId = Context.UserIdentifier;
+                string answer = await chatAiService.ResponseHelp(userId, friendId);
+
+                if (string.IsNullOrWhiteSpace(answer))
+                {
+                    return new List<string>();
+                }
+
+                var replies = answer.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                    .Take(3)
+                                    .ToList();
+
+                return replies;
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+        }
+
+        public async Task SaveSmartReplySettings(string friendId, string tone, string custom, bool auto)
+        {
+            var userId = Context.UserIdentifier;
+            if (userId == null) return;
+
+            try
+            {
+                await chatAiService.SaveSRSettings(userId, friendId, tone, custom, auto);
+            }
+            catch (Exception) { }
+        }
+
+        public async Task<string> ChatSummary(string friendId, DateTime start, DateTime end)
+        {
+            if (Context.UserIdentifier == null)
+            {
+                return "Błąd autoryzacji.";
+            }
+
+            try
+            {
+                var userId = Context.UserIdentifier;
+                string answer = await chatAiService.SummarizeChat(userId, friendId, start, end);
+                return answer;
+            }
+            catch (Exception ex)
+            {
+                return "Nie udało się wygenerować podsumowania.";
+            }
+        }
+
+        public async Task ClearNotifications(string userId, string friendId)
+        {
+            var currentUserId = Context.UserIdentifier;
+            if (userId != currentUserId)
+            {
+                return;
+            }
+            try
+            {
+                await chatService.ClearNotification(userId, friendId);
             }
             catch (Exception ex) { }
         }
         public async Task MarkAsRead(string userId, string friendId)
         {
-            if (userId != Context.UserIdentifier) return;
+            var currentUserId = Context.UserIdentifier;
+            if (userId != currentUserId)
+            {
+                return;
+            }
 
             try
             {
-                await chatService.MarkMessagesAsReadAsync(userId, friendId);
+                await chatService.MarkAsReaded(userId, friendId);
                 await Clients.User(friendId).SendAsync("MessagesRead", userId);
             }
             catch (Exception ex) { }
         }
 
-        public async Task SendTypingIndicator(string senderId, string receiverId)
+        public async Task WritingStatus(string senderId, string receiverId)
         {
-            if(senderId != Context.UserIdentifier) return;
+            var userId = Context.UserIdentifier;
+
+            if (senderId != userId)
+            {
+                return;
+            }
             await Clients.User(receiverId).SendAsync("ReceiveTypingIndicator", senderId);
         }
 
@@ -118,16 +214,27 @@ namespace INZYNIERKA.Hubs
         {
             try
             {
-                if (Context.UserIdentifier != null)
+                var userId = Context.UserIdentifier;
+                if (userId == null)
                 {
-                    var isOnline = await tracker.UserConnected(Context.UserIdentifier, Context.ConnectionId);
-                    if (isOnline)
-                    {
-                        await Clients.Others.SendAsync("UserIsOnline", Context.UserIdentifier);
-                    }
+                    await base.OnConnectedAsync();
+                    return;
                 }
+
+                var connectionId = Context.ConnectionId;
+
+                var connected = await tracker.Connected(userId, connectionId);
+
+                if (connected)
+                {
+                    await Clients.Others.SendAsync("Online", userId);
+                }
+
             }
-            catch (Exception ex) { }
+            catch (Exception ex) 
+            { 
+            
+            }
 
             await base.OnConnectedAsync();
         }
@@ -136,26 +243,37 @@ namespace INZYNIERKA.Hubs
         {
             try
             {
-                if (Context.UserIdentifier != null)
+                var userId = Context.UserIdentifier;
+                if (userId == null)
                 {
-                    var isOffline = await tracker.UserDisconnected(Context.UserIdentifier, Context.ConnectionId);
-                    if (isOffline)
-                    {
-                        await Clients.Others.SendAsync("UserIsOffline", Context.UserIdentifier);
-                    }
+                    await base.OnDisconnectedAsync(exception);
+                    return;
                 }
+
+                var connectionId = Context.ConnectionId;
+
+                var disconnected = await tracker.Disconnected(userId, connectionId);
+
+                if (disconnected)
+                {
+                    await Clients.Others.SendAsync("Offline", userId);
+                }
+
             }
-            catch (Exception ex) { }
+            catch (Exception ex) 
+            {
+
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task<bool> CheckIfUserIsOnline(string friendId)
+        public async Task<bool> CheckStatus(string friendId)
         {
             try
             {
-                var onlineUsers = await tracker.GetOnlineUsers();
-                return onlineUsers.Any(id => id.Equals(friendId, StringComparison.OrdinalIgnoreCase));
+                var online = await tracker.OnlineUsers();
+                return online.Any(id => id.Equals(friendId, StringComparison.OrdinalIgnoreCase));
             }
             catch (Exception ex)
             {

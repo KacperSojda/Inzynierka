@@ -15,11 +15,14 @@
     </div>
 
     <form asp-action="SelectTags" method="post">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger fw-bold mb-4" style="font-size: 1.1rem;"></div>
+
         <div class="tags-container justify-content-center mb-5">
             @for (int i = 0; i < Model.Tags.Count; i++)
             {
                 <input type="hidden" asp-for="Tags[i].TagId" />
-                <input type="checkbox" asp-for="Tags[i].IsSelected" id="tag-@i" class="tag-checkbox" />
+                <input type="checkbox" asp-for="Tags[i].Selected" id="tag-@i" class="tag-checkbox" />
                 
                 <label for="tag-@i" class="tag-block">
                     @Model.Tags[i].TagName

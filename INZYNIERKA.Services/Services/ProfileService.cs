@@ -7,18 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class ProfileService : IProfileService
+    public class ProfileService<TUser> : IProfileService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
-        private readonly UserManager<User> userManager;
+        private readonly INZDbContext<TUser> context;
+        private readonly UserManager<TUser> userManager;
 
-        public ProfileService(INZDbContext context, UserManager<User> userManager)
+        public ProfileService(INZDbContext<TUser> context, UserManager<TUser> userManager)
         {
             this.context = context;
             this.userManager = userManager;
         }
 
-        public async Task<UserViewModel> GetUserProfileAsync(string userId)
+        public async Task<UserViewModel> Profile(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
 
@@ -35,11 +35,20 @@ namespace INZYNIERKA.Services.Services
                 PublicDescription = user.PublicDescription,
                 UserName = user.UserName,
                 Avatar = user.Avatar,
-                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList()
+                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList(),
+                BirthDate = user.BirthDate,
+                Age = user.Age,
+                City = user.City,
+                Country = user.Country,
+                Status = user.Status,
+                Zodiac = user.Zodiac,
+                Cover = user.Cover,
+                SocialMedia = user.SocialMedia,
+                Language = user.PreferredLanguages
             };
         }
 
-        public async Task<UserViewModel> GetUserProfileForEditAsync(string userId)
+        public async Task<UserViewModel> EditProfile(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
 
@@ -51,11 +60,20 @@ namespace INZYNIERKA.Services.Services
                 PrivateDescription = user.PrivateDescription,
                 PublicDescription = user.PublicDescription,
                 UserName = user.UserName,
-                Avatar = user.Avatar
+                Avatar = user.Avatar, 
+                BirthDate = user.BirthDate,
+                Age = user.Age,
+                City = user.City,
+                Country = user.Country,
+                Status = user.Status,
+                Zodiac = user.Zodiac,
+                Cover = user.Cover,
+                SocialMedia = user.SocialMedia,
+                Language = user.PreferredLanguages
             };
         }
 
-        public async Task<UserViewModel> GetOtherUserProfileAsync(string targetUserId)
+        public async Task<UserViewModel> OtherProfile(string targetUserId)
         {
             if (string.IsNullOrWhiteSpace(targetUserId)) return null;
 
@@ -73,45 +91,85 @@ namespace INZYNIERKA.Services.Services
                 UserName = user.UserName,
                 PublicDescription = user.PublicDescription,
                 PrivateDescription = "",
-                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList()
+                Tags = user.UserTags.Select(ut => ut.Tag.Name).ToList(),
+                BirthDate = user.BirthDate,
+                Age = user.Age,
+                City = user.City,
+                Country = user.Country,
+                Status = user.Status,
+                Zodiac = user.Zodiac,
+                Cover = user.Cover,
+                SocialMedia = user.SocialMedia,
+                Language = user.PreferredLanguages
             };
         }
 
-        public async Task<(bool IsSuccess, IEnumerable<string> Errors)> UpdateUserProfileAsync(string userId, UserViewModel model)
+        public async Task<(bool result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return (false, new[] {"Authorization error."});
-            if (model == null) return (false, new[] {"Empty data sended"});
+            if (model == null) return (false, "No Data");
 
             var user = await userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
-                return (false, new[] { "User not found" });
+                return (false, "User not found");
             }
 
-            if (model.Avatar != null)
-            {
-                user.Avatar = model.Avatar;
-            }
-
+            user.Avatar = model.Avatar;
             user.PublicDescription = model.PublicDescription;
             user.PrivateDescription = model.PrivateDescription;
-            user.DateOfBirth = model.DateOfBirth;
+            if (model.BirthDate != null && model.BirthDate != default(DateTime))
+            {
+                user.BirthDate = DateTime.SpecifyKind(Convert.ToDateTime(model.BirthDate), DateTimeKind.Utc);
+            }
+            else
+            {
+                user.BirthDate = model.BirthDate;
+            }
             user.City = model.City;
             user.Country = model.Country;
-            user.CustomStatus = model.CustomStatus;
+            user.Status = model.Status;
             user.Zodiac = model.Zodiac;
-            user.SocialMediaUrl = model.SocialMediaUrl;
-            user.PreferredLanguages = model.PreferredLanguages;
+            user.SocialMedia = model.SocialMedia;
+            user.PreferredLanguages = model.Language;
 
             var result = await userManager.UpdateAsync(user);
 
             if (result.Succeeded)
             {
-                return (true, Array.Empty<string>());
+                return (true, "");
             }
 
-            return (false, result.Errors.Select(e => e.Description));
+            return (false, "Failed to update profile");
+        }
+        public async Task<bool> UpdateAvatar(string userId, string avatarData)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(avatarData))
+                return false;
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.Avatar = avatarData;
+            var result = await userManager.UpdateAsync(user);
+
+            return result.Succeeded;
+        }
+
+        public async Task<bool> UpdateCover(string userId, string coverData)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(coverData))
+                return false;
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.Cover = coverData;
+            var result = await userManager.UpdateAsync(user);
+
+            return result.Succeeded;
         }
     }
 }

@@ -1,12 +1,15 @@
-﻿using INZYNIERKA.Services.ViewModels;
+﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.ViewModels;
 
 namespace INZYNIERKA.Services.Interfaces
 {
-    public interface IProfileService
+    public interface IProfileService<TUser> where TUser : User
     {
-        Task<UserViewModel> GetUserProfileAsync(string userId);
-        Task<UserViewModel> GetUserProfileForEditAsync(string userId);
-        Task<UserViewModel> GetOtherUserProfileAsync(string targetUserId);
-        Task<(bool IsSuccess, IEnumerable<string> Errors)> UpdateUserProfileAsync(string userId, UserViewModel model);
+        Task<UserViewModel> Profile(string userId);
+        Task<UserViewModel> EditProfile(string userId);
+        Task<UserViewModel> OtherProfile(string targetUserId);
+        Task<(bool result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model);
+        Task<bool> UpdateAvatar(string userId, string avatarData);
+        Task<bool> UpdateCover(string userId, string coverData);
     }
 }

@@ -1,10 +1,11 @@
 ﻿using INZYNIERKA.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Timers;
 
 namespace INZYNIERKA.Data
 {
-    public class INZDbContext : IdentityDbContext<User>
+    public class INZDbContext<TUser> : IdentityDbContext<TUser> where TUser : User
     {
         public DbSet<Tag> Tags { get; set; }
         public DbSet<UserTag> UserTags {  get; set; }
@@ -16,8 +17,9 @@ namespace INZYNIERKA.Data
         public DbSet<GroupMessage> GroupMessages { get; set; }
         public DbSet<GroupTag> GroupTags { get; set; }
 
+        public INZDbContext(DbContextOptions<INZDbContext<TUser>> options) : base(options) { }
 
-        public INZDbContext(DbContextOptions<INZDbContext> options) : base(options) { }
+        protected INZDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -124,5 +126,9 @@ namespace INZYNIERKA.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
         }
+    }
+    public class INZDbContext : INZDbContext<User>
+    {
+        public INZDbContext(DbContextOptions<INZDbContext> options) : base(options) { }
     }
 }

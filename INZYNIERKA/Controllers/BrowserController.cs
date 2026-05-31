@@ -12,14 +12,14 @@ namespace INZYNIERKA.Controllers
     public class BrowserController : Controller
     {
         private readonly UserManager<User> userManager;
-        private readonly IMatchmakingService matchmakingService;
-        private readonly IFriendshipService friendshipService;
-        private readonly IAiMatchmakingService aiMatchmakingService;
+        private readonly IMatchmakingService<User> matchmakingService;
+        private readonly IFriendshipService<User> friendshipService;
+        private readonly IAiMatchmakingService<User> aiMatchmakingService;
         public BrowserController(
             UserManager<User> userManager, 
-            IMatchmakingService matchmakingService,
-            IFriendshipService friendshipService,
-            IAiMatchmakingService aiMatchmakingService)
+            IMatchmakingService<User> matchmakingService,
+            IFriendshipService<User> friendshipService,
+            IAiMatchmakingService<User> aiMatchmakingService)
         {
             this.userManager = userManager;
             this.matchmakingService = matchmakingService;
@@ -33,11 +33,11 @@ namespace INZYNIERKA.Controllers
         {
             try
             {
-                var viewModel = await matchmakingService.GetTagsForSearchAsync();
+                var browserViewModel = await matchmakingService.Tags();
 
-                return View(viewModel);
+                return View(browserViewModel);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 return RedirectToAction("SearchUsersByTags");
             }
@@ -50,17 +50,27 @@ namespace INZYNIERKA.Controllers
             {
                 var userId = userManager.GetUserId(User);
 
-                var selectedTagIds = model.AvailableTags
-                    .Where(t => t.IsSelected)
+                var tagIds = model.AvailableTags
+                    .Where(t => t.Selected)
                     .Select(t => t.TagId)
                     .ToList();
 
-                if (selectedTagIds.Count == 0) return View("NoSelectedTags");
+                var matchedUsersIds = await matchmakingService.MatchingUsersIds(
+                    userId,
+                    tagIds,
+                    model.SearchName,
+                    model.SearchCity,
+                    model.SearchCountry
+                );
 
-                var matchedUserIds = await matchmakingService.GetMatchingUserIdsByTagsAsync(userId, selectedTagIds);
+                if (matchedUsersIds.Count == 0)
+                {
+                    return View("NoSearchResults");
+                }
 
-                HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchedUserIds));
-                HttpContext.Session.SetInt32("CurrentIndex", matchedUserIds.Any() ? 0 : -1);
+                HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchedUsersIds));
+
+                HttpContext.Session.SetInt32("currentIndex", 0);
 
                 return RedirectToAction("ShowUser", "Browser");
             }
@@ -75,22 +85,33 @@ namespace INZYNIERKA.Controllers
         {
             try
             {
-                var usersJson = HttpContext.Session.GetString("MatchingUsers");
-                if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
+                var users = HttpContext.Session.GetString("matchingUsers");
 
-                var usersIds = JsonConvert.DeserializeObject<List<string>>(usersJson);
-                if(usersIds == null || usersIds.Count == 0) return View("NoSearchResults");
+                if (string.IsNullOrEmpty(users))
+                {
+                    return RedirectToAction("SearchUsersByTags");
+                }
 
-                int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+                var usersIds = JsonConvert.DeserializeObject<List<string>>(users);
 
-                if (currentIndex == -1 || currentIndex >= usersIds.Count) return View("NoSearchResults");
+                int currentIndex = HttpContext.Session.GetInt32("currentIndex") ?? 0;
+
+                if(currentIndex == -1 || currentIndex >= usersIds.Count)
+                {
+                    return View("NoSearchResults");
+                }
 
                 var targetUserId = usersIds[currentIndex];
-                var model = await matchmakingService.GetUserForBrowserAsync(targetUserId);
 
-                if (model == null) return View("NoSearchResults");
+                var model = await matchmakingService.MatchedUser(targetUserId);
+
+                if (model == null)
+                {
+                    return View("NoSearchResults");
+                }
 
                 return View("SearchResults", model);
+
             }
             catch (Exception ex)
             {
@@ -103,18 +124,25 @@ namespace INZYNIERKA.Controllers
         {
             try
             {
-                var usersJson = HttpContext.Session.GetString("MatchingUsers");
-                if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
+                var users = HttpContext.Session.GetString("matchingUsers");
 
-                var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
-                if (users == null || users.Count == 0) return RedirectToAction("SearchUsersByTags");
+                if (string.IsNullOrEmpty(users))
+                {
+                    return RedirectToAction("SearchUsersByTags");
+                }
 
-                int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+                var usersIds = JsonConvert.DeserializeObject<List<string>>(users);
+
+                int currentIndex = HttpContext.Session.GetInt32("currentIndex") ?? 0;
+
                 currentIndex++;
 
-                if (currentIndex >= users.Count) currentIndex = -1;
+                if (currentIndex >= usersIds.Count)
+                {
+                    currentIndex = -1;
+                }
 
-                HttpContext.Session.SetInt32("CurrentIndex", currentIndex);
+                HttpContext.Session.SetInt32("currentIndex", currentIndex);
 
                 return RedirectToAction("ShowUser");
             }
@@ -129,14 +157,20 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> SendFriendRequest(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return NextUser();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NextUser();
+            }
 
             try
             {
                 var currentUserId = userManager.GetUserId(User);
-                await friendshipService.SendFriendRequestAsync(currentUserId, userId);
+                await friendshipService.SendRequest(currentUserId, userId);
             }
-            catch (Exception ex){}
+            catch (Exception ex)
+            {
+
+            }
 
             return NextUser();
         }
@@ -149,10 +183,10 @@ namespace INZYNIERKA.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
-                var matchingUsers = await aiMatchmakingService.GetPotentialMatchesForAiAsync(userId);
+                var matchingUsers = await aiMatchmakingService.AiMatches(userId);
 
-                HttpContext.Session.SetString("MatchingUsers", JsonConvert.SerializeObject(matchingUsers));
-                HttpContext.Session.SetInt32("CurrentIndex", matchingUsers.Any() ? 0 : -1);
+                HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchingUsers));
+                HttpContext.Session.SetInt32("currentIndex", 0);
 
                 return RedirectToAction("ShowUserWithAI");
             }
@@ -167,27 +201,38 @@ namespace INZYNIERKA.Controllers
         {
             try
             {
-                var usersJson = HttpContext.Session.GetString("MatchingUsers");
-                if (string.IsNullOrEmpty(usersJson)) return RedirectToAction("SearchUsersByTags");
+                var users = HttpContext.Session.GetString("MatchingUsers");
 
-                var users = JsonConvert.DeserializeObject<List<string>>(usersJson);
-                if (users == null || users.Count == 0) return View("NoSearchResults");  
+                if (string.IsNullOrEmpty(users))
+                {
+                    return RedirectToAction("SearchUsersByTags");
+                }
 
-                int currentIndex = HttpContext.Session.GetInt32("CurrentIndex") ?? 0;
+                var usersIds = JsonConvert.DeserializeObject<List<string>>(users);
 
-                if (currentIndex == -1 || currentIndex >= users.Count) return View("NoSearchResults");
+                if (usersIds == null || usersIds.Count == 0)
+                {
+                    return View("NoSearchResults");
+                }
+
+                int currentIndex = HttpContext.Session.GetInt32("currentIndex") ?? 0;
+
+                if (currentIndex == -1 || currentIndex >= usersIds.Count)
+                {
+                    return View("NoSearchResults");
+                }
 
                 var currentUserId = userManager.GetUserId(User);
 
-                var (matchedUser, newIndex) = await aiMatchmakingService.FindNextAiMatchAsync(currentUserId, users, currentIndex);
+                var (matchedUser, newIndex) = await aiMatchmakingService.AiNext(currentUserId, usersIds, currentIndex);
 
                 if (matchedUser != null)
                 {
-                    HttpContext.Session.SetInt32("CurrentIndex", newIndex);
+                    HttpContext.Session.SetInt32("currentIndex", newIndex);
                     return View("SearchAiResults", matchedUser);
                 }
 
-                HttpContext.Session.SetInt32("CurrentIndex", -1);
+                HttpContext.Session.SetInt32("currentIndex", -1);
                 return View("NoSearchResults");
             }
             catch (Exception ex)

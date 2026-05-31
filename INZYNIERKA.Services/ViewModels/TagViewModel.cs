@@ -4,15 +4,15 @@ namespace INZYNIERKA.Services.ViewModels
 {
     public class TagViewModel
     {
-        private string _tagName;
+        private string tagName;
 
         [Required(ErrorMessage = "Tag name is required")]
         [StringLength(15, MinimumLength = 2, ErrorMessage = "Tag must be between 2 and 30 characters long.")]
         [Display(Name = "Tag name")]
         public string TagName
         {
-            get => _tagName;
-            set => _tagName = value?.Trim();
+            get => tagName;
+            set => tagName = value.Trim();
         }
     }
 }

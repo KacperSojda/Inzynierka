@@ -12,6 +12,9 @@
         <h2 class="fw-bold mb-4" style="color: #111827;">Add tag</h2>
 
         <form asp-action="AddTag" method="post">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger small fw-bold mb-3 text-start"></div>
+
             <div class="mb-4 text-start">
                 <label asp-for="TagName" class="form-label fw-bold text-muted"></label>
                 <input asp-for="TagName" class="form-control custom-input" placeholder="Enter tag name..." />

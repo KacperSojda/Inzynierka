@@ -1,7 +1,7 @@
 using INZYNIERKA.Data;
 using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Hubs;
-using INZYNIERKA.Services.Interfaces;
+using INZYNIERKA.Services;
 using INZYNIERKA.Services.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -15,6 +15,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<INZDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
     b => b.MigrationsAssembly("INZYNIERKA.Data")));
+
+builder.Services.AddScoped<INZDbContext<User>>(provider => provider.GetRequiredService<INZDbContext>());
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -34,31 +36,9 @@ builder.Services.AddSession();
 
 builder.Services.AddSignalR();
 
-builder.Services.AddHttpClient<IGeminiService, GeminiService>();
+builder.Services.AddHttpClient();
 
-builder.Services.AddScoped<IFriendshipService, FriendshipService>();
-
-builder.Services.AddScoped<INotificationService, NotificationService>();
-
-builder.Services.AddScoped<ITagService, TagService>();
-
-builder.Services.AddTransient<IFileService, FileService>();
-
-builder.Services.AddScoped<IProfileService, ProfileService>();
-
-builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
-
-builder.Services.AddScoped<IAiMatchmakingService, AiMatchmakingService>();
-
-builder.Services.AddScoped<IGroupService, GroupService>();
-
-builder.Services.AddScoped<IGroupMemberService, GroupMemberService>();
-
-builder.Services.AddScoped<IChatService, ChatService>();
-
-builder.Services.AddScoped<IChatAiService, ChatAiService>();
-
-builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddInzynierkaCommunication<User>();
 
 builder.Services.AddSingleton<PresenceTracker>();
 
@@ -93,9 +73,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapHub<ChatHub>("/chathub");
-
-app.MapHub<GroupChatHub>("/groupchathub");
+app.MapHub<ChatHub<User>>("/chathub");
+app.MapHub<GroupChatHub<User>>("/groupchathub");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -103,7 +82,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<INZDbContext>();
-        context.Database.Migrate(); // Automatycznie stworzy tabele w chmurze
+        context.Database.Migrate();
         Console.WriteLine("Migracje bazy danych zosta³y pomyœlnie na³o¿one.");
     }
     catch (Exception ex)

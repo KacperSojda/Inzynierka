@@ -4,11 +4,11 @@
     ViewData["Title"] = "Edit Profile";
 }
 
-<div class="container py-5 d-flex justify-content-center">
-    <div class="edit-card p-5 w-100" style="max-width: 700px;">
-        <h2 class="text-center fw-bold mb-4" style="color: #111827;">Edit Profile, @Model.UserName</h2>
+<div class="my-container">
+    <div class="my-card w-100" style="max-width: 700px;">
+        <h2 class="text-center fw-bold mb-4">Edit Profile, @Model.UserName</h2>
 
-        <form asp-action="EditProfile" method="post" novalidate>
+        <form asp-action="EditProfile" method="post" novalidate id="profile-form">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <input type="hidden" asp-for="Avatar" />
@@ -16,21 +16,21 @@
 
             <div class="mb-4">
                 <label asp-for="PublicDescription" class="form-label fw-bold text-muted">Public Description</label>
-                <input asp-for="PublicDescription" class="form-control custom-input" placeholder="Opis widoczny dla wszystkich..." />
+                <input asp-for="PublicDescription" class="form-control my-input"/>
                 <span asp-validation-for="PublicDescription" class="text-danger"></span>
             </div>
 
             <div class="mb-4">
                 <label asp-for="PrivateDescription" class="form-label fw-bold text-muted">Private Description</label>
-                <input asp-for="PrivateDescription" class="form-control custom-input" placeholder="Opis widoczny dla znajomych..." />
+                <input asp-for="PrivateDescription" class="form-control my-input"/>
                 <span asp-validation-for="PrivateDescription" class="text-danger"></span>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <label asp-for="DateOfBirth" class="form-label fw-bold text-muted">Date of Birth</label>
-                    <input asp-for="DateOfBirth" class="form-control custom-input" type="date" />
-                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                    <label asp-for="BirthDate" class="form-label fw-bold text-muted">Date of Birth</label>
+                    <input asp-for="BirthDate" class="form-control custom-input" type="date" />
+                    <span asp-validation-for="BirthDate" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-4">
                     <label asp-for="Zodiac" class="form-label fw-bold text-muted">Zodiac Sign</label>
@@ -56,72 +56,152 @@
             </div>
 
             <div class="mb-4">
-                <label asp-for="CustomStatus" class="form-label fw-bold text-muted">Custom Status</label>
-                <input asp-for="CustomStatus" class="form-control custom-input" placeholder="What's on your mind?" />
-                <span asp-validation-for="CustomStatus" class="text-danger"></span>
+                <label asp-for="Status" class="form-label fw-bold text-muted">Custom Status</label>
+                <input asp-for="Status" class="form-control custom-input" placeholder="What's on your mind?" />
+                <span asp-validation-for="Status" class="text-danger"></span>
             </div>
 
             <div class="mb-4">
-                <label asp-for="PreferredLanguages" class="form-label fw-bold text-muted">Preferred Languages</label>
-                <input asp-for="PreferredLanguages" class="form-control custom-input" placeholder="e.g. Polish, English" />
-                <span asp-validation-for="PreferredLanguages" class="text-danger"></span>
+                <label class="form-label fw-bold text-muted">Language</label>
+                <div id="flag-container" class="d-flex flex-wrap gap-2">
+                    <button type="button" class="flag-btn" data-lang="Polish">🇵🇱 Polish</button>
+                    <button type="button" class="flag-btn" data-lang="English">🇬🇧 English</button>
+                    <button type="button" class="flag-btn" data-lang="German">🇩🇪 German</button>
+                    <button type="button" class="flag-btn" data-lang="Spanish">🇪🇸 Spanish</button>
+                    <button type="button" class="flag-btn" data-lang="French">🇫🇷 French</button>
+                    <button type="button" class="flag-btn" data-lang="Italian">🇮🇹 Italian</button>
+                    <button type="button" class="flag-btn" data-lang="Ukrainian">🇺🇦 Ukrainian</button>
+                </div>
+                <span asp-validation-for="Language" class="text-danger"></span>
             </div>
 
             <div class="mb-5">
-                <label asp-for="SocialMediaUrl" class="form-label fw-bold text-muted">Social Media (URL)</label>
-                <input asp-for="SocialMediaUrl" class="form-control custom-input" placeholder="https://instagram.com/..." />
-                <span asp-validation-for="SocialMediaUrl" class="text-danger"></span>
+                <label class="form-label fw-bold text-muted">Social Media Links</label>
+                <div id="links-container">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 fw-bold rounded-pill" id="add-link-btn">
+                    + Add another link
+                </button>
+                <span asp-validation-for="SocialMedia" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="action-btn btn-save w-100 shadow-sm">Save changes</button>
+            <button type="submit" class="btn-main gradient-main">Save changes</button>
         </form>
+
+        <div class="text-center mt-4">
+            <form asp-action="DeleteAccount" asp-controller="Account" method="post" onsubmit="return confirm('Are you sure you want to deactivate your account? You will not be able to log in again.');">
+                <button type="submit" class="text-center w-50 d-block mx-auto text-decoration-none btn-main gradient-pink">
+                    <i class="bi bi-trash3 me-2"></i> Delete Account
+                </button>
+            </form>
+        </div>
+
     </div>
 </div>
 
 <style>
-    .edit-card {
+    .flag-btn {
         background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-
-    .custom-input {
+        border: 2px solid #e5e7eb;
         border-radius: 12px;
-        padding: 12px 15px;
-        border: 1px solid #ced4da;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        padding: 8px 15px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        color: #6b7280;
+        font-weight: 500;
+        filter: grayscale(100%);
+        opacity: 0.7;
     }
 
-        .custom-input:focus {
-            border-color: #ae2eb8;
-            box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.25);
-            outline: none;
-        }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 14px 0;
-        border-radius: 15px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        text-decoration: none;
-        color: white;
-        border: none;
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .flag-btn:hover {
+        filter: grayscale(0%);
+        opacity: 1;
+        border-color: #ae2eb8;
     }
 
-        .action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(174, 46, 184, 0.3);
-            color: white;
-        }
+    .flag-btn.selected {
+        filter: grayscale(0%);
+        opacity: 1;
+        border-color: #ae2eb8;
+        background: rgba(174, 46, 184, 0.05);
+        color: #ae2eb8;
+        box-shadow: 0 2px 8px rgba(174, 46, 184, 0.2);
+    }
 </style>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            const flagBtns = document.querySelectorAll('.flag-btn');
+            const hiddenLangInput = document.getElementById('HiddenPreferredLanguage');
+            
+            let selectedLang = hiddenLangInput.value ? hiddenLangInput.value.trim() : "";
+
+            flagBtns.forEach(btn => {
+                if (btn.dataset.lang === selectedLang) {
+                    btn.classList.add('selected');
+                }
+
+                btn.addEventListener('click', () => {
+                    flagBtns.forEach(b => b.classList.remove('selected'));
+                    
+                    btn.classList.add('selected');
+                    
+                    hiddenLangInput.value = btn.dataset.lang;
+                });
+            });
+
+            const linksContainer = document.getElementById('links-container');
+            const hiddenLinksInput = document.getElementById('HiddenSocialMedia');
+            const addLinkBtn = document.getElementById('add-link-btn');
+
+            let currentLinks = hiddenLinksInput.value ? hiddenLinksInput.value.split(',').map(s => s.trim()).filter(s => s !== '') : [];
+            
+            if(currentLinks.length === 0) currentLinks.push('');
+
+            function renderLinks() {
+                linksContainer.innerHTML = '';
+                currentLinks.forEach((link, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'd-flex mb-2 gap-2 align-items-center';
+                    
+                    row.innerHTML = `
+                        <input type="url" class="form-control custom-input link-input w-100" value="${link}" placeholder="https://..." />
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-link-btn rounded-circle" style="width: 38px; height: 38px;" title="Usuń link">
+                            <i class="fa-solid fa-xmark">✖</i>
+                        </button>
+                    `;
+
+                    row.querySelector('.remove-link-btn').addEventListener('click', () => {
+                        row.remove();
+                        updateHiddenLinksInput();
+                    });
+
+                    row.querySelector('.link-input').addEventListener('input', updateHiddenLinksInput);
+
+                    linksContainer.appendChild(row);
+                });
+            }
+
+            function updateHiddenLinksInput() {
+                const inputs = Array.from(document.querySelectorAll('.link-input'))
+                                    .map(i => i.value.trim())
+                                    .filter(v => v !== '');
+                hiddenLinksInput.value = inputs.join(',');
+            }
+
+            addLinkBtn.addEventListener('click', () => {
+                currentLinks = Array.from(document.querySelectorAll('.link-input')).map(i => i.value);
+                currentLinks.push('');
+                renderLinks();
+            });
+
+            renderLinks();
+        });
+    </script>
 }

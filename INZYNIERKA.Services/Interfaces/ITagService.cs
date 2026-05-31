@@ -3,11 +3,11 @@ using INZYNIERKA.Services.ViewModels;
 
 namespace INZYNIERKA.Services.Interfaces    
 {
-    public interface ITagService
+    public interface ITagService<TUser> where TUser : User
     {
-        Task<SelectTagsViewModel> GetUserTagsForSelectionAsync(string userId);
-        Task UpdateUserTagsAsync(string userId, List<int> selectedTagIds);
-        Task AddNewTagAsync(string tagName);
-        Task<List<Tag>> GetAllTagsAsync();
+        Task<SelectTagsViewModel> UserTags(string userId);
+        Task UpdateUserTags(string userId, List<int> selectedTagIds);
+        Task<(bool result, string ErrorMessage)> NewTag(string tagName);
+        Task<List<Tag>> AllTags();
     }
 }

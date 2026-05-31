@@ -12,73 +12,60 @@
         <p class="text-muted">Manage the communities you own or are part of</p>
     </div>
 
-    @if (!Model.AdminGroups.Any() && !Model.Groups.Any())
+    @if (!Model.Groups.Any() && string.IsNullOrEmpty(Context.Request.Query["searchQuery"]))
     {
         <div class="text-center mt-5">
             <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
             <h4 class="mt-3 text-muted">You don't belong to any group!</h4>
-            <a asp-controller="Group" asp-action="ShowAvailableGroups" class="action-btn btn-show mt-3">Search for groups</a>
         </div>
     }
 
     <div class="row justify-content-center">
         <div class="col-12" style="max-width: 900px;">
             
-            @if (Model.AdminGroups.Any())
+            @if (Model.Groups.Any() || !string.IsNullOrEmpty(Context.Request.Query["searchQuery"]))
             {
-                <h4 class="fw-bold mb-4" style="color: #552459;"><i class="bi bi-shield-lock-fill me-2"></i>Admin</h4>
-                <div class="d-flex flex-column gap-4 mb-5">
-                    @foreach (var group in Model.AdminGroups)
-                    {
-                        <div class="group-list-card p-4">
-                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
-                                <h3 class="fw-bold mb-3 mb-md-0" style="color: #111827;">@group.Name</h3>
-                                
-                                <div class="action-menu gap-2">
-                                    <form asp-action="LeaveGroup" method="post" class="m-0">
-                                        <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-leave" title="Leave"><i class="bi bi-box-arrow-right"></i></button>
-                                    </form>
-                                    <form asp-action="ShowGroupMembers" method="post" class="m-0">
-                                        <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-show" title="Members"><i class="bi bi-people"></i></button>
-                                    </form>
-                                    <form asp-action="GroupChat" asp-controller="Chat" method="get" class="m-0">
-                                        <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-chat" title="Chat"><i class="bi bi-chat-dots"></i></button>
-                                    </form>
-                                    <form asp-action="EditGroup" asp-controller="Group" method="get" class="m-0">
-                                        <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-edit" title="Edit"><i class="bi bi-pencil-square"></i></button>
-                                    </form>
-                                </div>
-                            </div>
+                <form method="get" asp-action="ShowUserGroups" class="mb-4 w-100">
+                    <div class="input-group shadow-sm" style="border-radius: 15px; overflow: hidden; border: 1px solid #f0f0f0;">
+                        <input type="text" name="searchQuery" value="@Context.Request.Query["searchQuery"]" class="form-control border-0 py-2 shadow-none" placeholder="Szukaj grupy po nazwie...">
+                        
+                        <button type="submit" class="btn px-4 border-0" style="background: linear-gradient(135deg, #552459, #ae2eb8); color: white;">
+                            <i class="bi bi-search me-1"></i> Szukaj
+                        </button>
 
-                            <p class="text-secondary mb-3">@group.Description</p>
+                        @if (!string.IsNullOrEmpty(Context.Request.Query["searchQuery"]))
+                        {
+                            <a asp-action="ShowUserGroups" class="btn btn-light px-3 border-start d-flex align-items-center" title="Wyczyść wyszukiwanie">
+                                <i class="bi bi-x-lg text-danger"></i>
+                            </a>
+                        }
+                    </div>
+                </form>
 
-                            @if (group.Tags.Any())
-                            {
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach (var tag in group.Tags)
-                                    {
-                                        <span class="badge custom-badge">@tag</span>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
+                @if (!Model.Groups.Any())
+                {
+                    <div class="text-center mt-5 w-100">
+                        <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">Nie znaleziono grup pasujących do frazy.</h5>
+                    </div>
+                }
             }
 
             @if (Model.Groups.Any())
             {
-                <h4 class="fw-bold mb-4" style="color: #111827;"><i class="bi bi-people-fill me-2"></i>Member</h4>
-                <div class="d-flex flex-column gap-4">
+                <div class="d-flex flex-column gap-4 mb-5">
                     @foreach (var group in Model.Groups)
                     {
-                        <div class="group-list-card p-4">
+                        <div class="group-list-card p-4 group-item" data-name="@group.Name.ToLower()">
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
-                                <h3 class="fw-bold mb-3 mb-md-0" style="color: #111827;">@group.Name</h3>
+                                
+                                <h3 class="fw-bold mb-3 mb-md-0 d-flex align-items-center" style="color: #111827;">
+                                    @group.Name
+                                    @if (group.IsAdmin)
+                                    {
+                                        <span class="badge ms-2" style="font-size: 0.5em; background-color: #8c144c; vertical-align: middle;">Admin</span>
+                                    }
+                                </h3>
                                 
                                 <div class="action-menu gap-2">
                                     <form asp-action="LeaveGroup" method="post" class="m-0">
@@ -93,6 +80,14 @@
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
                                         <button type="submit" class="action-btn btn-chat" title="Chat"><i class="bi bi-chat-dots"></i></button>
                                     </form>
+                                    
+                                    @if (group.IsAdmin)
+                                    {
+                                        <form asp-action="EditGroup" asp-controller="Group" method="get" class="m-0">
+                                            <input type="hidden" name="groupId" value="@group.GroupId" />
+                                            <button type="submit" class="action-btn btn-edit" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                                        </form>
+                                    }
                                 </div>
                             </div>
 
@@ -110,6 +105,44 @@
                         </div>
                     }
                 </div>
+                
+                int currentPage = ViewBag.CurrentPage ?? 1;
+                int totalPages = ViewBag.TotalPages ?? 1;
+                string currentSearch = Context.Request.Query["searchQuery"];
+
+                @if (totalPages > 1)
+                {
+                    <div class="d-flex justify-content-center mt-4 w-100">
+                        <nav aria-label="Nawigacja stron grup">
+                            <ul class="pagination pagination-sm shadow-sm" style="border-radius: 10px;">
+                                
+                                <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                    <a class="page-link text-dark" asp-action="ShowUserGroups" asp-route-searchQuery="@currentSearch" asp-route-page="@(currentPage - 1)">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    <li class="page-item @(currentPage == i ? "active" : "")">
+                                        <a class="page-link @(currentPage == i ? "text-white" : "text-dark")" 
+                                           style="@(currentPage == i ? "background: linear-gradient(135deg, #552459, #ae2eb8); border-color: #ae2eb8;" : "")"
+                                           asp-action="ShowUserGroups" 
+                                           asp-route-searchQuery="@currentSearch" 
+                                           asp-route-page="@i">@i</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                    <a class="page-link text-dark" asp-action="ShowUserGroups" asp-route-searchQuery="@currentSearch" asp-route-page="@(currentPage + 1)">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+                    </div>
+                }
             }
         </div>
     </div>

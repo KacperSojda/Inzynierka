@@ -29,3 +29,110 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Custom Styles */
+
+.my-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 20px;
+}
+
+.my-card {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 450px;
+}
+
+.btn-main {
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 12px 0;
+    width: 100%;
+    font-weight: bold;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .btn-main:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+        color: white;
+    }
+
+.my-input {
+    border-radius: 10px;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .my-input:focus {
+        border-color: #ae2eb8;
+        box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.25);
+    }
+
+.nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 40px 20px;
+    border-radius: 20px;
+    width: 260px;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .nav-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(174, 46, 184, 0.3);
+        color: white;
+    }
+
+    .nav-card h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+.gradient-main {
+    background: linear-gradient(135deg, #552459, #ae2eb8);
+}
+
+.gradient-yellow {
+    background: linear-gradient(135deg, #757009, #cfc61d);
+}
+
+.gradient-grey {
+    background: linear-gradient(135deg, #89838a, #c4c0c4);
+}
+
+.gradient-green {
+    background: linear-gradient(135deg, #1c7a15, #32b528);
+}
+
+.gradient-pink {
+    background: linear-gradient(135deg, #8c144c, #d43780);
+}
+
+.gradient-purple {
+    background: linear-gradient(135deg, #441463, #8129bd);
+}
+
+.gradient-blue {
+    background: linear-gradient(135deg, #1b3480, #4565c4);
+}
+
+.gradient-ai {
+    background: linear-gradient(135deg, #8d00E9, #1200E9);
+}

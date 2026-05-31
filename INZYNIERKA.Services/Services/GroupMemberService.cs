@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class GroupMemberService : IGroupMemberService
+    public class GroupMemberService<TUser> : IGroupMemberService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
+        private readonly INZDbContext<TUser> context;
 
-        public GroupMemberService(INZDbContext context)
+        public GroupMemberService(INZDbContext<TUser> context)
         {
             this.context = context;
         }
 
-        public async Task<GroupMembersViewModel> GetGroupMembersAsync(int groupId, string currentUserId)
+        public async Task<GroupMembersViewModel> GroupMembers(int groupId, string currentUserId)
         {
             var group = await context.Groups
                 .Include(g => g.Members)
@@ -34,7 +34,7 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
-        public async Task<bool> GiveAdminAsync(int groupId, string targetUserId, string currentUserId)
+        public async Task<bool> GiveAdmin(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
 
@@ -52,7 +52,7 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
-        public async Task<bool> DemoteAdminAsync(int groupId, string targetUserId, string currentUserId)
+        public async Task<bool> DemoteAdmin(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot demote yourself.");
@@ -68,7 +68,7 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
-        public async Task<bool> KickUserAsync(int groupId, string targetUserId, string currentUserId)
+        public async Task<bool> KickUser(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot kick yourself.");
@@ -81,7 +81,7 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
-        public async Task<bool> BanUserAsync(int groupId, string targetUserId, string currentUserId)
+        public async Task<bool> BanUser(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot ban yourself.");

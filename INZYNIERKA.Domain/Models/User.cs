@@ -24,28 +24,35 @@ namespace INZYNIERKA.Domain.Models
         public string PublicDescription { get; set; }
         public string PrivateDescription { get; set; }
         public string Avatar { get; set; }
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime? BirthDate { get; set; }
         [MaxLength(30)]
         public string? City { get; set; }
         [MaxLength(50)]
         public string? Country { get; set; }
         [MaxLength(30)]
-        public string? CustomStatus { get; set; }
-        public string? CoverPhoto { get; set; }
-        public string? SocialMediaUrl { get; set; }
+        public string? Status { get; set; }
+        public string? Cover { get; set; }
+        public string? SocialMedia { get; set; }
         public ZodiacSign? Zodiac { get; set; }
         [MaxLength(30)]
         public string? PreferredLanguages { get; set; }
-        public DateTime LastActiveDate { get; set; } = DateTime.UtcNow;
+        public DateTime LastActive { get; set; } = DateTime.UtcNow;
         [NotMapped]
         public int? Age
         {
             get
             {
-                if (!DateOfBirth.HasValue) return null;
+                if (!BirthDate.HasValue) return null;
+
                 var today = DateTime.Today;
-                var age = today.Year - DateOfBirth.Value.Year;
-                if (DateOfBirth.Value.Date > today.AddYears(-age)) age--;
+
+                var age = today.Year - BirthDate.Value.Year;
+
+                if (BirthDate.Value.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+
                 return age;
             }
         }

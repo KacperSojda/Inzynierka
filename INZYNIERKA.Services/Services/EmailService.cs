@@ -14,7 +14,7 @@ namespace INZYNIERKA.Services.Services
             this.configuration = configuration;
         }
 
-        public async Task<bool> SendEmailAsync(string email, string subject, string htmlMessage)
+        public async Task<bool> SendEmail(string email, string subject, string htmlMessage)
         {
             try
             {

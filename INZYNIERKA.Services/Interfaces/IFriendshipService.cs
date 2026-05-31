@@ -1,14 +1,15 @@
-﻿using INZYNIERKA.Services.ViewModels;
+﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.ViewModels;
 
 namespace INZYNIERKA.Services.Interfaces
 {
-    public interface IFriendshipService
+    public interface IFriendshipService<TUser> where TUser : User
     {
-        Task<bool> AcceptFriendRequestAsync(string currentUserId, int notificationId);
-        Task<List<FriendViewModel>> GetFriendListAsync(string userId);
-        Task DeleteFriendAsync(string currentUserId, string friendId);
-        Task<List<FriendViewModel>> GetRequestListAsync(string userId);
-        Task DeleteRequestAsync(string currentUserId, string friendId);
-        Task SendFriendRequestAsync(string senderId, string receiverId);
+        Task<bool> AcceptRequest(string currentUserId, int notificationId);
+        Task<(List<FriendViewModel> Friends, int TotalCount)> FriendList(string userId, string? searchQuery, int page, int pageSize);
+        Task DeleteFriend(string currentUserId, string friendId);
+        Task<(List<FriendViewModel> Requests, int TotalCount)> RequestList(string userId, int page, int pageSize);
+        Task DeleteRequest(string currentUserId, string friendId);
+        Task SendRequest(string senderId, string receiverId);
     }
 }

@@ -6,25 +6,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class GroupService : IGroupService
+    public class GroupService<TUser> : IGroupService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
+        private readonly INZDbContext<TUser> context;
 
-        public GroupService(INZDbContext context)
+        public GroupService(INZDbContext<TUser> context)
         {
             this.context = context;
         }
 
-        public async Task<GroupViewModel> GetAvailableGroupsAsync(string userId)
+        public async Task<(GroupViewModel Model, int TotalCount)> AvailableGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10)
         {
             var userGroupIds = await context.UserGroups
                 .Where(ug => ug.UserId == userId)
                 .Select(ug => ug.ChatGroupId)
                 .ToListAsync();
 
-            var model = await context.Groups
+            var availableGroupsQuery = context.Groups
                 .Include(g => g.GroupTags).ThenInclude(gt => gt.Tag)
-                .Where(g => !userGroupIds.Contains(g.Id))
+                .Where(g => !userGroupIds.Contains(g.Id));
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var lowerSearchQuery = searchQuery.ToLower();
+                availableGroupsQuery = availableGroupsQuery.Where(g => g.Name.ToLower().Contains(lowerSearchQuery));
+            }
+
+            int totalCount = await availableGroupsQuery.CountAsync();
+
+            var model = await availableGroupsQuery
+                .OrderBy(g => g.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(g => new GroupItem
                 {
                     GroupId = g.Id,
@@ -34,24 +47,38 @@ namespace INZYNIERKA.Services.Services
                 })
                 .ToListAsync();
 
-            return new GroupViewModel { Groups = model };
+            return (new GroupViewModel { Groups = model }, totalCount);
         }
 
-        public async Task<GroupViewModel> GetUserGroupsAsync(string userId)
+        public async Task<(GroupViewModel Model, int TotalCount)> UserGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10)
         {
-            var userGroups = await context.UserGroups
+            var query = context.UserGroups
                 .Include(ug => ug.ChatGroup).ThenInclude(g => g.GroupTags).ThenInclude(gt => gt.Tag)
-                .Where(ug => ug.UserId == userId)
+                .Where(ug => ug.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var lowerSearchQuery = searchQuery.ToLower();
+                query = query.Where(ug => ug.ChatGroup.Name.ToLower().Contains(lowerSearchQuery));
+            }
+
+            int totalCount = await query.CountAsync();
+
+            var userGroups = await query
+                .OrderBy(ug => ug.ChatGroup.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return new GroupViewModel
+            var model = new GroupViewModel
             {
-                AdminGroups = userGroups.Where(ug => ug.Type == MemberType.Administrator).Select(MapToGroupItem).ToList(),
-                Groups = userGroups.Where(ug => ug.Type == MemberType.Member).Select(MapToGroupItem).ToList()
+                Groups = userGroups.Select(MapToGroupItem).ToList()
             };
+
+            return (model, totalCount);
         }
 
-        public async Task CreateGroupAsync(string name, string creatorUserId)
+        public async Task CreateGroup(string name, string creatorUserId)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Group name cannot be empty.");
 
@@ -66,7 +93,7 @@ namespace INZYNIERKA.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task JoinGroupAsync(int groupId, string userId)
+        public async Task JoinGroup(int groupId, string userId)
         {
             var alreadyMember = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
 
@@ -77,7 +104,7 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
-        public async Task LeaveGroupAsync(int groupId, string userId)
+        public async Task LeaveGroup(int groupId, string userId)
         {
             var membership = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
             if (membership == null) return;
@@ -95,16 +122,25 @@ namespace INZYNIERKA.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<Group> GetGroupForEditAsync(int groupId, string currentUserId)
+        public async Task<EditGroupViewModel> EditGroup(int groupId, string userId)
         {
-            if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
-            return await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+            if (!await IsAdminAsync(groupId, userId)) throw new UnauthorizedAccessException();
+
+            var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+            if (group == null) return null;
+
+            return new EditGroupViewModel
+            {
+                Id = group.Id,
+                Name = group.Name,
+                Description = group.Description
+            };
         }
 
-        public async Task UpdateGroupAsync(Group model, string currentUserId)
+        public async Task UpdateGroup(EditGroupViewModel model, string userId)    
         {
-            if (model == null) return;
-            if (!await IsAdminAsync(model.Id, currentUserId)) throw new UnauthorizedAccessException();
+            if (model == null || model.Id <= 0) return;
+            if (!await IsAdminAsync(model.Id, userId)) throw new UnauthorizedAccessException();
 
             var group = await context.Groups.FindAsync(model.Id);
             if (group != null)
@@ -115,7 +151,7 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
-        public async Task DeleteGroupAsync(int groupId, string currentUserId)
+        public async Task DeleteGroup(int groupId, string currentUserId)
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
@@ -128,7 +164,7 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
-        public async Task<SelectGroupTagsViewModel> GetGroupTagsForSelectionAsync(int groupId, string currentUserId)
+        public async Task<SelectGroupTagsViewModel> GroupTags(int groupId, string currentUserId)
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
@@ -138,11 +174,11 @@ namespace INZYNIERKA.Services.Services
             return new SelectGroupTagsViewModel
             {
                 GroupID = groupId,
-                Tags = tags.Select(t => new TagItem { TagId = t.Id, TagName = t.Name, IsSelected = groupTagIds.Contains(t.Id) }).ToList()
+                Tags = tags.Select(t => new TagItem { TagId = t.Id, TagName = t.Name, Selected = groupTagIds.Contains(t.Id) }).ToList()
             };
         }
 
-        public async Task UpdateGroupTagsAsync(int groupId, string currentUserId, List<int> selectedTagIds)
+        public async Task UpdateGroupTags(int groupId, string currentUserId, List<int> selectedTagIds)
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
@@ -163,7 +199,13 @@ namespace INZYNIERKA.Services.Services
 
         private GroupItem MapToGroupItem(UserGroup ug)
         {
-            return new GroupItem { GroupId = ug.ChatGroup.Id, Name = ug.ChatGroup.Name, Description = ug.ChatGroup.Description, Tags = ug.ChatGroup.GroupTags.Select(gt => gt.Tag.Name).ToList() };
+            return new GroupItem { 
+                GroupId = ug.ChatGroup.Id, 
+                Name = ug.ChatGroup.Name, 
+                Description = ug.ChatGroup.Description, 
+                Tags = ug.ChatGroup.GroupTags.Select(gt => gt.Tag.Name).ToList(),
+                IsAdmin = ug.Type == MemberType.Administrator
+            };
         }
     }
 }

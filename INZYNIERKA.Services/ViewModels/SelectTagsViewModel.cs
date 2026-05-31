@@ -9,6 +9,6 @@
     {
         public int TagId { get; set; }
         public string TagName { get; set; }
-        public bool IsSelected { get; set; }
+        public bool Selected { get; set; }
     }
 }

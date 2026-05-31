@@ -3,17 +3,17 @@ using INZYNIERKA.Services.ViewModels;
 
 namespace INZYNIERKA.Services.Interfaces
 {
-    public interface IGroupService
+    public interface IGroupService<TUser> where TUser : User
     {
-        Task<GroupViewModel> GetAvailableGroupsAsync(string userId);
-        Task<GroupViewModel> GetUserGroupsAsync(string userId);
-        Task CreateGroupAsync(string name, string creatorUserId);
-        Task JoinGroupAsync(int groupId, string userId);
-        Task LeaveGroupAsync(int groupId, string userId);
-        Task<Group> GetGroupForEditAsync(int groupId, string currentUserId);
-        Task UpdateGroupAsync(Group model, string currentUserId);
-        Task DeleteGroupAsync(int groupId, string currentUserId);
-        Task<SelectGroupTagsViewModel> GetGroupTagsForSelectionAsync(int groupId, string currentUserId);
-        Task UpdateGroupTagsAsync(int groupId, string currentUserId, List<int> selectedTagIds);
+        Task<(GroupViewModel Model, int TotalCount)> AvailableGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10);
+        Task<(GroupViewModel Model, int TotalCount)> UserGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10);
+        Task CreateGroup(string name, string creatorUserId);
+        Task JoinGroup(int groupId, string userId);
+        Task LeaveGroup(int groupId, string userId);
+        Task<EditGroupViewModel> EditGroup(int groupId, string currentUserId);
+        Task UpdateGroup(EditGroupViewModel model, string currentUserId);
+        Task DeleteGroup(int groupId, string currentUserId);
+        Task<SelectGroupTagsViewModel> GroupTags(int groupId, string currentUserId);
+        Task UpdateGroupTags(int groupId, string currentUserId, List<int> selectedTagIds);
     }
 }

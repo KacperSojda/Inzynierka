@@ -9,11 +9,11 @@ namespace INZYNIERKA.Tests.Services
         // TEST 1: Brak pliku //
 
         [Fact]
-        public async Task UploadAvatarAsyncTest()
+        public async Task UploadAvatarTest()
         {
             var service = new FileService();
 
-            var result = await service.UploadAvatarAsync(null);
+            var result = await service.UploadAvatar(null);
 
             Assert.False(result.IsSuccess);
             Assert.Equal("Nie wybrano pliku.", result.Result);
@@ -22,14 +22,14 @@ namespace INZYNIERKA.Tests.Services
         // TEST 2: Pusty plik //
 
         [Fact]
-        public async Task UploadAvatarAsyncTest2()
+        public async Task UploadAvatarTest2()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
 
             fileMock.Setup(f => f.Length).Returns(0);
 
-            var result = await service.UploadAvatarAsync(fileMock.Object);
+            var result = await service.UploadAvatar(fileMock.Object);
 
             Assert.False(result.IsSuccess);
             Assert.Equal("Nie wybrano pliku.", result.Result);
@@ -38,7 +38,7 @@ namespace INZYNIERKA.Tests.Services
         // TEST 3: Nieprawidłowe rozszerzenie //
 
         [Fact]
-        public async Task UploadAvatarAsyncTest3()
+        public async Task UploadAvatarTest3()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
@@ -46,7 +46,7 @@ namespace INZYNIERKA.Tests.Services
             fileMock.Setup(f => f.Length).Returns(1024);
             fileMock.Setup(f => f.FileName).Returns("avatar.exe");
 
-            var result = await service.UploadAvatarAsync(fileMock.Object);
+            var result = await service.UploadAvatar(fileMock.Object);
 
             Assert.False(result.IsSuccess);
             Assert.Equal("Nieobsługiwany format pliku. Dozwolone formaty: .jpg, .jpeg, .png", result.Result);
@@ -55,7 +55,7 @@ namespace INZYNIERKA.Tests.Services
         // TEST 4: Plik jest za duży //
 
         [Fact]
-        public async Task UploadAvatarAsyncTest4()
+        public async Task Test4()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
@@ -64,7 +64,7 @@ namespace INZYNIERKA.Tests.Services
             fileMock.Setup(f => f.Length).Returns(threeMegabytes);
             fileMock.Setup(f => f.FileName).Returns("avatar.png");
 
-            var result = await service.UploadAvatarAsync(fileMock.Object);
+            var result = await service.UploadAvatar(fileMock.Object);
 
             Assert.False(result.IsSuccess);
             Assert.Equal("Plik jest zbyt duży. Maksymalny rozmiar to 2MB.", result.Result);
@@ -73,7 +73,7 @@ namespace INZYNIERKA.Tests.Services
         // TEST 5: Poprawny plik //
 
         [Fact]
-        public async Task UploadAvatarAsyncTest5()
+        public async Task UploadAvatarTest5()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
@@ -84,7 +84,7 @@ namespace INZYNIERKA.Tests.Services
             fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
                     .Returns(Task.CompletedTask);
 
-            var result = await service.UploadAvatarAsync(fileMock.Object);
+            var result = await service.UploadAvatar(fileMock.Object);
 
             Assert.True(result.IsSuccess);
 

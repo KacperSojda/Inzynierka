@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Services.Services
 {
-    public class TagService : ITagService
+    public class TagService<TUser> : ITagService<TUser> where TUser : User
     {
-        private readonly INZDbContext context;
+        private readonly INZDbContext<TUser> context;
 
-        public TagService(INZDbContext context)
+        public TagService(INZDbContext<TUser> context)
         {
             this.context = context;
         }
 
-        public async Task<SelectTagsViewModel> GetUserTagsForSelectionAsync(string userId)
+        public async Task<SelectTagsViewModel> UserTags(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return new SelectTagsViewModel { Tags = new List<TagItem>() };
 
@@ -32,12 +32,12 @@ namespace INZYNIERKA.Services.Services
                 {
                     TagId = t.Id,
                     TagName = t.Name,
-                    IsSelected = userTagIds.Contains(t.Id)
+                    Selected = userTagIds.Contains(t.Id)
                 }).ToList()
             };
         }
 
-        public async Task UpdateUserTagsAsync(string userId, List<int> selectedTagIds)
+        public async Task UpdateUserTags(string userId, List<int> selectedTagIds)
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
 
@@ -63,9 +63,9 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
-        public async Task AddNewTagAsync(string tagName)
+        public async Task<(bool result, string ErrorMessage)> NewTag(string tagName)
         {
-            if (string.IsNullOrWhiteSpace(tagName)) return;
+            if (string.IsNullOrWhiteSpace(tagName)) return (false, "Tag name cannot be empty");
 
             var normalizedTagName = tagName.Trim();
             var searchName = normalizedTagName.ToLower();
@@ -73,19 +73,22 @@ namespace INZYNIERKA.Services.Services
             var tagExists = await context.Tags
                 .AnyAsync(t => t.Name.ToLower() == searchName);
 
-            if (!tagExists)
+            if (tagExists)
             {
-                Tag tag = new Tag
-                {
-                    Name = normalizedTagName
-                };
-
-                context.Tags.Add(tag);
-                await context.SaveChangesAsync();
+                return (false, "Tag already exists");
             }
+
+            Tag tag = new Tag
+            {
+                Name = normalizedTagName
+            };
+
+            context.Tags.Add(tag);
+            await context.SaveChangesAsync();
+            return (true, "");
         }
 
-        public async Task<List<Tag>> GetAllTagsAsync()
+        public async Task<List<Tag>> AllTags()
         {
             return await context.Tags.ToListAsync();
         }
