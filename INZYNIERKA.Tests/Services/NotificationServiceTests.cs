@@ -56,7 +56,7 @@ namespace INZYNIERKA.Tests.Services
 
             var service = new NotificationService<User>(context);
 
-            var result = await service.Notifications(userId);
+            var (result, totalCount) = await service.Notifications(userId, 1, 10);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Notifications.Count);
@@ -77,7 +77,7 @@ namespace INZYNIERKA.Tests.Services
             var context = CreateInMemoryDbContext();
             var service = new NotificationService<User>(context);
 
-            var result = await service.Notifications("brak usera");
+            var (result, totalCount) = await service.Notifications("brak usera", 1, 10);
 
             Assert.NotNull(result);
             Assert.NotNull(result.Notifications);

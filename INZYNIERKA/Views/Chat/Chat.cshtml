@@ -242,6 +242,56 @@
     <script>
         const connection = window.appSignalRConnection;
 
+        const emoticonsMap = {
+            ":)": "🙂",
+            ":D": "😀",
+            "xD": "😆",
+            "XD": "😆",
+            "xd": "😆",
+            "^^": "😊",
+            "^_^": "😊",
+            ":(": "🙁",
+            ":'(": "😢",
+            "T_T": "😭",
+            ";(": "😥",
+            ";)": "😉",
+            ":*": "😘",
+            ":-*": "😘",
+            ":O": "😲",
+            ":o": "😲",
+            ":P": "😛",
+            ":p": "😛",
+            "xP": "😝",
+            "XP": "😝",
+            ">:<": "😠",
+            "-_-": "😑",
+            ">_>": "😒",
+            "<_<": "😒",
+            "B)": "😎",
+            "8)": "😎",
+            "O:)": "😇",
+            "o:)": "😇",
+            ":/": "😕",
+            ":\\": "😕",
+            ":|": "😐",
+            "<3": "❤️",
+            "</3": "💔",
+            "(y)": "👍",
+            "(Y)": "👍",
+            "(n)": "👎",
+            "(N)": "👎"
+        };
+
+        function parseEmoticons(text) {
+        if (!text) return text;
+        let parsedText = text;
+        for (const [emoticon, emoji] of Object.entries(emoticonsMap)) {
+        const regex = new RegExp(emoticon.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"), "g");
+        parsedText = parsedText.replace(regex, emoji);
+        }
+        return parsedText;
+        }
+
         // SMART REPLIES //
         const smartRepliesContainer = document.getElementById("smartRepliesContainer");
         const isLastMsgFromFriend = @isLastMessageFromFriend.ToString().ToLower();
@@ -555,7 +605,7 @@
 
         document.getElementById("sendButton").addEventListener("click", function() {
             const messageInput = document.getElementById("messageInput");
-            const message = messageInput.value;
+            let message = parseEmoticons(messageInput.value);
             if (!message.trim()) return;
 
             const isAutoTranslate = document.getElementById("autoTranslateSwitch").checked;

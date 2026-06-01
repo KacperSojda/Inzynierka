@@ -139,9 +139,6 @@ G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\runtimes\win\lib\net6.0\Sys
 G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Data.dll
 G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Domain.dll
 G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Services.dll
-G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Domain.pdb
-G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Services.pdb
-G:\Inzynierka\Inzynierka\INZYNIERKA\bin\Debug\net8.0\INZYNIERKA.Data.pdb
 G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\rjimswa.dswa.cache.json
 G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 G:\Inzynierka\Inzynierka\INZYNIERKA\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json

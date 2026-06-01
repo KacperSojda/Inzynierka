@@ -125,7 +125,7 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            var result = await service.FriendList(userId, "");
+            var (result, totalCount) = await service.FriendList(userId, "", 1, 10);
 
             Assert.Single(result);
             Assert.Equal("znajomy1", result.First().Id);
@@ -152,7 +152,7 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            var result = await service.RequestList(userId);
+            var (result, totalCount) = await service.RequestList(userId, 1, 10);
 
             Assert.Single(result);
             Assert.Equal("znajomy2", result.First().Id);

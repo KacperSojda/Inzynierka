@@ -1,6 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
+COPY ["nuget.config", "."]
+COPY ["LocalNuGet/", "LocalNuGet/"]
+
 COPY ["INZYNIERKA.sln", "./"]
 COPY ["INZYNIERKA/INZYNIERKA.csproj", "INZYNIERKA/"]
 COPY ["INZYNIERKA.Domain/INZYNIERKA.Domain.csproj", "INZYNIERKA.Domain/"]

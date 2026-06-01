@@ -4,6 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageId>Inzynierka.Data</PackageId>
+	<Version>1.0.0</Version>
+	<Authors>Kacper Sojda</Authors>
+	<Description>Kontekst bazy danych dla systemu chatu.</Description>
   </PropertyGroup>
 
   <ItemGroup>

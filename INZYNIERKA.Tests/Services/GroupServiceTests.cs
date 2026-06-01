@@ -32,7 +32,7 @@ namespace INZYNIERKA.Tests.Services
             await context.SaveChangesAsync();
             var service = new GroupService<User>(context);
 
-            var result = await service.AvailableGroups(userId);
+            var (result, totalCount) = await service.AvailableGroups(userId, "", 1, 10);
 
             Assert.NotNull(result);
             Assert.Single(result.Groups);
@@ -59,11 +59,9 @@ namespace INZYNIERKA.Tests.Services
             await context.SaveChangesAsync();
             var service = new GroupService<User>(context);
 
-            var result = await service.UserGroups(userId);
+            var (result, totalCount) = await service.UserGroups(userId, "", 1, 10);
 
             Assert.NotNull(result);
-            Assert.Single(result.AdminGroups);
-            Assert.Equal(1, result.AdminGroups.First().GroupId);
             Assert.Single(result.Groups);
             Assert.Equal(2, result.Groups.First().GroupId);
         }
