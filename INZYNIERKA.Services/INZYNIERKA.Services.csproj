@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\INZYNIERKA.Domain\INZYNIERKA.Domain.csproj" />
+    <ProjectReference Include="..\INZYNIERKA.Data\INZYNIERKA.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageId>Inzynierka.Services</PackageId>
+	<Version>1.0.0</Version>
+	<Authors>Kacper Sojda</Authors>
+	<Description>Usługi dla systemu chatu.</Description>
+  </PropertyGroup>
+
+</Project>

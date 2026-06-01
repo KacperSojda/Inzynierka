@@ -1,0 +1,31 @@
+﻿namespace INZYNIERKA.Services.ViewModels
+{
+    public class ChatViewModel
+    {
+        public string FriendId { get; set; }
+        public string FriendName { get; set; }
+        public string CurrentUserId { get; set; }
+        public string CurrentUserName { get; set; }
+        public List<MessageViewModel> Messages { get; set; }
+        public string UserMessage { get; set;  }
+        public string GeminiQuestion { get; set; }
+        public string GeminiAnswer { get; set; }
+        public string Tone { get; set; } = "casual";
+        public string? Custom { get; set; }
+        public bool Auto { get; set; } = true;
+    }
+
+    public class MessageViewModel
+    {
+        public string SenderId { get; set; }
+        public string SenderName { get; set; }
+        public string ReceiverId { get; set; }
+        public string ReceiverName { get; set; }
+        public string Content { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? ImageData { get; set; }
+        public string? ImageType { get; set; }
+        public bool IsImage => !string.IsNullOrEmpty(ImageData);
+        public bool Readed { get; set; }
+    }
+}

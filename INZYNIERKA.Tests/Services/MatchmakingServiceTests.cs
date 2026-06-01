@@ -1,6 +1,6 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.Services;
+using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Tests.Services
@@ -15,41 +15,41 @@ namespace INZYNIERKA.Tests.Services
             return new INZDbContext(options);
         }
 
-        // TESTY DLA: GetTagsForSearchAsync //
+        // TESTY DLA: Tags //
 
         [Fact]
-        public async Task GetTagsForSearchAsyncTest()
+        public async Task TagsTest()
         {
             var context = CreateInMemoryDbContext();
             context.Tags.Add(new Tag {Id = 1, Name = "Szachy"});
             context.Tags.Add(new Tag {Id = 2, Name = "Sport"});
             await context.SaveChangesAsync();
 
-            var service = new MatchmakingService(context);
+            var service = new MatchmakingService<User>(context);
 
-            var result = await service.GetTagsForSearchAsync();
+            var result = await service.Tags();
 
             Assert.NotNull(result);
             Assert.Equal(2, result.AvailableTags.Count);
-            Assert.All(result.AvailableTags, tag => Assert.False(tag.IsSelected));
+            Assert.All(result.AvailableTags, tag => Assert.False(tag.Selected));
             Assert.Contains(result.AvailableTags, t => t.TagName == "Szachy");
         }
 
-        // TESTY DLA: GetUserForBrowserAsync //
+        // TESTY DLA: MatchedUser //
 
         [Fact]
-        public async Task GetUserForBrowserAsyncTest()
+        public async Task MatchedUserTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new MatchmakingService(context);
+            var service = new MatchmakingService<User>(context);
 
-            var result = await service.GetUserForBrowserAsync("nieistniejacy");
+            var result = await service.MatchedUser("nieistniejacy");
 
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetUserForBrowserAsyncTest2()
+        public async Task MatchedUserTest2()
         {
             var context = CreateInMemoryDbContext();
             var userId = "Szukany";
@@ -70,9 +70,9 @@ namespace INZYNIERKA.Tests.Services
             context.UserTags.Add(new UserTag {UserId = userId, TagId = tag.Id});
             await context.SaveChangesAsync();
 
-            var service = new MatchmakingService(context);
+            var service = new MatchmakingService<User>(context);
 
-            var result = await service.GetUserForBrowserAsync(userId);
+            var result = await service.MatchedUser(userId);
 
             Assert.NotNull(result);
             Assert.Equal("Szukany", result.UserName);
@@ -81,10 +81,10 @@ namespace INZYNIERKA.Tests.Services
             Assert.Equal("Szachy", result.Tags.First());
         }
 
-        // TESTY DLA: GetMatchingUserIdsByTagsAsync //
+        // TESTY DLA: MatchingUsersIds //
 
         [Fact]
-        public async Task GetMatchingUserIdsByTagsAsyncTest()
+        public async Task MatchingUsersIdsTest()
         {
             var context = CreateInMemoryDbContext();
 
@@ -115,10 +115,10 @@ namespace INZYNIERKA.Tests.Services
             context.UserTags.Add(new UserTag {UserId = perfectMatchId, TagId = 2});
 
             await context.SaveChangesAsync();
-            var service = new MatchmakingService(context);
+            var service = new MatchmakingService<User>(context);
             var searchedTags = new List<int> {1, 2};
 
-            var result = await service.GetMatchingUserIdsByTagsAsync(userId, searchedTags);
+            var result = await service.MatchingUsersIds(userId, searchedTags);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);

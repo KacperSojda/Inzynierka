@@ -1,14 +1,9 @@
-﻿using System.Text.Json;
-using System.Text;
-using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.ViewModels;
+﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Configuration;
-using INZYNIERKA.Services;
+using INZYNIERKA.Services.Interfaces;
 
 namespace INZYNIERKA.Controllers
 {
@@ -16,10 +11,10 @@ namespace INZYNIERKA.Controllers
     public class ChatController : Controller
     {
         private readonly UserManager<User> userManager;
-        private readonly IChatService chatService;
-        private readonly IChatAiService chatAiService;
+        private readonly IChatService<User> chatService;
+        private readonly IChatAiService<User> chatAiService;
 
-        public ChatController(UserManager<User> userManager, IChatService chatService, IChatAiService chatAiService)
+        public ChatController(UserManager<User> userManager, IChatService<User> chatService, IChatAiService<User> chatAiService)
         {
             this.userManager = userManager;
             this.chatService = chatService;
@@ -31,71 +26,192 @@ namespace INZYNIERKA.Controllers
         [HttpGet]
         public async Task<IActionResult> Chat(string friendId)
         {
-            var userMessage = TempData["UserMessage"]?.ToString() ?? "";
-            var geminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "";
+            if (string.IsNullOrEmpty(friendId))
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-            var model = await chatService.GetPrivateChatAsync(userManager.GetUserId(User), friendId, userMessage, geminiAnswer);
+            try
+            {
+                var userMessage = TempData["UserMessage"]?.ToString() ?? "";
+                var geminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "";
+                var userId = userManager.GetUserId(User);
 
-            if (model == null) return NotFound("Nie znaleziono użytkownika.");
-            return View(model);
+                var model = await chatService.Chat(userId, friendId, userMessage, geminiAnswer);
+
+                if(model == null)
+                {
+                    return NotFound("Cannot find the user.");
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadOlderMessages(string friendId, int skip)
+        {
+            if (string.IsNullOrEmpty(friendId))
+            {
+                return Json(new List<object>());
+            }
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var olderMessages = await chatService.OlderMessages(userId, friendId, skip);
+                return Json(olderMessages);
+            }
+            catch (Exception ex)
+            {
+                return Json(new List<object>());
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GroupChat(int groupId)
         {
-            var userMessage = TempData["UserMessage"]?.ToString() ?? "";
-            var geminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "";
+            if (groupId <= 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-            var model = await chatService.GetGroupChatAsync(userManager.GetUserId(User), groupId, userMessage, geminiAnswer);
+            try
+            {
+                var userMessage = TempData["UserMessage"]?.ToString() ?? "";
+                var geminiAnswer = TempData["GeminiAnswer"]?.ToString() ?? "";
+                var userId = userManager.GetUserId(User);
 
-            if (model == null) return NotFound("Nie znaleziono grupy.");
-            return View(model);
+                var model = await chatService.GroupChat(userId, groupId, userMessage, geminiAnswer);
+                if (model == null)
+                {
+                    return NotFound("Cannot find the group.");
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadOlderGroupMessages(int groupId, int skip)
+        {
+            if (groupId <= 0) return Json(new List<object>());
+
+            try
+            {
+                var olderMessages = await chatService.OlderGroupMessages(groupId, skip);
+                return Json(olderMessages);
+            }
+            catch (Exception ex)
+            {
+                return Json(new List<object>());
+            }
         }
 
         // Chat AI Service //
 
-        [HttpPost]
-        public async Task<IActionResult> ResponseHelp(ChatViewModel model)
-        {
-            TempData["GeminiAnswer"] = await chatAiService.GetPrivateResponseHelpAsync(userManager.GetUserId(User), model.FriendId);
-            TempData["UserMessage"] = model.UserMessage;
-            return RedirectToAction("Chat", new {friendId = model.FriendId});
-        }
 
         [HttpPost]
         public async Task<IActionResult> CorrectMessage(ChatViewModel model)
         {
-            TempData["UserMessage"] = await chatAiService.CorrectMessageAsync(model.UserMessage);
-            return RedirectToAction("Chat", new {friendId = model.FriendId});
+            if (model == null || string.IsNullOrEmpty(model.FriendId)) return RedirectToAction("Index", "Home");
+
+            try
+            {
+                TempData["UserMessage"] = await chatAiService.CorrectMessage(model.UserMessage);
+            }
+            catch (Exception ex)
+            {
+                TempData["UserMessage"] = model.UserMessage;
+            }
+
+            return RedirectToAction("Chat", new { friendId = model.FriendId });
         }
 
         [HttpPost]
         public async Task<IActionResult> TranslateMessage(ChatViewModel model)
         {
-            TempData["UserMessage"] = await chatAiService.TranslatePrivateMessageAsync(userManager.GetUserId(User), model.FriendId, model.UserMessage);
+            if (model == null || string.IsNullOrEmpty(model.FriendId))
+            { 
+                return RedirectToAction("Index", "Home");
+            }
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                TempData["UserMessage"] = await chatAiService.TranslateMessage(userId, model.FriendId, model.UserMessage);
+            }
+            catch (Exception ex)
+            {
+                TempData["UserMessage"] = model.UserMessage;
+            }
+
             return RedirectToAction("Chat", new {friendId = model.FriendId});
         }
 
         [HttpPost]
         public async Task<IActionResult> GroupResponseHelp(GroupChatViewModel model)
         {
-            TempData["GeminiAnswer"] = await chatAiService.GetGroupResponseHelpAsync(userManager.GetUserId(User), model.groupID);
-            TempData["UserMessage"] = model.UserMessage;
-            return RedirectToAction("GroupChat", new {groupId = model.groupID});
+            if (model == null || model.GroupId <= 0) return RedirectToAction("Index", "Home");
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                TempData["GeminiAnswer"] = await chatAiService.GroupResponseHelp(userId, model.GroupId);
+                TempData["UserMessage"] = model.UserMessage;
+            }
+            catch (Exception ex)
+            {
+                TempData["UserMessage"] = model.UserMessage;
+                TempData["GeminiAnswer"] = "Error during helping with response.";
+            }
+
+            return RedirectToAction("GroupChat", new {groupId = model.GroupId});
         }
 
         [HttpPost]
         public async Task<IActionResult> GroupCorrectMessage(GroupChatViewModel model)
         {
-            TempData["UserMessage"] = await chatAiService.CorrectMessageAsync(model.UserMessage);
-            return RedirectToAction("GroupChat", new { groupId = model.groupID });
+            if (model == null || model.GroupId <= 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            try
+            {
+                TempData["UserMessage"] = await chatAiService.CorrectMessage(model.UserMessage);
+
+            }
+            catch(Exception ex)
+            {
+                TempData["UserMessage"] = model.UserMessage;
+            }
+            return RedirectToAction("GroupChat", new {groupId = model.GroupId});
         }
 
         [HttpPost]
         public async Task<IActionResult> GroupTranslateMessage(GroupChatViewModel model)
         {
-            TempData["UserMessage"] = await chatAiService.TranslateGroupMessageAsync(model.groupID, model.UserMessage);
-            return RedirectToAction("GroupChat", new { groupId = model.groupID });
+            if (model == null || model.GroupId <= 0) return RedirectToAction("Index", "Home");
+
+            try
+            {
+                TempData["UserMessage"] = await chatAiService.TranslateGroupMessage(model.GroupId, model.UserMessage);
+            }
+            catch (Exception ex) 
+            {
+                TempData["UserMessage"] = model.UserMessage;
+            }
+
+            return RedirectToAction("GroupChat", new {groupId = model.GroupId});
         }
     }
 }

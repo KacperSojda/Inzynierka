@@ -1,35 +1,36 @@
-﻿@using INZYNIERKA.ViewModels;
+﻿@using INZYNIERKA.Services.ViewModels;
 @model VerifyEmailViewModel;
 
 @{
-	ViewData["Title"] = "Verify Email";
+    ViewData["Title"] = "Verify Email";
 }
 
-<div class="account-container">
-	<div class="account-box">
-		<h2 class="text-center mb-4">Verify Email</h2>
-		<form asp-action="VerifyEmail" method="post">
-			<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="my-container">
+    <div class="my-card">
+        <h2 class="fw-bold text-center mb-4">Verify Email</h2>
+        <form asp-action="VerifyEmail" method="post">
 
-			<div class="mb-3">
-				<label asp-for="Email" class="form-label"></label>
-				<input asp-for="Email" class="form-control" />
-				<span asp-validation-for="Email" class="text-danger"></span>
-			</div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-			<div class="text-center mb-3">
-				<input type="submit" value="Verify" class="btn btn-outline-success w-50" />
-			</div>
+            <div class="mb-4">
+                <label asp-for="Email" class="form-label fw-bold"></label>
+                <input asp-for="Email" class="form-control my-input" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
 
-			<div class="text-center">
-				<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary w-50">Back</a>
-			</div>
-		</form>
-	</div>
+            <div class="mb-3 text-center">
+                <button type="submit" class="btn-main gradient-main">Verify</button>
+            </div>
+
+            <div class="text-center mt-3">
+                <a asp-controller="Home" asp-action="Index" class="d-block text-decoration-none btn-main gradient-main">Back to Home</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
-	@{
-		await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
-	}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+    }
 }

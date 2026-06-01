@@ -1,6 +1,7 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.Services;
+using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Interfaces;
+using INZYNIERKA.Services.Services; 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -9,12 +10,12 @@ namespace INZYNIERKA.Tests.Services
 {
     public class AiMatchmakingServiceTests
     {
-        private INZDbContext CreateInMemoryDbContext()
+        private INZDbContext<User> CreateInMemoryDbContext()
         {
-            var options = new DbContextOptionsBuilder<INZDbContext>()
+            var options = new DbContextOptionsBuilder<INZDbContext<User>>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            return new INZDbContext(options);
+            return new INZDbContext<User>(options);
         }
 
         private Mock<IConfiguration> CreateMockConfiguration()
@@ -27,12 +28,12 @@ namespace INZYNIERKA.Tests.Services
         // TESTY DLA: GetPotentialMatchesForAiAsync //
 
         [Fact]
-        public async Task GetPotentialMatchesForAiAsyncTest()
+        public async Task AiMatchesTest()
         {
             var context = CreateInMemoryDbContext();
             var mockConfig = CreateMockConfiguration();
             var mockGemini = new Mock<IGeminiService>();
-            var service = new AiMatchmakingService(context, mockGemini.Object, mockConfig.Object);
+            var service = new AiMatchmakingService<User>(context, mockGemini.Object, mockConfig.Object);
 
             var userId = "ja";
 
@@ -50,7 +51,7 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            var result = await service.GetPotentialMatchesForAiAsync(userId);
+            var result = await service.AiMatches(userId);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);
@@ -60,29 +61,29 @@ namespace INZYNIERKA.Tests.Services
             Assert.DoesNotContain("znajomy1", result);
         }
 
-        // TESTY DLA: FindNextAiMatchAsync //
+        // TESTY DLA: AiNext //
 
         [Fact]
-        public async Task FindNextAiMatchAsyncTest()
+        public async Task AiNextTest()
         {
             var context = CreateInMemoryDbContext();
             var mockConfig = CreateMockConfiguration();
             var mockGemini = new Mock<IGeminiService>();
-            var service = new AiMatchmakingService(context, mockGemini.Object, mockConfig.Object);
+            var service = new AiMatchmakingService<User>(context, mockGemini.Object, mockConfig.Object);
 
-            var result = await service.FindNextAiMatchAsync("nieistniejacy", new List<string> {"Nieistniejący"}, 0);
+            var result = await service.AiNext("nieistniejacy", new List<string> {"Nieistniejący"}, 0);
 
             Assert.Null(result.MatchedUser);
             Assert.Equal(0, result.LastProcessedIndex);
         }
 
         [Fact]
-        public async Task FindNextAiMatchAsyncTest2()
+        public async Task AiNextTest2()
         {
             var context = CreateInMemoryDbContext();
             var mockConfig = CreateMockConfiguration();
             var mockGemini = new Mock<IGeminiService>();
-            var service = new AiMatchmakingService(context, mockGemini.Object, mockConfig.Object);
+            var service = new AiMatchmakingService<User>(context, mockGemini.Object, mockConfig.Object);
 
             var userId = "ja";
             var candidate1Id = "nieznajomy1";
@@ -101,7 +102,7 @@ namespace INZYNIERKA.Tests.Services
                       .ReturnsAsync("NO")
                       .ReturnsAsync("YES");
 
-            var result = await service.FindNextAiMatchAsync(userId, candidatesList, 0);
+            var result = await service.AiNext(userId, candidatesList, 0);
 
             Assert.NotNull(result.MatchedUser);
             Assert.Equal("Nieznajomy2", result.MatchedUser.UserName);
@@ -109,12 +110,12 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task FindNextAiMatchAsyncTest3()
+        public async Task AiNextTest3()
         {
             var context = CreateInMemoryDbContext();
             var mockConfig = CreateMockConfiguration();
             var mockGemini = new Mock<IGeminiService>();
-            var service = new AiMatchmakingService(context, mockGemini.Object, mockConfig.Object);
+            var service = new AiMatchmakingService<User>(context, mockGemini.Object, mockConfig.Object);
 
             var userId = "ja";
             var candidate1Id = "Nieznajomy1";
@@ -130,7 +131,7 @@ namespace INZYNIERKA.Tests.Services
             mockGemini.Setup(g => g.AskAsync(It.IsAny<string>(), It.IsAny<string>()))
                       .ReturnsAsync("NO");
 
-            var result = await service.FindNextAiMatchAsync(userId, candidatesList, 0);
+            var result = await service.AiNext(userId, candidatesList, 0);
 
             Assert.Null(result.MatchedUser);
             Assert.Equal(1, result.LastProcessedIndex);

@@ -1,6 +1,6 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.Services;
+using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -23,25 +23,25 @@ namespace INZYNIERKA.Tests.Services
             return new Mock<UserManager<User>>(store.Object, null, null, null, null, null, null, null, null);
         }
 
-        // TESTY DLA: GetPrivateChatAsync //
+        // TESTY DLA: Chat //
 
         [Fact]
-        public async Task GetPrivateChatAsyncTest()
+        public async Task ChatTest()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
 
             mockUserManager.Setup(um => um.FindByIdAsync(It.IsAny<string>())).ReturnsAsync((User)null);
 
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
-            var result = await service.GetPrivateChatAsync("user1", "user2", "", "");
+            var result = await service.Chat("user1", "user2", "", "");
 
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetPrivateChatAsyncTest2()
+        public async Task ChatTest2()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
@@ -53,14 +53,14 @@ namespace INZYNIERKA.Tests.Services
             mockUserManager.Setup(um => um.FindByIdAsync("Znajomy")).ReturnsAsync(friend);
 
             context.Messages.AddRange(
-                new Message {Id = 1, SenderId = "Ja", ReceiverId = "Znajomy", Content = "Pierwsza", DateTime = DateTime.UtcNow, Sender = user, Receiver = friend},
-                new Message {Id = 2, SenderId = "Znajomy", ReceiverId = "Ja", Content = "Druga", DateTime = DateTime.UtcNow.AddMinutes(5), Sender = friend, Receiver = user}
+                new Message {Id = 1, SenderId = "Ja", ReceiverId = "Znajomy", Content = "Pierwsza", Timestamp = DateTime.UtcNow, Sender = user, Receiver = friend},
+                new Message {Id = 2, SenderId = "Znajomy", ReceiverId = "Ja", Content = "Druga", Timestamp = DateTime.UtcNow.AddMinutes(5), Sender = friend, Receiver = user}
             );
             await context.SaveChangesAsync();
 
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
-            var result = await service.GetPrivateChatAsync("Ja", "Znajomy", "", "");
+            var result = await service.Chat("Ja", "Znajomy", "", "");
 
             Assert.NotNull(result);
             Assert.Equal("Znajomy", result.FriendId);
@@ -69,14 +69,14 @@ namespace INZYNIERKA.Tests.Services
             Assert.Equal("Druga", result.Messages.Last().Content);
         }
 
-        // TESTY DLA: GetGroupChatAsync //
+        // TESTY DLA: GroupChat //
 
         [Fact]
-        public async Task GetGroupChatAsyncTest()
+        public async Task GroupChatTest()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
             var groupId = 1;
             var userId = "Ja";
@@ -85,22 +85,22 @@ namespace INZYNIERKA.Tests.Services
             await context.SaveChangesAsync();
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                service.GetGroupChatAsync(userId, groupId, "", ""));
+                service.GroupChat(userId, groupId, "", ""));
         }
 
-        // TESTY DLA: SavePrivateMessageAsync //
+        // TESTY DLA: SaveMessage //
 
         [Fact]
-        public async Task SavePrivateMessageAsyncTest()
+        public async Task SaveMessageTest()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
             var senderId = "Ja";
             var receiverId = "Znajomy";
 
-            await service.SavePrivateMessageAsync(senderId, receiverId, "Hej");
+            await service.SaveMessage(senderId, receiverId, "Hej");
 
             var savedMessage = await context.Messages.FirstOrDefaultAsync();
             var notification = await context.Notifications.FirstOrDefaultAsync();
@@ -113,11 +113,11 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task SavePrivateMessageAsyncTest2()
+        public async Task SaveMessageTest2()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
             var senderId = "Ja";
             var receiverId = "Znajomy";
@@ -125,21 +125,21 @@ namespace INZYNIERKA.Tests.Services
             context.Notifications.Add(new Notification { SenderId = senderId, ReceiverId = receiverId, Type = NotificationType.Message });
             await context.SaveChangesAsync();
 
-            await service.SavePrivateMessageAsync(senderId, receiverId, "Wiadomosc");
+            await service.SaveMessage(senderId, receiverId, "Wiadomosc");
 
             var totalNotifications = await context.Notifications.CountAsync();
 
             Assert.Equal(1, totalNotifications);
         }
 
-        // TESTY DLA: ClearMessageNotificationAsync //
+        // TESTY DLA: ClearNotification //
 
         [Fact]
-        public async Task ClearMessageNotificationAsyncTest()
+        public async Task ClearNotificationTest()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
             var userId = "Ja";
             var friendId = "Znajomy";
@@ -147,20 +147,20 @@ namespace INZYNIERKA.Tests.Services
             context.Notifications.Add(new Notification {SenderId = friendId, ReceiverId = userId});
             await context.SaveChangesAsync();
 
-            await service.ClearMessageNotificationAsync(userId, friendId);
+            await service.ClearNotification(userId, friendId);
 
             var notificationsLeft = await context.Notifications.CountAsync();
             Assert.Equal(0, notificationsLeft);
         }
 
-        // TESTY DLA: SaveGroupMessageAsync //
+        // TESTY DLA: SaveGroupMessage //
 
         [Fact]
-        public async Task SaveGroupMessageAsyncTest()
+        public async Task SaveGroupMessageTest()
         {
             var context = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ChatService(context, mockUserManager.Object);
+            var service = new ChatService<User>(context, mockUserManager.Object);
 
             var groupId = 1;
             var senderId = "Ja";
@@ -177,7 +177,7 @@ namespace INZYNIERKA.Tests.Services
             );
             await context.SaveChangesAsync();
 
-            await service.SaveGroupMessageAsync(groupId, senderId, "Wiadomosc");
+            await service.SaveGroupMessage(groupId, senderId, "Wiadomosc");
 
             var savedMessage = await context.GroupMessages.FirstOrDefaultAsync();
             var notifications = await context.Notifications.ToListAsync();

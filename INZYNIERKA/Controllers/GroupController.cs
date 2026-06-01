@@ -1,9 +1,9 @@
-﻿using INZYNIERKA.Models;
-using INZYNIERKA.ViewModels;
+﻿using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Interfaces;
+using INZYNIERKA.Services.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using INZYNIERKA.Services;
 
 namespace INZYNIERKA.Controllers
 {
@@ -11,13 +11,13 @@ namespace INZYNIERKA.Controllers
     public class GroupController : Controller
     {
         private readonly UserManager<User> userManager;
-        private readonly IGroupService groupService;
-        private readonly IGroupMemberService groupMemberService;
+        private readonly IGroupService<User> groupService;
+        private readonly IGroupMemberService<User> groupMemberService;
 
         public GroupController(
             UserManager<User> userManager, 
-            IGroupService groupService,
-            IGroupMemberService groupMemberService)
+            IGroupService<User> groupService,
+            IGroupMemberService<User> groupMemberService)
         {
             this.userManager = userManager;
             this.groupService = groupService;
@@ -31,16 +31,45 @@ namespace INZYNIERKA.Controllers
             return View();
         }
 
-        public async Task<IActionResult> ShowAvailableGroups()
+        public async Task<IActionResult> ShowAvailableGroups(string? searchQuery, int page = 1)
         {
             var userId = userManager.GetUserId(User);
-            return View(await groupService.GetAvailableGroupsAsync(userId));
+            try
+            {
+                int pageSize = 10;
+                var (model, totalCount) = await groupService.AvailableGroups(userId, searchQuery, page, pageSize);
+
+                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        public async Task<IActionResult> ShowUserGroups()
+        public async Task<IActionResult> ShowUserGroups(string? searchQuery, int page = 1)
         {
             var userId = userManager.GetUserId(User);
-            return View(await groupService.GetUserGroupsAsync(userId));
+            try
+            {
+                int pageSize = 10;
+                var (model, totalCount) = await groupService.UserGroups(userId, searchQuery, page, pageSize);
+
+                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public IActionResult CreateGroup()
@@ -51,139 +80,303 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGroup(string name)
         {
-            var userId = userManager.GetUserId(User);
-            await groupService.CreateGroupAsync(name, userId);
-            return RedirectToAction("ShowUserGroups");
+            if (string.IsNullOrEmpty(name))
+            {
+                return View();
+            }
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                await groupService.CreateGroup(name, userId);
+                return RedirectToAction("ShowUserGroups");
+            }
+            catch (Exception ex)
+            {
+                return View();
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> JoinGroup(int groupId)
         {
-            var userId = userManager.GetUserId(User);
-            await groupService.JoinGroupAsync(groupId, userId);
-            return RedirectToAction("ShowUserGroups");
+            if (groupId <= 0) return RedirectToAction("ShowAvailableGroups");
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                await groupService.JoinGroup(groupId, userId);
+                return RedirectToAction("ShowUserGroups");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowAvailableGroups");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> LeaveGroup(int groupId)
         {
-            var userId = userManager.GetUserId(User);
-            await groupService.LeaveGroupAsync(groupId, userId);
-            return RedirectToAction("ShowUserGroups");
-        }
+            if (groupId <= 0) return RedirectToAction("ShowUserGroups");
 
-        public async Task<IActionResult> EditGroup(int GroupID)
-        {
             try
             {
-                var group = await groupService.GetGroupForEditAsync(GroupID, userManager.GetUserId(User));
-                if (group == null) return NotFound();
-                return View(group);
+                var userId = userManager.GetUserId(User);
+                await groupService.LeaveGroup(groupId, userId);
+                return RedirectToAction("ShowUserGroups");
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+        }
+
+        public async Task<IActionResult> EditGroup(int groupID)
+        {
+            if (groupID <= 0) return RedirectToAction("ShowUserGroups");
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+
+                var model = await groupService.EditGroup(groupID, userId);
+
+                if (model == null)
+                {
+                    return NotFound("Cannot find the group.");
+                }
+                return View(model);
+            }
+            catch (UnauthorizedAccessException) 
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditGroup(Models.Group model)
+        public async Task<IActionResult> EditGroup(EditGroupViewModel model)
         {
-            try
+            if (model == null || model.Id <= 0)
             {
-                await groupService.UpdateGroupAsync(model, userManager.GetUserId(User));
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+
+            if (!ModelState.IsValid) return View(model);
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                await groupService.UpdateGroup(model, userId);
+                return RedirectToAction("ShowUserGroups");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteGroup(int groupId)
         {
-            try
+            if (groupId <= 0)
             {
-                await groupService.DeleteGroupAsync(groupId, userManager.GetUserId(User));
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
-        }
 
-        public async Task<IActionResult> SelectGroupTags(int groupID)
-        {
             try
             {
-                var model = await groupService.GetGroupTagsForSelectionAsync(groupID, userManager.GetUserId(User));
+                var userId = userManager.GetUserId(User);
+                await groupService.DeleteGroup(groupId, userId);
+                return RedirectToAction("ShowUserGroups");
+            }
+            catch (UnauthorizedAccessException) 
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+        }
+
+        public async Task<IActionResult> SelectGroupTags(int groupId)
+        {
+            if (groupId <= 0)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await groupService.GroupTags(groupId, userId);
                 return View(model);
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+            catch (UnauthorizedAccessException) 
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> SelectGroupTags(SelectGroupTagsViewModel model)
         {
+            if (model == null || model.GroupID <= 0)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+
             try
             {
-                var selectedTagIds = model.Tags.Where(t => t.IsSelected).Select(t => t.TagId).ToList();
-                await groupService.UpdateGroupTagsAsync(model.GroupID, userManager.GetUserId(User), selectedTagIds);
+                var userId = userManager.GetUserId(User);
+
+                var selectedTagsIds = model.Tags
+                                        .Where(t => t.Selected)
+                                        .Select(t => t.TagId)
+                                        .ToList();
+
+                await groupService.UpdateGroupTags(model.GroupID, userId, selectedTagsIds);
                 return RedirectToAction("EditGroup", new {model.GroupID});
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+            catch (UnauthorizedAccessException) 
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return View(model);
+            }
         }
 
         // GroupMember Service //
 
         public async Task<IActionResult> ShowGroupMembers(int groupId)
         {
-            var userId = userManager.GetUserId(User);
-            var model = await groupMemberService.GetGroupMembersAsync(groupId, userId);
+            if (groupId <= 0)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
 
-            if (model == null) return NotFound();
-            return View(model);
+            try
+            {
+                var userId = userManager.GetUserId(User);
+                var model = await groupMemberService.GroupMembers(groupId, userId);
+
+                if (model == null)
+                {
+                    return NotFound("Cannot find the group members.");
+                }
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> GiveAdmin(int groupId, string userId)
         {
+            if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+
             try
             {
-                var success = await groupMemberService.GiveAdminAsync(groupId, userId, userManager.GetUserId(User));
-                if (!success) return NotFound();
+                var currentUserId = userManager.GetUserId(User);
+                var success = await groupMemberService.GiveAdmin(groupId, userId, currentUserId);
+                if (!success) return NotFound("Cannot give admin role.");
                 return RedirectToAction("ShowGroupMembers", new {groupId});
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+            catch (UnauthorizedAccessException) 
+            {
+                return Forbid();
+            }
+            catch (Exception ex) {
+                return RedirectToAction("ShowGroupMembers", new { groupId }); 
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> DemoteAdmin(int groupId, string userId)
         {
+            if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+
             try
             {
-                var success = await groupMemberService.DemoteAdminAsync(groupId, userId, userManager.GetUserId(User));
-                if (!success) return NotFound();
-                return RedirectToAction("ShowGroupMembers", new {groupId});
+                var success = await groupMemberService.DemoteAdmin(groupId, userId, userManager.GetUserId(User));
+                if (!success) return NotFound("Cannot demote admin role.");
+                return RedirectToAction("ShowGroupMembers", new { groupId });
             }
-            catch (UnauthorizedAccessException) {return Forbid();}    
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowGroupMembers", new { groupId });
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> KickUser(int groupId, string userId)
         {
+            if (groupId <= 0 || string.IsNullOrWhiteSpace(userId)) return RedirectToAction("ShowUserGroups");
+
             try
             {
-                var success = await groupMemberService.KickUserAsync(groupId, userId, userManager.GetUserId(User));
-                if (!success) return NotFound();
+                var success = await groupMemberService.KickUser(groupId, userId, userManager.GetUserId(User));
+                if (!success) return NotFound("Cannot kick user.");
                 return RedirectToAction("ShowGroupMembers", new {groupId});
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+            catch (UnauthorizedAccessException) 
+            {
+                return Forbid();
+            }
+            catch (Exception ex) {
+                return RedirectToAction("ShowGroupMembers", new { groupId });
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> BanUser(int groupId, string userId)
         {
+            if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
+            {
+                return RedirectToAction("ShowUserGroups");
+            }
+
             try
             {
-                var success = await groupMemberService.BanUserAsync(groupId, userId, userManager.GetUserId(User));
-                if (!success) return NotFound();
+                var currentUserId = userManager.GetUserId(User);
+                var success = await groupMemberService.BanUser(groupId, userId, currentUserId);
+                if (!success) return NotFound("Cannot ban user.");
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
-            catch (UnauthorizedAccessException) {return Forbid();}
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ShowGroupMembers", new { groupId });
+            }
         }
     }
 }

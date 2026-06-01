@@ -1,105 +1,562 @@
-﻿@model INZYNIERKA.ViewModels.GroupChatViewModel
+﻿@model INZYNIERKA.Services.ViewModels.GroupChatViewModel
 
-<div class="row mb-3">
-    <div class="col">
-        <p class="display-4">@Model.groupName</p>
-    </div>
-</div>
-
-<div id="chatWindow" class="border rounded p-3 mb-3 bg-light" style="height:300px; overflow-y:auto;">
-    @if (Model.messages != null && Model.messages.Any())
-    {
-        @foreach (var msg in Model.messages)
-        {
-            <div class="mb-2">
-                <strong>@msg.SenderName:</strong> @msg.Content
-            </div>
-        }
-    }
-    else
-    {
-        <div class="text-muted">No messages yet.</div>
-    }
-</div>
-
-<div class="input-group">
-    <input type="text" id="messageInput" class="form-control"
-           placeholder="Write a message..."
-           value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
-    <button id="sendButton" class="btn btn-primary bg">Send</button>
-</div>
-
-@if (!string.IsNullOrEmpty(Model.GeminiAnswer))
-{
-    <div class="mt-3 p-3 bg-light rounded border">
-        <strong>Gemini:</strong> @Model.GeminiAnswer
-    </div>
+@{
+    ViewData["Title"] = "Group Chat";
 }
-<div class="menu">
-    <form method="post" asp-action="GroupResponseHelp" asp-controller="Chat">
-        <input type="hidden" name="groupId" value="@Model.groupID" />
-        <button type="submit" class="mybtn">Help with response</button>
-    </form>
 
-    <form id="CorrectForm" method="post" asp-action="GroupCorrectMessage" asp-controller="Chat">
-        <input type="hidden" name="groupId" value="@Model.groupID" />
-        <input type="hidden" id="userMessageCorrect" name="UserMessage" value="" />
-        <button type="submit" class="mybtn">Correct my message</button>
-    </form>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
 
-    <form id="TranslateForm" method="post" asp-action="GroupTranslateMessage" asp-controller="Chat">
-        <input type="hidden" name="groupId" value="@Model.groupID" />
-        <input type="hidden" id="userMessageTranslate" name="UserMessage" value="" />
-        <button type="submit" class="mybtn">Translate</button>
-    </form>
+<div class="container-fluid py-4 px-lg-4">
+    <div class="row g-4 justify-content-center">
+        
+        <div class="col-xl-2 col-lg-4 d-flex flex-column">
+            <div class="card-body d-flex flex-column p-4">
+                    
+                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                    <i class="bi bi-journal-text fs-3 text-primary me-2" style="color: #552459 !important;"></i>
+                    <h5 class="fw-bold mb-0">AI Summary</h5>
+                </div>
+
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted mb-2"> Select period:</label>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0">From:</span>
+                            <input type="date" id="summaryDateStart" class="form-control bg-light border-0" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0">To:</span>
+                            <input type="date" id="summaryDateEnd" class="form-control bg-light border-0" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                        </div>
+                        <button onclick="generateGroupChatSummary()" class="btn btn-gradient-ai btn-sm w-100 mt-2">
+                            <i class="bi bi-stars me-1"></i> Generate Summary
+                        </button>
+                    </div>
+                </div>
+
+                <div id="summaryResultContainer" class="flex-grow-1 overflow-auto" style="max-height: 400px;">
+                    <div class="text-center text-muted fst-italic mt-4">
+                        <i class="bi bi-calendar-range fs-1 d-block mb-2"></i>
+                        Select dates and click the button.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-xl-7 col-lg-8 d-flex flex-column">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex flex-column p-4">
+                 
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <h4 class="mb-0 fw-bold d-flex align-items-center" style="color: #111827;">
+                            <i class="bi bi-collection-fill me-3" style="color: #552459;"></i>
+                            @Model.GroupName
+                        </h4>
+                        
+                        <div class="d-flex align-items-center gap-3">
+                            <a asp-controller="Group" asp-action="ShowGroupMembers" asp-route-groupId="@Model.GroupId" class="btn btn-gradient-primary btn-sm rounded-pill px-3">
+                                <i class="bi bi-people"></i> Członkowie
+                            </a>
+                        </div>
+                    </div>
+
+                    <div id="chatWindow" class="chat-scrollable bg-light rounded-3 p-3 mb-3 flex-grow-1 border">
+                        @{ 
+                            DateTime? lastDate = null;
+                        }
+
+                        @foreach (var msg in Model.Messages)
+                        {
+                            var msgDate = msg.Timestamp.Date; 
+
+                            if (lastDate == null || lastDate.Value != msgDate)
+                            {
+                                <div class="d-flex align-items-center justify-content-center my-4 date-separator">
+                                    <hr class="flex-grow-1 text-muted opacity-25 m-0">
+                                    <span class="mx-3 text-muted fw-bold" style="font-size: 0.75rem; background-color: #f8f9fa; padding: 2px 10px; border-radius: 10px;">
+                                        @if (msgDate == DateTime.Today)
+                                        {
+                                            <text>Dzisiaj</text>
+                                        }
+                                        else if (msgDate == DateTime.Today.AddDays(-1))
+                                        {
+                                            <text>Wczoraj</text>
+                                        }
+                                        else
+                                        {
+                                            <text>@msgDate.ToString("dd MMMM yyyy")</text>
+                                        }
+                                    </span>
+                                    <hr class="flex-grow-1 text-muted opacity-25 m-0">
+                                </div>
+                                lastDate = msgDate;
+                            }
+
+                            <div class="mb-3">
+                                <strong style="color: @(msg.SenderId == Model.CurrentUserId ? "#ae2eb8" : "#111827");">
+                                    @(msg.SenderId == Model.CurrentUserId ? "You" : msg.SenderName):
+                                </strong>
+                                
+                                @if (msg.IsImage)
+                                {
+                                    <br />
+                                    <img src="data:@msg.ImageType;base64,@msg.ImageData" class="chat-image rounded-3 mt-2" style="max-width: 250px;" />
+                                }
+                                else
+                                {
+                                    <span class="ms-1">@msg.Content</span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.GeminiAnswer))
+                    {
+                        <div class="gemini-box p-3 mb-4 d-flex gap-3">
+                            <i class="bi bi-robot" style="font-size: 2rem; color: #ae2eb8;"></i>
+                            <div style="white-space: pre-wrap; line-height: 1.5;">
+                                <strong style="color: #552459; font-size: 1.1rem;">Gemini AI:</strong><br />
+                                @Model.GeminiAnswer
+                            </div>
+                        </div>
+                    }
+
+                    <div class="input-group mb-3 border rounded-pill overflow-hidden p-1 bg-white shadow-sm">
+                        <input type="file" id="groupImageInput" accept="image/*" style="display:none;" />
+                        
+                        <button class="btn btn-gradient-send border-0 rounded-circle" type="button" onclick="document.getElementById('groupImageInput').click()" title="Wyślij zdjęcie">
+                            <i class="bi bi-image"></i>
+                        </button>
+
+                        <button class="btn btn-gradient-send border-0 rounded-circle mx-1" type="button" id="emojiTriggerBtn" title="Wstaw Emoji">
+                            <i class="bi bi-emoji-smile"></i>
+                        </button>
+
+                        <input type="text" id="messageInput" class="form-control border-0 shadow-none"
+                               placeholder="Napisz do grupy..."
+                               value="@(string.IsNullOrEmpty(Model?.UserMessage) ? "" : Model.UserMessage)" />
+                        
+                        <button id="sendButton" class="btn btn-gradient-send rounded-pill px-4">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <form id="CorrectForm" method="post" asp-action="GroupCorrectMessage" asp-controller="Chat" class="flex-grow-1">
+                            <input type="hidden" name="groupId" value="@Model.GroupId" />
+                            <input type="hidden" id="userMessageCorrect" name="UserMessage" value="" />
+                            <button type="submit" class="btn btn-gradient-ai btn-sm w-100 mt-2"><i class="bi bi-spellcheck me-1"></i> Correct</button>
+                        </form>
+
+                        <form id="TranslateForm" method="post" asp-action="GroupTranslateMessage" asp-controller="Chat" class="flex-grow-1">
+                            <input type="hidden" name="groupId" value="@Model.GroupId" />
+                            <input type="hidden" id="userMessageTranslate" name="UserMessage" value="" />
+                            <button type="submit" class="btn btn-gradient-ai btn-sm w-100 mt-2"><i class="bi bi-translate me-1"></i> Translate</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 d-none d-xl-flex flex-column">
+            <div class="card-body d-flex flex-column p-4">
+                    
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-robot fs-3 text-primary me-2" style="color: #552459 !important;"></i>
+                        <h5 class="fw-bold mb-0">Smart Replies</h5>
+                    </div>
+                    <button class="btn btn-sm btn-light rounded-circle shadow-sm border" type="button" data-bs-toggle="collapse" data-bs-target="#smartRepliesConfig" aria-expanded="false" aria-controls="smartRepliesConfig" title="Ustawienia AI">
+                        <i class="bi bi-gear-fill" style="color: #552459;"></i>
+                    </button>
+                </div>
+
+                <div class="collapse mb-3" id="smartRepliesConfig">
+                    <div class="card card-body border-0 shadow-sm bg-light p-3 rounded-3" style="font-size: 0.85rem;">
+                        <h6 class="fw-bold mb-3 text-dark border-bottom pb-2">AI Settings</h6>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="autoGenerateSwitch" onchange="saveGroupSmartReplySettings()">
+                            <label class="form-check-label text-muted fw-bold" for="autoGenerateSwitch">Auto-generate</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted fw-bold mb-1">Response Style:</label>
+                            <select class="form-select form-select-sm border-0 shadow-sm" id="smartReplyTone" onchange="onToneChange()">
+                                <option value="casual" selected>Casual</option>
+                                <option value="formal">Formal</option>
+                                <option value="funny">Funny</option>
+                                <option value="custom">Custom...</option>
+                            </select>
+                        </div>
+
+                        <div id="customStyleContainer" class="d-none">
+                            <label class="form-label text-muted fw-bold mb-1">Describe your style:</label>
+                            <textarea class="form-control form-control-sm border-0 shadow-sm rounded-3 py-2" id="customStyleInput" rows="3" placeholder="e.g. Respond very briefly..." onchange="saveGroupSmartReplySettings()"></textarea>
+                        </div>
+
+                        <div id="refreshRepliesContainer" class="mt-3 border-top pt-3 d-none">
+                            <button type="button" class="btn btn-sm btn-gradient-ai w-100 shadow-sm" onclick="generateGroupSmartReply()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Suggestions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                    
+                <p class="text-muted small mb-4">Click the button to get AI suggestions based on the recent group conversation.</p>
+                    
+                <div id="smartRepliesContainer" class="d-flex flex-column gap-2">
+                    <div class="text-center text-muted fst-italic mt-4">
+                        <i class="bi bi-chat-left-dots fs-1 d-block mb-2"></i>
+                        Waiting for action...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
 </div>
-
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@joeattardi/emoji-button@3.1.1/dist/index.min.js"></script>
     <script>
+        const currentgroupID = "@Model.GroupId";
+        const currentUserId = "@Model.CurrentUserId";
+
+        // Konfiguracja SignalR //
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/groupchathub")
+            .withAutomaticReconnect()
             .build();
 
-        const currentgroupID = "@Model.groupID";
-        const currentUserId = "@Model.currentUserID";
+        async function start() {
+            await connection.start();
+            await connection.invoke("JoinGroup", `group_${currentgroupID}`);
+        }
+        start();
 
-        connection.on("ReceiveGroupMessage", function (groupId, senderId, message) {
+        const emoticonsMap = {
+        ":)": "🙂",
+        ":D": "😀",
+        "xD": "😆",
+        "XD": "😆",
+        "xd": "😆",
+        "^^": "😊",
+        "^_^": "😊",
+        ":(": "🙁",
+        ":'(": "😢",
+        "T_T": "😭",
+        ";(": "😥",
+        ";)": "😉",
+        ":*": "😘",
+        ":-*": "😘",
+        ":O": "😲",
+        ":o": "😲",
+        ":P": "😛",
+        ":p": "😛",
+        "xP": "😝",
+        "XP": "😝",
+        ">:<": "😠",
+        "-_-": "😑",
+        ">_>": "😒",
+        "<_<": "😒",
+        "B)": "😎",
+        "8)": "😎",
+        "O:)": "😇",
+        "o:)": "😇",
+        ":/": "😕",
+        ":\\": "😕",
+        ":|": "😐",
+        "<3": "❤️",
+        "</3": "💔",
+        "(y)": "👍",
+        "(Y)": "👍",
+        "(n)": "👎",
+        "(N)": "👎"
+        };
 
-            if(groupId != currentgroupID) return;
+        function parseEmoticons(text) {
+        if (!text) return text;
+        let parsedText = text;
+        for (const [emoticon, emoji] of Object.entries(emoticonsMap)) {
+        const regex = new RegExp(emoticon.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"), "g");
+        parsedText = parsedText.replace(regex, emoji);
+        }
+        return parsedText;
+        }
 
-            const chatWindow = document.getElementById("chatWindow");
-            const div = document.createElement("div");
-            div.innerHTML = `<strong>${senderId === currentUserId ? "You" : senderId}:</strong> ${message}`;
-            chatWindow.appendChild(div);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+        const chatWindow = document.getElementById("chatWindow");
+
+        // SMART REPLIES & SUMMARY //
+        const smartRepliesContainer = document.getElementById("smartRepliesContainer");
+
+        async function generateGroupSmartReply() {
+            smartRepliesContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center p-4 border rounded-3" style="background: rgba(174, 46, 184, 0.05);">
+                <div class="spinner-grow spinner-grow-sm me-2" style="color: #ae2eb8;" role="status"></div>
+                <span class="text-muted fw-bold" style="color: #552459 !important;">Gemini myśli...</span>
+            </div>`;
+
+            try {
+                const aiReplies = await connection.invoke("GroupSmartReply", currentgroupID);
+                if (Array.isArray(aiReplies) && aiReplies.length > 0) {
+                    let buttonsHtml = '';
+                    aiReplies.forEach(reply => {
+                        buttonsHtml += `<button class="btn btn-gradient-smart text-start w-100 mb-2 border bg-white"
+                        onclick="useSmartReply(this.dataset.reply)"
+                        data-reply="${reply.replace(/"/g, '&quot;')}">
+                        <i class="bi bi-stars text-primary me-1"></i> ${reply}
+                        </button>`;
+                    });
+                    smartRepliesContainer.innerHTML = buttonsHtml;
+                }
+                else {
+                    smartRepliesContainer.innerHTML = `<span class="text-danger small"><i class="bi bi-exclamation-triangle"></i> Brak odpowiedzi.</span>`;
+                }
+            }
+            catch (err) {
+                smartRepliesContainer.innerHTML = `<span class="text-danger small"><i class="bi bi-exclamation-triangle"></i> Błąd API / Brak metody w Hubie.</span>`;
+            }
+        }
+
+        function onToneChange() {
+        toggleCustomStyleField();
+        saveGroupSmartReplySettings();
+        }
+
+        function toggleCustomStyleField() {
+        const toneSelect = document.getElementById("smartReplyTone");
+        const customContainer = document.getElementById("customStyleContainer");
+        if (toneSelect.value === "custom") {
+        customContainer.classList.remove("d-none");
+        document.getElementById("customStyleInput").focus();
+        } else {
+        customContainer.classList.add("d-none");
+        }
+        }
+
+        async function saveGroupSmartReplySettings() {
+        const isAuto = document.getElementById("autoGenerateSwitch").checked;
+        const tone = document.getElementById("smartReplyTone").value;
+        const custom = document.getElementById("customStyleInput").value;
+
+        const refreshContainer = document.getElementById("refreshRepliesContainer");
+        if (isAuto) refreshContainer.classList.remove("d-none");
+        else refreshContainer.classList.add("d-none");
+
+        if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        try {
+        await connection.invoke("SaveGroupSmartReplySettings", currentgroupID, tone, custom, isAuto);
+        } catch (err) { console.error("Błąd zapisu AI:", err); }
+        }
+        }
+
+        function useSmartReply(text) {
+            const input = document.getElementById('messageInput');
+            input.value = text;
+            input.focus();
+        }
+
+        async function generateGroupChatSummary() {
+            const container = document.getElementById("summaryResultContainer");
+            const startDate = document.getElementById("summaryDateStart").value;
+            const endDate = document.getElementById("summaryDateEnd").value;
+
+            container.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <p class="small fw-bold text-muted">Analizuję historię...</p>
+                </div>`;
+
+            try {
+                const summary = await connection.invoke("GroupChatSummary", currentgroupID, startDate, endDate);
+                container.innerHTML = `
+                    <div class="p-3 border rounded-3 bg-light" style="font-size: 0.9rem;">
+                        <div class="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Gotowe</span>
+                            <small class="text-muted">${startDate}</small>
+                        </div>
+                        ${summary}
+                    </div>`;
+            } catch (err) {
+                container.innerHTML = `<div class="alert alert-danger small p-2">Błąd generowania. Sprawdź backend.</div>`;
+            }
+        }
+
+        // Infinite scroll //
+        let loadedMessagesCount = 30;
+        let isLoadingOlder = false;
+        let hasMoreMessages = true;
+
+        chatWindow.addEventListener("scroll", async function() {
+            if (chatWindow.scrollTop === 0 && !isLoadingOlder && hasMoreMessages) {
+                isLoadingOlder = true;
+                const previousScrollHeight = chatWindow.scrollHeight;
+
+                try {
+                    const response = await fetch(`/Chat/LoadOlderGroupMessages?groupId=${currentgroupID}&skip=${loadedMessagesCount}`);
+                    if (response.ok) {
+                        const olderMessages = await response.json();
+
+                        if (olderMessages.length > 0) {
+                            loadedMessagesCount += olderMessages.length;
+                            let olderHtml = "";
+
+                            olderMessages.forEach(msg => {
+                                const senderLabel = msg.senderId === currentUserId ? "You" : msg.senderName;
+                                const colorStyle = msg.senderId === currentUserId ? "color: #ae2eb8;" : "color: #111827;";
+                                let contentHtml = msg.isImage ?
+                                    `<br/><img src="data:${msg.imageType};base64,${msg.imageDataBase64}" class="chat-image" />` :
+                                    `<span class="ms-1">${msg.content}</span>`;
+                                olderHtml += `<div class="message-container mb-3"><strong style="${colorStyle}">${senderLabel}:</strong> ${contentHtml}</div>`;
+                            });
+
+                            chatWindow.insertAdjacentHTML('afterbegin', olderHtml);
+                            chatWindow.scrollTop = chatWindow.scrollHeight - previousScrollHeight;
+                        }
+
+                        if (olderMessages.length < 30) {
+                            hasMoreMessages = false;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Błąd przy ładowaniu starszych wiadomości", err);
+                } finally {
+                    isLoadingOlder = false;
+                }
+            }
         });
 
-        connection.start().then(function () {
-            connection.invoke("JoinGroup", `group_${currentgroupID}`)
-                .catch(function (err) {
-                    return console.error("JoinGroup error:", err.toString());
-                });
-        });
-
-        document.getElementById("sendButton").addEventListener("click", function () {
-            console.log("co jest");
-            const message = document.getElementById("messageInput").value;
-            if (!message.trim()) {
-                console.log("Window Error");
-                return;
+        // Message handling & Date Separators //
+        function appendGroupMessage(senderId, senderName, content, isHtml) {
+            
+            const todayStr = "Dzisiaj";
+            const dateSeparators = chatWindow.querySelectorAll('.date-separator span');
+            let needsTodaySeparator = true;
+            
+            if (dateSeparators.length > 0) {
+                const lastSeparatorText = dateSeparators[dateSeparators.length - 1].innerText;
+                if (lastSeparatorText === todayStr) {
+                    needsTodaySeparator = false;
+                }
             }
 
-            connection.invoke("SendMessageToGroup", currentgroupID, currentUserId, message)
-                .catch(err => console.error(err.toString()));
-            document.getElementById("messageInput").value = "";
-        });
-    </script>
+            if (needsTodaySeparator) {
+                const separatorDiv = document.createElement("div");
+                separatorDiv.className = "d-flex align-items-center justify-content-center my-4 date-separator";
+                separatorDiv.innerHTML = `
+                    <hr class="flex-grow-1 text-muted opacity-25 m-0">
+                    <span class="mx-3 text-muted fw-bold" style="font-size: 0.75rem; background-color: #f8f9fa; padding: 2px 10px; border-radius: 10px;">${todayStr}</span>
+                    <hr class="flex-grow-1 text-muted opacity-25 m-0">
+                `;
+                chatWindow.appendChild(separatorDiv);
+            }
 
-    <script>
+            const div = document.createElement("div");
+            div.className = "message-container mb-3";
+            
+            const senderLabel = senderId === currentUserId ? "You" : senderName;
+            const colorStyle = senderId === currentUserId ? "color: #ae2eb8;" : "color: #111827;";
+
+            let innerContent = `<strong style="${colorStyle}">${senderLabel}:</strong> `;
+            if (isHtml) {
+                innerContent += content;
+            } else {
+                const tempDiv = document.createElement("div");
+                tempDiv.innerText = content;
+                innerContent += `<span class="ms-1">${tempDiv.innerHTML}</span>`;
+            }
+
+            div.innerHTML = innerContent;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        connection.on("ReceiveGroupMessage", function(groupId, senderId, senderName, message) {
+        if (groupId != currentgroupID) return;
+        appendGroupMessage(senderId, senderName || senderId, message, false);
+
+        if (senderId !== currentUserId) {
+        const isAuto = document.getElementById("autoGenerateSwitch").checked;
+        if (isAuto) {
+        generateGroupSmartReply();
+        }
+        }
+        });
+
+        connection.on("ReceiveGroupImage", function(groupId, senderId, senderName, base64Data, contentType) {
+            if (groupId != currentgroupID) return;
+            const imgHtml = `<br/><img src="data:${contentType};base64,${base64Data}" class="chat-image rounded-3 mt-2" style="max-width: 250px;" />`;
+            appendGroupMessage(senderId, senderName || senderId, imgHtml, true);
+        });
+
+        // Users Interactions //
+        document.getElementById("sendButton").addEventListener("click", function() {
+            const messageInput = document.getElementById("messageInput");
+            let message = parseEmoticons(messageInput.value);
+
+            if (!message.trim()) return
+
+            connection.invoke("SendMessageToGroup", currentgroupID, currentUserId, message)
+            .catch(err => console.error(err.toString()));
+            
+            messageInput.value = "";
+        });
+
+        document.getElementById("groupImageInput").addEventListener("change", function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64Data = reader.result.split(',')[1];
+                const contentType = file.type;
+
+                connection.invoke("SendGroupImage", currentgroupID.toString(), currentUserId, base64Data, contentType)
+                .catch(err => console.error("Upload error:", err.toString()));
+            };
+            reader.readAsDataURL(file);
+            this.value = "";
+        });
+
+        connection.on("ErrorNotification", function(errorMessage) {
+            alert(errorMessage);
+        });
+
+        function notifyGroupMessagesRead() {
+            const groupId = "@Model.GroupId";
+            connection.invoke("ClearGroupNotifications", currentUserId, groupId.toString()).catch(e => { });
+        }
+
+        document.getElementById("messageInput").addEventListener("focus", notifyGroupMessagesRead);
+        document.getElementById("chatWindow").addEventListener("click", notifyGroupMessagesRead);
+        setTimeout(notifyGroupMessagesRead, 1500);
+
+        // Emoji Picker //
+        const emojiTriggerBtn = document.getElementById("emojiTriggerBtn");
+        const msgInput = document.getElementById("messageInput");
+        
+        const picker = new EmojiButton({
+            position: 'top-start',
+            theme: 'light',
+            autoHide: false
+        });
+
+        picker.on('emoji', emoji => {
+            msgInput.value += emoji;
+            msgInput.focus();
+        });
+
+        emojiTriggerBtn.addEventListener('click', () => {
+            picker.togglePicker(emojiTriggerBtn);
+        });
+
+        // Forms binding //
         function bindMessageToForm(formId, hiddenInputId) {
-            document.getElementById(formId).addEventListener("submit", function () {
+            document.getElementById(formId).addEventListener("submit", function() {
                 var message = document.getElementById("messageInput").value;
                 document.getElementById(hiddenInputId).value = message;
             });
@@ -110,46 +567,82 @@
     </script>
 
     <style>
-        .menu {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin-top: 20px;
+        .chat-scrollable {
+            height: 450px;
+            overflow-y: auto;
         }
 
-        .mybtn {
-            background: linear-gradient(135deg, #ae2eb8, #3b82f6);
-            color: white;
-            text-align: center;
-            padding: 10px 0px;
-            border-radius: 15px;
-            width: 300px;
-            text-decoration: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        .chat-scrollable::-webkit-scrollbar {
+            width: 8px;
         }
 
-            .mybtn:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-            }
+        .chat-scrollable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
 
-        .show {
+        .chat-scrollable::-webkit-scrollbar-thumb {
+            background: #c4c0c4;
+            border-radius: 10px;
+        }
+
+        .chat-scrollable::-webkit-scrollbar-thumb:hover {
+            background: #ae2eb8;
+        }
+
+        .btn-gradient-primary {
             background: linear-gradient(135deg, #757009, #cfc61d);
             color: white;
-            text-align: center;
-            padding: 10px 0px;
-            border-radius: 15px;
-            width: 200px;
-            text-decoration: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-gradient-primary:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(174, 46, 184, 0.25);
         }
 
-            .show:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-            }
+        .btn-gradient-ai {
+            background: linear-gradient(135deg, #8d00E9, #1200E9);
+            color: white;
+            border: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-gradient-ai:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-gradient-send {
+            background: linear-gradient(135deg, #ae2eb8, #552459);
+            color: white;
+            border: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-gradient-send:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-gradient-smart {
+            background: linear-gradient(to right, #ffffff, #fcf8fd);
+            border: 1px solid #e9ecef;
+            color: #111827;
+            transition: all 0.2s ease;
+        }
+        .btn-gradient-smart:hover {
+            background: linear-gradient(to right, #fcf8fd, #f4e8f6);
+            transform: translateX(4px);
+        }
+        
+        .gemini-box {
+            background: linear-gradient(to right, #fdfbfe, #f4e8f6);
+            border-left: 5px solid #ae2eb8;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(174, 46, 184, 0.08);
+        }
     </style>
 }

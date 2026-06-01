@@ -1,7 +1,7 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.Services;
-using INZYNIERKA.ViewModels;
+using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Services;
+using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -23,14 +23,14 @@ namespace INZYNIERKA.Tests.Services
             return new Mock<UserManager<User>>(store.Object, null, null, null, null, null, null, null, null);
         }
 
-        // TESTY DLA GetUserProfileAsync //
+        // TESTY DLA Profile //
 
         [Fact]
-        public async Task GetUserProfileAsyncTest()
+        public async Task ProfileTest()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
             var userId = "Ja";
             var user = new User
@@ -45,7 +45,7 @@ namespace INZYNIERKA.Tests.Services
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
 
-            var result = await service.GetUserProfileAsync(userId);
+            var result = await service.Profile(userId);
 
             Assert.NotNull(result);
             Assert.Equal("Ja", result.UserName);
@@ -55,25 +55,25 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task GetUserProfileAsyncTest2()
+        public async Task ProfileTest2()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.GetUserProfileAsync("nieistniejacy");
+            var result = await service.Profile("nieistniejacy");
 
             Assert.Null(result);
         }
 
-        // --- TESTY DLA GetOtherUserProfileAsync //
+        // --- TESTY DLA OtherProfile //
 
         [Fact]
-        public async Task GetOtherUserProfileAsyncTest()
+        public async Task OtherProfileTest()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
             var userId = "Znajomy";
             var user = new User
@@ -88,7 +88,7 @@ namespace INZYNIERKA.Tests.Services
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
 
-            var result = await service.GetOtherUserProfileAsync(userId);
+            var result = await service.OtherProfile(userId);
 
             Assert.NotNull(result);
             Assert.Equal("Znajomy", result.UserName);
@@ -97,25 +97,25 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task GetOtherUserProfileAsyncTest2()
+        public async Task OtherProfileTest2()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.GetOtherUserProfileAsync("nieistniejacy");
+            var result = await service.OtherProfile("nieistniejacy");
 
             Assert.Null(result);
         }
 
-        // TESTY DLA GetUserProfileForEditAsync //
+        // TESTY DLA EditProfile //
 
         [Fact]
-        public async Task GetUserProfileForEditAsyncTest()
+        public async Task EditProfileTest()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
             var userId = "Ja";
             dbContext.Users.Add(new User
@@ -128,7 +128,7 @@ namespace INZYNIERKA.Tests.Services
             });
             await dbContext.SaveChangesAsync();
 
-            var result = await service.GetUserProfileForEditAsync(userId);
+            var result = await service.EditProfile(userId);
 
             Assert.NotNull(result);
             Assert.Equal("Ja", result.UserName);
@@ -137,21 +137,21 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task GetUserProfileForEditAsyncTest2()
+        public async Task EditProfileTest2()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.GetUserProfileForEditAsync("nieistniejacy");
+            var result = await service.EditProfile("nieistniejacy");
 
             Assert.Null(result);
         }
 
-        // TESTY DLA: UpdateUserProfileAsync //
+        // TESTY DLA: UpdateProfile //
 
         [Fact]
-        public async Task UpdateUserProfileAsyncTest()
+        public async Task UpdateProfileTest()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
@@ -164,7 +164,7 @@ namespace INZYNIERKA.Tests.Services
             mockUserManager.Setup(m => m.UpdateAsync(It.IsAny<User>()))
                            .ReturnsAsync(IdentityResult.Success);
 
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
             var updateModel = new UserViewModel
             {
@@ -173,10 +173,9 @@ namespace INZYNIERKA.Tests.Services
                 PrivateDescription = "Nowy Opis Prywatny"
             };
 
-            var result = await service.UpdateUserProfileAsync(userId, updateModel);
+            var (result, err) = await service.UpdateProfile(userId, updateModel);
 
-            Assert.True(result.IsSuccess);
-            Assert.Empty(result.Errors);
+            Assert.True(result);
 
             Assert.Equal("Nowy avatar.jpg", existingUser.Avatar);
             Assert.Equal("Nowy Opis Publiczny", existingUser.PublicDescription);
@@ -184,7 +183,7 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateUserProfileAsyncTest2()
+        public async Task UpdateProfileTest2()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
@@ -192,13 +191,12 @@ namespace INZYNIERKA.Tests.Services
             mockUserManager.Setup(m => m.FindByIdAsync(It.IsAny<string>()))
                            .ReturnsAsync((User)null);
 
-            var service = new ProfileService(dbContext, mockUserManager.Object);
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
             var model = new UserViewModel();
 
-            var result = await service.UpdateUserProfileAsync("Nieistniejący", model);
+            var (result, err) = await service.UpdateProfile("Nieistniejący", model);
 
-            Assert.False(result.IsSuccess);
-            Assert.Contains("Nie znaleziono użytkownika.", result.Errors);
+            Assert.False(result);
         }
     }
 }

@@ -1,102 +1,51 @@
 ﻿@using Microsoft.AspNetCore.Identity;
+@using INZYNIERKA.Domain.Models;
 @inject SignInManager<User> signInManager;
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
+<div class="my-container flex-column">
 
-@if (!signInManager.IsSignedIn(User))
-{
-    <div class="home-container">
-        <div class="welcome-header">
-            <h1 class="display-3">Welcome to the website!</h1>
-            <p class="lead">Register or log in to meet people who share your interests</p>
+    @if (!signInManager.IsSignedIn(User))
+    {
+        <div class="text-center mb-5">
+            <h1 class="fw-bold">Welcome to the website!</h1>
+            <p class="text-muted mt-3">Register or log in to meet people who share your interests</p>
         </div>
-        <div class="home-menu">
-            <a asp-controller="Account" asp-action="Register" class="home-card">
-                <i class="fas fa-user-plus"></i>
+
+        <div class="d-flex justify-content-center gap-4 flex-wrap">
+            <a asp-controller="Account" asp-action="Register" class="nav-card gradient-main">
+                <i class="display-4 mb-2 bi-person-plus-fill"></i>
                 <h3>Register</h3>
             </a>
-            <a asp-controller="Account" asp-action="Login" class="home-card">
-                <i class="fas fa-sign-in-alt"></i>
+            <a asp-controller="Account" asp-action="Login" class="nav-card gradient-main">
+                <i class="display-4 mb-2 bi-box-arrow-in-right"></i>
                 <h3>Log In</h3>
             </a>
         </div>
-    </div>
-}
-else
-{
-    <div class="home-container">
-        <div class="welcome-header">
-            <h1 class="display-3">Welcome @ViewBag.UserName!</h1>
-            <p class="lead">Chat with friends, explore users, or join thematic groups</p>
+    }
+    else
+    {
+        <div class="text-center mb-5 mt-4">
+            <h1 class="display-4 fw-bold">Welcome @ViewBag.UserName!</h1>
+            <p class="text-muted mt-3">Chat with friends, explore users, or join thematic groups</p>
         </div>
-        <div class="home-menu">
-            <a asp-controller="Group" asp-action="Index" class="home-card">
-                <i class="fas fa-users"></i>
+
+        <div class="d-flex justify-content-center gap-4 flex-wrap">
+            <a asp-controller="Group" asp-action="Index" class="nav-card gradient-main">
+                <i class="display-4 bi-people-fill"></i>
                 <h3>Groups</h3>
             </a>
-            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="home-card">
-                <i class="fas fa-search"></i>
+            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="nav-card gradient-main">
+                <i class="display-4 bi-search"></i>
                 <h3>Browser</h3>
             </a>
-            <a asp-controller="Profile" asp-action="Index" class="home-card">
-                <i class="fas fa-user-circle"></i>
+            <a asp-controller="Profile" asp-action="Index" class="nav-card gradient-main">
+                <i class="display-4 bi bi-person-circle"></i>
                 <h3>Profile</h3>
             </a>
         </div>
-    </div>
-}
-
-<style>
-    .home-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2rem;
-        margin-top: 40px;
     }
-
-    .welcome-header {
-        text-align: center;
-        color: #111827;
-    }
-
-    .home-menu {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        flex-wrap: wrap;
-        margin-top: 20px;
-    }
-
-    .home-card {
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        text-align: center;
-        padding: 30px 20px;
-        border-radius: 15px;
-        width: 250px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .home-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-        .home-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .home-card h3 {
-            margin: 0;
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
-</style>
+</div>

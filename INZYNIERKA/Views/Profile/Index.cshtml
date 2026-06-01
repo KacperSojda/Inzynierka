@@ -1,215 +1,163 @@
-﻿@model INZYNIERKA.ViewModels.UserViewModel
+﻿@model INZYNIERKA.Services.ViewModels.UserViewModel
 
 @{
-    ViewData["Title"] = "Profile Home Page";
+    ViewData["Title"] = "Mój Profil";
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
 
-<div class="container py-5">
-    <div class="text-center mb-4">
-        <h1>@Model.UserName</h1>
-        <p class="lead">@Model.PublicDescription</p>
-    </div>
+<div class="my-container">
+    <div class="row g-4">
+        
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                
+                <div style="height: 200px; background-image: url('@Model.Cover'); background-size: cover; background-position: center;">
+                </div>
 
-    <div class="row justify-content-center mb-4">
-        <div class="col-md-4 text-center">
-            <img src="@Model.Avatar" alt="Avatar" class="img-fluid rounded-circle mb-3" />
+                <div class="card-body px-4 px-md-5 pb-4">
+                    
+                    <div style="margin-top: -75px; margin-bottom: 15px;">
+                        <img src="@Model.Avatar" alt="Avatar" class="prof-avatar rounded-circle border border-4 border-white shadow-sm" />
+                    </div>
+
+                    <h3 class="fw-bold mb-1">
+                        @Model.UserName
+                        @if (Model.Age.HasValue)
+                        {
+                            <span class="text-muted fw-normal fs-5 ms-1">@Model.Age</span>
+                        }
+                    </h3>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Status))
+                    {
+                        <p class="fst-italic text-muted mb-3">"@Model.Status"</p>
+                    }
+
+                    <div class="d-flex flex-wrap justify-content-start gap-4 text-muted mb-4">
+                        @if (!string.IsNullOrEmpty(Model.City))
+                        {
+                            <span><i class="bi bi-geo-alt-fill text-danger me-1"></i> @Model.City, @Model.Country</span>
+                        }
+                        @if (Model.BirthDate.HasValue)
+                        {
+                            <span><i class="bi bi-cake2-fill text-primary me-1"></i> @Model.BirthDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                        @if (Model.Zodiac != null && (int)Model.Zodiac != 0)
+                        {
+                            <span><i class="bi bi-stars text-warning me-1"></i> @Model.Zodiac</span>
+                        }
+                    </div>
+
+                    <div>
+                        <h5 class="fw-bold">Tags:</h5>
+                        @if (Model.Tags != null && Model.Tags.Any())
+                        {
+                            foreach (var tag in Model.Tags)
+                            {
+                                <span class="badge tag-badge gradient-main">@tag</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">No tags</span>
+                        }
+                    </div>
+
+                    <hr class="text-muted mb-4" />
+
+                    <div class="text-start mt-2">
+                        <h5 class="fw-bold">Public Description:</h5>
+                        <p class="text-muted mb-4">@(string.IsNullOrEmpty(Model.PublicDescription) ? "No description." : Model.PublicDescription)</p>
+
+                        <h5 class="fw-bold">Private Description:</h5>
+                        <p class="text-muted mb-4">@(string.IsNullOrEmpty(Model.PrivateDescription) ? "No description." : Model.PrivateDescription)</p>
+
+                        <h5 class="fw-bold">Language:</h5>
+                        <div class="mb-4">
+                            @(string.IsNullOrEmpty(Model.Language) ? "No language selected." : Model.Language)
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
-        <div class="col-md-8">
-            <h4>Private Description:</h4>
-            <p>@Model.PrivateDescription</p>
 
-            <h5>Your tags:</h5>
-            <ul class="list-inline">
-                @foreach (var tag in Model.Tags)
-                {
-                    <li class="list-inline-item badge bg-primary mx-1">@tag</li>
-                }
-            </ul>
+        <div class="col-lg-2">
+            <div class="card border-0 mb-4">
+                <div class="card-body p-4 d-flex flex-wrap gap-3 justify-content-center">
+                    <a asp-controller="Profile" asp-action="EditProfile" class="btn-profile gradient-yellow" title="Edit Profile" data-bs-toggle="tooltip">
+                        <i class="bi bi-pencil-square"></i> <span>Edit</span>
+                    </a>
+                    <a asp-controller="Profile" asp-action="SelectTags" class="btn-profile gradient-grey" title="Edit Tags" data-bs-toggle="tooltip">
+                        <i class="bi bi-tags"></i> <span>Tags</span>
+                    </a>
+                    <a asp-controller="Profile" asp-action="FriendList" class="btn-profile gradient-green" title="Friends List" data-bs-toggle="tooltip">
+                        <i class="bi bi-people-fill"></i> <span>Friends</span>
+                    </a>
+                    <a asp-controller="Profile" asp-action="RequestList" class="btn-profile gradient-pink" title="Friend Requests" data-bs-toggle="tooltip">
+                        <i class="bi bi-person-badge"></i> <span>Requests</span>
+                    </a>
+                    <a asp-controller="Profile" asp-action="EditMedia" class="btn-profile gradient-purple" title="Manage Media" data-bs-toggle="tooltip">
+                        <i class="bi bi-images"></i> <span>Media</span>
+                    </a>
+                </div>
+            </div> 
+
+            @if (!string.IsNullOrEmpty(Model.SocialMedia))
+            {
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Social Media</h5>
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var link in Model.SocialMedia.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                var cleanLink = link.Trim();
+                                <a href="@cleanLink" target="_blank" class="text-decoration-none text-primary text-truncate">
+                                    <i class="bi bi-link-45deg"></i> @cleanLink.Replace("https://", "").Replace("http://", "").TrimEnd('/')
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
         </div>
-    </div>
 
-    <div class="home-menu">
-        <a asp-controller="Profile" asp-action="EditProfile" class="home-edit" title="Edit profile" data-bs-toggle="tooltipp"><i class="bi bi-pencil-square"></i> Edit</a>
-        <a asp-controller="Profile" asp-action="SelectTags" class="home-tags" title="Edit tags" data-bs-toggle="tooltipp"><i class="bi bi-tags"></i> Tags</a>
-        <a asp-controller="Profile" asp-action="FriendList" class="home-friends" title="Friend list" data-bs-toggle="tooltipp"><i class="bi bi-people-fill"></i> Friends</i></a>
-        <a asp-controller="Profile" asp-action="RequestList" class="home-requests" title="Friend requests" data-bs-toggle="tooltipp"><i class="bi bi-person-badge"></i> Requests</a>
-        <a asp-controller="Profile" asp-action="EditAvatar" class="home-avatar" title="Edit Avatar" data-bs-toggle="tooltipp"><i class="bi bi-person-badge"></i> Avatar</a>
     </div>
 </div>
 
 <style>
-    .home-container {
+
+    .prof-avatar {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        background-color: white;
+    }
+
+    .tag-badge {
+        padding: 8px 15px;
+        border-radius: 12px;
+        color: white;
+    }
+
+    .btn-profile {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2rem;
-        margin-top: 40px;
-    }
-
-    .home-menu {
-        display: flex;
         justify-content: center;
-        gap: 2rem;
-        flex-wrap: wrap;
-        margin-top: 20px;
-    }
-
-    .home-edit {
-        background: linear-gradient(135deg, #757009, #cfc61d);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
+        padding: 15px 10px;
         border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
+        width: 140px;
+        color: white;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-        .home-edit:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-        .home-edit i {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .home-edit h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-    .home-tags {
-        background: linear-gradient(135deg, #89838a, #c4c0c4);
+    .btn-profile:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .home-tags:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-        .home-tags i {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .home-tags h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-    .home-friends {
-        background: linear-gradient(135deg, #1c7a15, #32b528);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .home-friends:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-        .home-friends i {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .home-friends h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-    .home-requests {
-        background: linear-gradient(135deg, #8c144c, #d43780);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .home-requests:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-        .home-requests i {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .home-requests h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-    .home-avatar {
-        background: linear-gradient(135deg, #1b3480, #4565c4);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .home-avatar:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        }
-
-        .home-avatar i {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .home-avatar h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-    .list-inline-item.badge {
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        text-align: center;
-        padding: 10px 0px;
-        border-radius: 15px;
-        width: 100px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 </style>

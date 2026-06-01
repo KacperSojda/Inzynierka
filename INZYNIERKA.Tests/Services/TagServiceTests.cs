@@ -1,6 +1,6 @@
 ﻿using INZYNIERKA.Data;
-using INZYNIERKA.Models;
-using INZYNIERKA.Services;
+using INZYNIERKA.Domain.Models;
+using INZYNIERKA.Services.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Tests.Services
@@ -15,19 +15,19 @@ namespace INZYNIERKA.Tests.Services
             return new INZDbContext(options);
         }
 
-        // TESTY DLA GetAllTagsAsync //
+        // TESTY DLA AllTags //
 
         [Fact]
-        public async Task GetAllTagsAsyncTest()
+        public async Task AllTagsTest()
         {
             var context = CreateInMemoryDbContext();
             context.Tags.Add(new Tag {Id = 1, Name = "Szachy"});
             context.Tags.Add(new Tag {Id = 2, Name = "Sport"});
             await context.SaveChangesAsync();
 
-            var service = new TagService(context);
+            var service = new TagService<User>(context);
 
-            var result = await service.GetAllTagsAsync();
+            var result = await service.AllTags();
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);
@@ -35,15 +35,15 @@ namespace INZYNIERKA.Tests.Services
             Assert.Contains(result, t => t.Name == "Sport");
         }
 
-        // TESTY DLA AddNewTagAsync //
+        // TESTY DLA NewTag //
 
         [Fact]
-        public async Task AddNewTagAsyncTest()
+        public async Task NewTagTest()
         {
             var context = CreateInMemoryDbContext();
-            var service = new TagService(context);
+            var service = new TagService<User>(context);
 
-            await service.AddNewTagAsync("NowyTag");
+            await service.NewTag("NowyTag");
 
             var tags = await context.Tags.ToListAsync();
             Assert.Single(tags);
@@ -51,24 +51,24 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task AddNewTagAsyncTest2()
+        public async Task NewTagTest2()
         {
             var context = CreateInMemoryDbContext();
             context.Tags.Add(new Tag {Id = 1, Name = "NowyTag"});
             await context.SaveChangesAsync();
-            var service = new TagService(context);
+            var service = new TagService<User>(context);
 
-            await service.AddNewTagAsync("NowyTag");
+            await service.NewTag("NowyTag");
 
             var tags = await context.Tags.ToListAsync();
             Assert.Single(tags);
             Assert.Equal("NowyTag", tags.First().Name); 
         }
 
-        // TESTY DLA: GetUserTagsForSelectionAsync //
+        // TESTY DLA: UserTags //
 
         [Fact]
-        public async Task GetUserTagsForSelectionAsyncTest()
+        public async Task UserTagsTest()
         {
             var context = CreateInMemoryDbContext();
             var userId = "Ja";
@@ -79,9 +79,9 @@ namespace INZYNIERKA.Tests.Services
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 1});
             await context.SaveChangesAsync();
 
-            var service = new TagService(context);
+            var service = new TagService<User>(context);
 
-            var result = await service.GetUserTagsForSelectionAsync(userId);
+            var result = await service.UserTags(userId);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Tags.Count); 
@@ -89,14 +89,14 @@ namespace INZYNIERKA.Tests.Services
             var chessTag = result.Tags.First(t => t.TagId == 1);
             var sportTag = result.Tags.First(t => t.TagId == 2);
 
-            Assert.True(chessTag.IsSelected);
-            Assert.False(sportTag.IsSelected);
+            Assert.True(chessTag.Selected);
+            Assert.False(sportTag.Selected);
         }
 
-        // TESTY DLA: UpdateUserTagsAsync //
+        // TESTY DLA: UpdateUserTags //
 
         [Fact]
-        public async Task UpdateUserTagsAsyncTest()
+        public async Task UpdateUserTagsTest()
         {
             var context = CreateInMemoryDbContext();
             var userId = "Ja";
@@ -105,11 +105,11 @@ namespace INZYNIERKA.Tests.Services
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 2});
             await context.SaveChangesAsync();
 
-            var service = new TagService(context);
+            var service = new TagService<User>(context);
 
             var newTagIds = new List<int> {2, 3};
 
-            await service.UpdateUserTagsAsync(userId, newTagIds);
+            await service.UpdateUserTags(userId, newTagIds);
 
             var userTags = await context.UserTags.Where(ut => ut.UserId == userId).ToListAsync();
 
@@ -120,7 +120,7 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateUserTagsAsyncTest2()
+        public async Task UpdateUserTagsTest2()
         {
             var context = CreateInMemoryDbContext();
             var userId = "Ja";
@@ -129,9 +129,9 @@ namespace INZYNIERKA.Tests.Services
             context.UserTags.Add(new UserTag {UserId = userId, TagId = 2});
             await context.SaveChangesAsync();
 
-            var service = new TagService(context);
+            var service = new TagService<User>(context);
 
-            await service.UpdateUserTagsAsync(userId, new List<int>());
+            await service.UpdateUserTags(userId, new List<int>());
 
             var userTags = await context.UserTags.Where(ut => ut.UserId == userId).ToListAsync();
             Assert.Empty(userTags);
