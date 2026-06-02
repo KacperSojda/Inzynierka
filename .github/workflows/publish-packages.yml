@@ -23,16 +23,19 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Autoryzacja serwera GitHub
-        run: dotnet nuget update source "Inz_Git" --username "github-actions" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text || dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name "Inz_Git" --username "github-actions" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+        run: dotnet nuget update source "GitHub_Inzynierka" --username "github-actions" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text || dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name "GitHub_Inzynierka" --username "github-actions" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
-      - name: Pakowanie INZYNIERKA.Domain
-        run: dotnet pack INZYNIERKA.Domain/INZYNIERKA.Domain.csproj -c Release -o ./out
+      - name: Twarda kompilacja bibliotek (Build)
+        run: |
+          dotnet build INZYNIERKA.Domain/INZYNIERKA.Domain.csproj -c Release
+          dotnet build INZYNIERKA.Data/INZYNIERKA.Data.csproj -c Release
+          dotnet build INZYNIERKA.Services/INZYNIERKA.Services.csproj -c Release
 
-      - name: Pakowanie INZYNIERKA.Data
-        run: dotnet pack INZYNIERKA.Data/INZYNIERKA.Data.csproj -c Release -o ./out
-
-      - name: Pakowanie INZYNIERKA.Services
-        run: dotnet pack INZYNIERKA.Services/INZYNIERKA.Services.csproj -c Release -o ./out
+      - name: Pakowanie (Pack)
+        run: |
+          dotnet pack INZYNIERKA.Domain/INZYNIERKA.Domain.csproj -c Release --no-build -o ./out
+          dotnet pack INZYNIERKA.Data/INZYNIERKA.Data.csproj -c Release --no-build -o ./out
+          dotnet pack INZYNIERKA.Services/INZYNIERKA.Services.csproj -c Release --no-build -o ./out
 
       - name: Publikacja na GitHub Packages
-        run: dotnet nuget push ./out/*.nupkg --source "Inz_Git" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+        run: dotnet nuget push ./out/*.nupkg --source "GitHub_Inzynierka" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
