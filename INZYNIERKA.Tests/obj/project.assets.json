@@ -5282,8 +5282,8 @@
         "net8.0"
       ],
       "sources": {
-        "G:\\Inzynierka\\Inzynierka\\LocalNuGet": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://nuget.pkg.github.com/KacperSojda/index.json": {}
       },
       "frameworks": {
         "net8.0": {
