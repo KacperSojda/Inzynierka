@@ -1,0 +1,68 @@
+﻿@model INZYNIERKA.Services.ViewModels.BannedMembersViewModel
+
+@{
+    ViewData["Title"] = "Zarządzanie banami - " + Model.GroupName;
+}
+
+<div class="container py-4 px-lg-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <h3 class="fw-bold mb-0" style="color: #111827;">
+            <i class="bi bi-shield-x me-2" style="color: #ae2eb8;"></i> Zbanowani w grupie: @Model.GroupName
+        </h3>
+        <a asp-controller="Group" asp-action="Details" asp-route-id="@Model.GroupId" class="btn btn-light shadow-sm rounded-pill px-3">
+            <i class="bi bi-arrow-left"></i> Powrót do grupy
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success rounded-3 shadow-sm mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            @if (Model.BannedUsers != null && Model.BannedUsers.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4 py-3 border-0 rounded-start-3">Użytkownik</th>
+                                <th class="py-3 border-0 text-end pe-4 rounded-end-3">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.BannedUsers)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-3 fw-bold text-dark">
+                                        <i class="bi bi-person-circle text-muted me-2 fs-5"></i> @user.UserName
+                                    </td>
+                                    <td class="py-3 text-end pe-4">
+                                        <form method="post" asp-action="UnbanUser" asp-controller="Group" class="d-inline">
+                                            <input type="hidden" name="groupId" value="@Model.GroupId" />
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <button type="submit" class="btn btn-sm text-white rounded-pill px-3" style="background: linear-gradient(135deg, #ae2eb8, #552459); transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                                                <i class="bi bi-unlock-fill me-1"></i> Odbanuj
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-5 text-muted">
+                    <i class="bi bi-shield-check fs-1 d-block mb-3" style="color: #c4c0c4;"></i>
+                    <h5 class="fw-bold">Brak zbanowanych użytkowników</h5>
+                    <p class="mb-0 small">Aktualnie nikt nie jest zbanowany w tej grupie.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY ["nuget.config", "."]
-COPY ["LocalNuGet/", "LocalNuGet/"]
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
 
 COPY ["INZYNIERKA.sln", "./"]
 COPY ["INZYNIERKA/INZYNIERKA.csproj", "INZYNIERKA/"]
@@ -12,10 +12,15 @@ COPY ["INZYNIERKA.E2ETests/INZYNIERKA.E2ETests.csproj", "INZYNIERKA.E2ETests/"]
 COPY ["INZYNIERKA.Services/INZYNIERKA.Services.csproj", "INZYNIERKA.Services/"]
 COPY ["INZYNIERKA.Data/INZYNIERKA.Data.csproj", "INZYNIERKA.Data/"]
 
+RUN dotnet nuget add source "https://nuget.pkg.github.com/${GITHUB_USERNAME}/index.json" \
+    --name "Inz_Git" \
+    --username "${GITHUB_USERNAME}" \
+    --password "${GITHUB_TOKEN}" \
+    --store-password-in-clear-text
+
 RUN dotnet restore
 
 COPY . .
-
 WORKDIR "/src/INZYNIERKA"
 RUN dotnet publish -c Release -o /app/out
 

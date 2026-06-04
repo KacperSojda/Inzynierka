@@ -1,5 +1,6 @@
 ﻿using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.Interfaces;
+using INZYNIERKA.Services.Services;
 using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -377,6 +378,24 @@ namespace INZYNIERKA.Controllers
             {
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
+        }
+
+        [HttpGet]
+        [HttpGet]
+        public async Task<IActionResult> BannedMembers(int groupId)
+        {
+            var viewModel = await groupService.GetBannedUsersViewModel(groupId);
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UnbanUser(int groupId, string userId)
+        {
+            await groupService.UnbanUser(groupId, userId);
+
+            TempData["SuccessMessage"] = "Użytkownik został pomyślnie odbanowany i przywrócono mu status członka grupy.";
+
+            return RedirectToAction(nameof(BannedMembers), new { groupId });
         }
     }
 }

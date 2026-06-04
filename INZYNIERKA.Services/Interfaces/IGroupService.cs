@@ -15,5 +15,7 @@ namespace INZYNIERKA.Services.Interfaces
         Task DeleteGroup(int groupId, string currentUserId);
         Task<SelectGroupTagsViewModel> GroupTags(int groupId, string currentUserId);
         Task UpdateGroupTags(int groupId, string currentUserId, List<int> selectedTagIds);
+        Task<BannedMembersViewModel> GetBannedUsersViewModel(int groupId);
+        Task UnbanUser(int groupId, string userId);
     }
 }
