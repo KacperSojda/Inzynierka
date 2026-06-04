@@ -22,7 +22,7 @@
 
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageId>Inzynierka.Services</PackageId>
-	<Version>1.0.0</Version>
+	<Version>1.0.1</Version>
 	<Authors>Kacper Sojda</Authors>
 	<Description>Usługi dla systemu chatu.</Description>
   </PropertyGroup>
