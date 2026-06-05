@@ -14,15 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Group\ShowBannedMembers.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Views\Group\ShowBannedMembers.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Inzynierka.Services" Version="1.0.0" />
+    <PackageReference Include="Inzynierka.Services" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />

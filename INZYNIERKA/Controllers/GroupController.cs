@@ -381,8 +381,7 @@ namespace INZYNIERKA.Controllers
         }
 
         [HttpGet]
-        [HttpGet]
-        public async Task<IActionResult> BannedMembers(int groupId)
+        public async Task<IActionResult> ShowBannedMembers(int groupId)
         {
             var viewModel = await groupService.GetBannedUsersViewModel(groupId);
             return View(viewModel);
@@ -395,7 +394,7 @@ namespace INZYNIERKA.Controllers
 
             TempData["SuccessMessage"] = "Użytkownik został pomyślnie odbanowany i przywrócono mu status członka grupy.";
 
-            return RedirectToAction(nameof(BannedMembers), new { groupId });
+            return RedirectToAction("ShowBannedMembers", new { groupId });
         }
     }
 }
