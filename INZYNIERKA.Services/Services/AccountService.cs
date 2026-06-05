@@ -129,6 +129,12 @@ namespace INZYNIERKA.Services.Services
                 return (false, "User not found.");
             }
 
+            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
+
+            if (currentUser != user) {
+                return (false, "You can only delete your own account.");
+            }
+
             var lockoutResult = await userManager.SetLockoutEnabledAsync(user, true);
             var dateResult = await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
 

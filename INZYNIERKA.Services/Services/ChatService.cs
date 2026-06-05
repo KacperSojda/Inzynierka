@@ -11,11 +11,13 @@ namespace INZYNIERKA.Services.Services
     {
         private readonly INZDbContext<TUser> context;
         private readonly UserManager<TUser> userManager;
+        private readonly SignInManager<TUser> signInManager;
 
-        public ChatService(INZDbContext<TUser> context, UserManager<TUser> userManager)
+        public ChatService(INZDbContext<TUser> context, UserManager<TUser> userManager, SignInManager<TUser> signInManager)
         {
             this.context = context;
             this.userManager = userManager;
+            this.signInManager = signInManager;
         }
 
         public async Task<ChatViewModel> Chat(string currentUserId, string friendId, string userMessage, string geminiAnswer)
@@ -132,6 +134,12 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<List<GroupMessageViewModel>> OlderGroupMessages(int groupId, int skip, int take = 30)
         {
+            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
+
+            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
+
+            if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
+
             var messages = await context.GroupMessages
                 .Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId)
@@ -208,6 +216,11 @@ namespace INZYNIERKA.Services.Services
 
         public async Task SaveGroupMessage(int groupId, string senderId, string content)
         {
+            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
+
+            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
+
+            if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
             var group = await context.Groups
                 .Include(g => g.Members)
@@ -254,6 +267,12 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<bool> SaveGroupImage(string senderId, int groupId, byte[] imageData, string imageType)
         {
+            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
+
+            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
+
+            if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
+
             if (imageData == null || imageData.Length == 0)
                 return false;
 

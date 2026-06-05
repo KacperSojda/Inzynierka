@@ -107,6 +107,7 @@ namespace INZYNIERKA.Services.Services
         public async Task LeaveGroup(int groupId, string userId)
         {
             var membership = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
+
             if (membership == null) return;
 
             if (membership.Type == MemberType.Administrator)
@@ -127,6 +128,7 @@ namespace INZYNIERKA.Services.Services
             if (!await IsAdminAsync(groupId, userId)) throw new UnauthorizedAccessException();
 
             var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+
             if (group == null) return null;
 
             return new EditGroupViewModel

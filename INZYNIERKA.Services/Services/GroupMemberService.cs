@@ -2,6 +2,7 @@
 using INZYNIERKA.Domain.Models;
 using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace INZYNIERKA.Services.Services
@@ -9,14 +10,23 @@ namespace INZYNIERKA.Services.Services
     public class GroupMemberService<TUser> : IGroupMemberService<TUser> where TUser : User
     {
         private readonly INZDbContext<TUser> context;
+        private readonly UserManager<TUser> userManager;
+        private readonly SignInManager<TUser> signInManager;
 
-        public GroupMemberService(INZDbContext<TUser> context)
+
+        public GroupMemberService(INZDbContext<TUser> context, UserManager<TUser> userManager, SignInManager<TUser> signInManager)
         {
             this.context = context;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
 
         public async Task<GroupMembersViewModel> GroupMembers(int groupId, string currentUserId)
         {
+            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
+
+            if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
+
             var group = await context.Groups
                 .Include(g => g.Members)
                 .ThenInclude(ug => ug.User)
@@ -39,6 +49,7 @@ namespace INZYNIERKA.Services.Services
             await EnsureIsAdminAsync(groupId, currentUserId);
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
+
             if (userGroup == null) return false;
 
             if (userGroup.Type == MemberType.Banned) return false;
@@ -55,6 +66,7 @@ namespace INZYNIERKA.Services.Services
         public async Task<bool> DemoteAdmin(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
+
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot demote yourself.");
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
@@ -71,6 +83,7 @@ namespace INZYNIERKA.Services.Services
         public async Task<bool> KickUser(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
+
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot kick yourself.");
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
@@ -84,6 +97,7 @@ namespace INZYNIERKA.Services.Services
         public async Task<bool> BanUser(int groupId, string targetUserId, string currentUserId)
         {
             await EnsureIsAdminAsync(groupId, currentUserId);
+
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot ban yourself.");
 
             var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
