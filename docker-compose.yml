@@ -8,4 +8,13 @@
     ports:
       - "8080:80"
     environment:
-      - ConnectionStrings__DefaultConnection=Host=dpg-d80s3djeo5us73fr8mmg-a.frankfurt-postgres.render.com;Port=5432;Database=inzdb_jdmh;Username=postgresuser;Password=wFXuVDdaN3GZYnAJBLay9m9NTyFfYNYn
+      - ConnectionStrings__DefaultConnection=Host=${HOST}
+
+      - EmailConfiguration__SmtpServer=${SMTP_SERVER}
+      - EmailConfiguration__SmtpPort=${SMTP_PORT}
+      - EmailConfiguration__SmtpUsername=${SMTP_USERNAME}
+      - EmailConfiguration__SmtpPassword=${SMTP_PASSWORD}
+
+      - ApiKeys__Gemini=${API_KEY}
+
+      - EndPoints__Gemini=${END_POINT}
