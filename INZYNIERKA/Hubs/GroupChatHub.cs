@@ -182,13 +182,20 @@ namespace INZYNIERKA.Hubs
         public async Task SaveGroupSRSettings(string groupIDString, string tone, string custom, bool auto)
         {
             var userId = Context.UserIdentifier;
-            if (userId == null || !int.TryParse(groupIDString, out int groupId)) return;
+            if (userId == null || !int.TryParse(groupIDString, out int groupId))
+            {
+                await Clients.Caller.SendAsync("ErrorNotification", "Authorization error");
+                return;
+            }
 
             try
             {
                 await chatAiService.SaveGroupSRSettings(userId, groupId, tone, custom, auto);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                await Clients.Caller.SendAsync("ErrorNotification", "Failed to save AI settings.");
+            }
         }
     }
 }

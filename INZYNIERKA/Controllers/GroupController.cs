@@ -47,8 +47,9 @@ namespace INZYNIERKA.Controllers
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load available groups.";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -67,8 +68,9 @@ namespace INZYNIERKA.Controllers
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load your groups.";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -83,6 +85,7 @@ namespace INZYNIERKA.Controllers
         {
             if (string.IsNullOrEmpty(name))
             {
+                ModelState.AddModelError("", "Group name cannot be empty.");
                 return View();
             }
 
@@ -90,10 +93,13 @@ namespace INZYNIERKA.Controllers
             {
                 var userId = userManager.GetUserId(User);
                 await groupService.CreateGroup(name, userId);
+
+                TempData["SuccessMessage"] = "Group created successfully.";
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                ModelState.AddModelError("", "Failed to create the group.");
                 return View();
             }
         }
@@ -101,16 +107,23 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> JoinGroup(int groupId)
         {
-            if (groupId <= 0) return RedirectToAction("ShowAvailableGroups");
+            if (groupId <= 0)
+            {
+                TempData["ErrorMessage"] = "Invalid group ID.";
+                return RedirectToAction("ShowAvailableGroups");
+            }
 
             try
             {
                 var userId = userManager.GetUserId(User);
                 await groupService.JoinGroup(groupId, userId);
+
+                TempData["SuccessMessage"] = "Successfully joined the group";
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to join the group.";
                 return RedirectToAction("ShowAvailableGroups");
             }
         }
@@ -118,23 +131,34 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> LeaveGroup(int groupId)
         {
-            if (groupId <= 0) return RedirectToAction("ShowUserGroups");
+            if (groupId <= 0)
+            {
+                TempData["ErrorMessage"] = "Invalid group ID.";
+                return RedirectToAction("ShowUserGroups");
+            }
 
             try
             {
                 var userId = userManager.GetUserId(User);
                 await groupService.LeaveGroup(groupId, userId);
+
+                TempData["SuccessMessage"] = "You have left the group.";
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to leave the group.";
                 return RedirectToAction("ShowUserGroups");
             }
         }
 
         public async Task<IActionResult> EditGroup(int groupID)
         {
-            if (groupID <= 0) return RedirectToAction("ShowUserGroups");
+            if (groupID <= 0)
+            {
+                TempData["ErrorMessage"] = "Invalid group ID.";
+                return RedirectToAction("ShowUserGroups");
+            }
 
             try
             {
@@ -144,16 +168,14 @@ namespace INZYNIERKA.Controllers
 
                 if (model == null)
                 {
-                    return NotFound("Cannot find the group.");
+                    TempData["ErrorMessage"] = "Cannot find the group.";
+                    return RedirectToAction("ShowUserGroups");
                 }
                 return View(model);
             }
-            catch (UnauthorizedAccessException) 
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
+                TempData["ErrorMessage"] = "Failed to load group details.";
                 return RedirectToAction("ShowUserGroups");
             }
         }
@@ -163,6 +185,7 @@ namespace INZYNIERKA.Controllers
         {
             if (model == null || model.Id <= 0)
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
@@ -174,13 +197,10 @@ namespace INZYNIERKA.Controllers
                 await groupService.UpdateGroup(model, userId);
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("ShowUserGroups");
+                ModelState.AddModelError("", "Failed to update group settings.");
+                return View(model);
             }
         }
 
@@ -189,6 +209,7 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0)
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
@@ -196,14 +217,13 @@ namespace INZYNIERKA.Controllers
             {
                 var userId = userManager.GetUserId(User);
                 await groupService.DeleteGroup(groupId, userId);
+
+                TempData["SuccessMessage"] = "Group has been deleted.";
                 return RedirectToAction("ShowUserGroups");
             }
-            catch (UnauthorizedAccessException) 
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
+                TempData["ErrorMessage"] = "Failed to delete the group.";
                 return RedirectToAction("ShowUserGroups");
             }
         }
@@ -212,6 +232,7 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0)
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
@@ -219,14 +240,17 @@ namespace INZYNIERKA.Controllers
             {
                 var userId = userManager.GetUserId(User);
                 var model = await groupService.GroupTags(groupId, userId);
+
+                if (model == null)
+                {
+                    TempData["ErrorMessage"] = "Cannot find the group.";
+                    return RedirectToAction("ShowUserGroups");
+                }
                 return View(model);
             }
-            catch (UnauthorizedAccessException) 
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
+                TempData["ErrorMessage"] = "Failed to load group tags.";
                 return RedirectToAction("ShowUserGroups");
             }
         }
@@ -236,6 +260,7 @@ namespace INZYNIERKA.Controllers
         {
             if (model == null || model.GroupID <= 0)
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
@@ -249,14 +274,13 @@ namespace INZYNIERKA.Controllers
                                         .ToList();
 
                 await groupService.UpdateGroupTags(model.GroupID, userId, selectedTagsIds);
+
+                TempData["SuccessMessage"] = "Group tags updated successfully.";
                 return RedirectToAction("EditGroup", new {model.GroupID});
             }
-            catch (UnauthorizedAccessException) 
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
+                ModelState.AddModelError("", "Failed to update tags.");
                 return View(model);
             }
         }
@@ -267,6 +291,7 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0)
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
@@ -277,12 +302,14 @@ namespace INZYNIERKA.Controllers
 
                 if (model == null)
                 {
-                    return NotFound("Cannot find the group members.");
+                    TempData["ErrorMessage"] = "Cannot find the group members.";
+                    return RedirectToAction("ShowUserGroups");
                 }
                 return View(model);
             }
             catch (Exception ex)
             {
+                TempData["ErrorMessage"] = "Failed to load members list.";
                 return RedirectToAction("ShowUserGroups");
             }
         }
@@ -292,6 +319,7 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
@@ -299,15 +327,20 @@ namespace INZYNIERKA.Controllers
             {
                 var currentUserId = userManager.GetUserId(User);
                 var success = await groupMemberService.GiveAdmin(groupId, userId, currentUserId);
-                if (!success) return NotFound("Cannot give admin role.");
-                return RedirectToAction("ShowGroupMembers", new {groupId});
+
+                if (!success)
+                {
+                    TempData["ErrorMessage"] = "Cannot assign admin role.";
+                    return RedirectToAction("ShowGroupMembers", new { groupId });
+                }
+
+                TempData["SuccessMessage"] = "User promoted to administrator.";
+                return RedirectToAction("ShowGroupMembers", new { groupId });
             }
-            catch (UnauthorizedAccessException) 
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex) {
-                return RedirectToAction("ShowGroupMembers", new { groupId }); 
+                TempData["ErrorMessage"] = "Server error while changing roles.";
+                return RedirectToAction("ShowGroupMembers", new { groupId });
             }
         }
 
@@ -316,21 +349,25 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
             {
+                TempData["ErrorMessage"] = "Invalid group ID.";
                 return RedirectToAction("ShowUserGroups");
             }
 
             try
             {
                 var success = await groupMemberService.DemoteAdmin(groupId, userId, userManager.GetUserId(User));
-                if (!success) return NotFound("Cannot demote admin role.");
+                if (!success)
+                {
+                    TempData["ErrorMessage"] = "Cannot demote this administrator.";
+                    return RedirectToAction("ShowGroupMembers", new { groupId });
+                }
+
+                TempData["SuccessMessage"] = "Administrator demoted to member.";
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
+                TempData["ErrorMessage"] = "Server error while changing roles.";
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
         }
@@ -338,19 +375,27 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> KickUser(int groupId, string userId)
         {
-            if (groupId <= 0 || string.IsNullOrWhiteSpace(userId)) return RedirectToAction("ShowUserGroups");
+            if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
+            {
+                TempData["ErrorMessage"] = "Invalid group ID.";
+                return RedirectToAction("ShowUserGroups");
+            }
 
             try
             {
                 var success = await groupMemberService.KickUser(groupId, userId, userManager.GetUserId(User));
-                if (!success) return NotFound("Cannot kick user.");
+                if (!success)
+                {
+                    TempData["ErrorMessage"] = "Cannot kick this user.";
+                    return RedirectToAction("ShowGroupMembers", new { groupId });
+                }
+
+                TempData["SuccessMessage"] = "User has been removed from the group.";
                 return RedirectToAction("ShowGroupMembers", new {groupId});
             }
-            catch (UnauthorizedAccessException) 
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex) {
+                TempData["ErrorMessage"] = "Server error while kicking user.";
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
         }
@@ -360,22 +405,26 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0 || string.IsNullOrWhiteSpace(userId))
             {
-                return RedirectToAction("ShowUserGroups");
+                TempData["ErrorMessage"] = "Invalid group ID.";
+                return RedirectToAction("ShowUserGroups");  
             }
 
             try
             {
                 var currentUserId = userManager.GetUserId(User);
                 var success = await groupMemberService.BanUser(groupId, userId, currentUserId);
-                if (!success) return NotFound("Cannot ban user.");
+                if (!success)
+                {
+                    TempData["ErrorMessage"] = "Cannot ban this user.";
+                    return RedirectToAction("ShowGroupMembers", new { groupId });
+                }
+
+                TempData["SuccessMessage"] = "User has been banned from the group.";
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception)
             {
-                return Forbid();
-            }
-            catch (Exception ex)
-            {
+                TempData["ErrorMessage"] = "Server error while banning user.";
                 return RedirectToAction("ShowGroupMembers", new { groupId });
             }
         }
@@ -383,16 +432,30 @@ namespace INZYNIERKA.Controllers
         [HttpGet]
         public async Task<IActionResult> ShowBannedMembers(int groupId)
         {
-            var viewModel = await groupService.GetBannedUsersViewModel(groupId);
-            return View(viewModel);
+            try
+            {
+                var viewModel = await groupService.GetBannedUsersViewModel(groupId);
+                return View(viewModel);
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "Failed to load banned members list.";
+                return RedirectToAction("ShowUserGroups");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> UnbanUser(int groupId, string userId)
         {
-            await groupService.UnbanUser(groupId, userId);
-
-            TempData["SuccessMessage"] = "Użytkownik został pomyślnie odbanowany i przywrócono mu status członka grupy.";
+            try
+            {
+                await groupService.UnbanUser(groupId, userId);
+                TempData["SuccessMessage"] = "User has been successfully unbanned and restored as a member.";
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "Failed to unban the user.";
+            }
 
             return RedirectToAction("ShowBannedMembers", new { groupId });
         }

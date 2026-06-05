@@ -36,15 +36,24 @@ namespace INZYNIERKA.Controllers
         // Profile Service //
         public async Task<IActionResult> Index()
         {
-            var userId = userManager.GetUserId(User);
-            var model = await profileService.Profile(userId);
-
-            if (model == null)
+            try
             {
-                return NotFound("Cannot find user profile.");
-            }
+                var userId = userManager.GetUserId(User);
+                var model = await profileService.Profile(userId);
 
-            return View(model);
+                if (model == null)
+                {
+                    TempData["ErrorMessage"] = "Cannot find your user profile.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                return View(model);
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "Failed to load profile data.";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public async Task<IActionResult> EditProfile()
@@ -54,13 +63,18 @@ namespace INZYNIERKA.Controllers
                 var userId = userManager.GetUserId(User);
                 var model = await profileService.EditProfile(userId);
 
-                if (model == null) return NotFound("Cannot find the user profile");
+                if (model == null)
+                {
+                    TempData["ErrorMessage"] = "Cannot find your user profile.";
+                    return RedirectToAction("Index", "Home");
+                }
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return RedirectToAction("Index");
+                TempData["ErrorMessage"] = "Failed to load the edit form.";
+                return RedirectToAction("Index", "Home");
             }
 
         }
@@ -70,7 +84,7 @@ namespace INZYNIERKA.Controllers
         {
             if (model == null)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Index, Home");
             }
 
             if (!ModelState.IsValid)
@@ -86,14 +100,14 @@ namespace INZYNIERKA.Controllers
 
                 if (result)
                 {
+                    TempData["SuccessMessage"] = "Profile updated successfully!";
                     return RedirectToAction("Index");
                 }
 
-                ModelState.AddModelError("", errorMessage);
-
+                ModelState.AddModelError("", "Update failed.");
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ModelState.AddModelError("", "Server error");
                 return View(model);
@@ -105,6 +119,7 @@ namespace INZYNIERKA.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
+                TempData["ErrorMessage"] = "Cannot identify user";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -114,13 +129,15 @@ namespace INZYNIERKA.Controllers
 
                 if (model == null)
                 {
+                    TempData["ErrorMessage"] = "User profile not found.";
                     return NotFound("Cannot find user profile.");
                 }
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load the user's profile.";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -136,8 +153,9 @@ namespace INZYNIERKA.Controllers
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load tags.";
                 return RedirectToAction("Index");
             }
         }
@@ -147,7 +165,7 @@ namespace INZYNIERKA.Controllers
         {
             if (model == null)
             {
-                ModelState.AddModelError("", "No data");
+                TempData["ErrorMessage"] = "No tags data provided.";
                 return RedirectToAction("Index");
             }
 
@@ -162,11 +180,12 @@ namespace INZYNIERKA.Controllers
 
                 await tagService.UpdateUserTags(userId, selectedTagsIds);
 
+                TempData["SuccessMessage"] = "Your tags have been updated!";
                 return RedirectToAction("Index", "Profile");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ModelState.AddModelError("", "Server error");
+                TempData["ErrorMessage"] = "Server error while updating tags.";
                 return RedirectToAction("Index");
             }
         }
@@ -189,13 +208,14 @@ namespace INZYNIERKA.Controllers
                 var (result, errorMessage) = await tagService.NewTag(model.TagName);
                 if (result)
                 {
+                    TempData["SuccessMessage"] = "Tag added successfully";
                     return RedirectToAction("Index", "Profile");
                 }
 
-                ModelState.AddModelError("", errorMessage);
+                ModelState.AddModelError("", "Failed to add tag.");
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ModelState.AddModelError("", "Server error");
                 return View(model);
@@ -209,8 +229,9 @@ namespace INZYNIERKA.Controllers
                 var tags = await tagService.AllTags();
                 return View(tags);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load tags list.";
                 return RedirectToAction("Index");
             }
         }
@@ -233,8 +254,9 @@ namespace INZYNIERKA.Controllers
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load notifications.";
                 return RedirectToAction("Index");
             }
         }
@@ -244,6 +266,7 @@ namespace INZYNIERKA.Controllers
         {
             if (notificationId <= 0)
             {
+                TempData["ErrorMessage"] = "Wrong notification Id";
                 return RedirectToAction("Notifications");
             }
 
@@ -254,13 +277,18 @@ namespace INZYNIERKA.Controllers
 
                 if (!success)
                 {
-                    return NotFound("Cannot delete the notification.");
+                    TempData["ErrorMessage"] = "Cannot delete the notification.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Notification deleted.";
                 }
 
                 return RedirectToAction("Notifications");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Server error";
                 return RedirectToAction("Notifications");
             }
         }
@@ -282,13 +310,18 @@ namespace INZYNIERKA.Controllers
 
                 if (!result)
                 {
-                    return NotFound("Cannot accept the friend request.");
+                    TempData["ErrorMessage"] = "Cannot accept the friend request.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Friend request accepted.";
                 }
 
                 return RedirectToAction("Notifications");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Server error";
                 return RedirectToAction("Notifications");
             }
         }
@@ -311,8 +344,9 @@ namespace INZYNIERKA.Controllers
 
                 return View("FriendList", model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load your friend list.";
                 return RedirectToAction("Index");
             }
         }
@@ -330,10 +364,12 @@ namespace INZYNIERKA.Controllers
                 var userId = userManager.GetUserId(User);
                 await friendshipService.DeleteFriend(userId, friendId);
 
+                TempData["SuccessMessage"] = "User has been removed from your friends.";
                 return RedirectToAction("FriendList");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to remove friend.";
                 return RedirectToAction("FriendList");
             }
         }
@@ -355,8 +391,9 @@ namespace INZYNIERKA.Controllers
 
                 return View("RequestList", model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load friend requests.";
                 return RedirectToAction("Index");
             }
         }
@@ -373,13 +410,14 @@ namespace INZYNIERKA.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
-
                 await friendshipService.DeleteRequest(userId, friendId);
 
+                TempData["SuccessMessage"] = "Friend request cancelled.";
                 return RedirectToAction("RequestList");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to delete the friend request.";
                 return RedirectToAction("RequestList");
             }
         }
@@ -396,13 +434,15 @@ namespace INZYNIERKA.Controllers
 
                 if (model == null)
                 {
-                    return NotFound("Nie znaleziono profilu użytkownika.");
+                    TempData["ErrorMessage"] = "User profile not found.";
+                    return RedirectToAction("Index");
                 }
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load media editor.";
                 return RedirectToAction("Index");
             }
         }
@@ -412,6 +452,7 @@ namespace INZYNIERKA.Controllers
         {
             if (AvatarFile == null || AvatarFile.Length == 0)
             {
+                TempData["ErrorMessage"] = "unvalid image file.";
                 return RedirectToAction("EditMedia");
             }
 
@@ -421,17 +462,19 @@ namespace INZYNIERKA.Controllers
 
                 if (!result)
                 {
+                    TempData["ErrorMessage"] = "Failed to upload the image.";
                     return RedirectToAction("EditMedia");
                 }
 
                 var userId = userManager.GetUserId(User);
-
                 result = await profileService.UpdateAvatar(userId, avatar);
 
+                TempData["SuccessMessage"] = "Profile picture updated successfully!";
                 return RedirectToAction("EditMedia");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Server error while saving the avatar.";
                 return RedirectToAction("EditMedia");
             }
         }
@@ -441,6 +484,7 @@ namespace INZYNIERKA.Controllers
         {
             if (CoverFile == null || CoverFile.Length == 0)
             {
+                TempData["ErrorMessage"] = "unvalid image file.";
                 return RedirectToAction("EditMedia");
             }
 
@@ -450,16 +494,19 @@ namespace INZYNIERKA.Controllers
 
                 if (!result)
                 {
+                    TempData["ErrorMessage"] = "Failed to upload the image";
                     return RedirectToAction("EditMedia");
                 }
 
                 var userId = userManager.GetUserId(User);
                 var success = await profileService.UpdateCover(userId, cover);
 
+                TempData["SuccessMessage"] = "Cover photo updated successfully.";
                 return RedirectToAction("EditMedia");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Server error";
                 return RedirectToAction("EditMedia");
             }
         }

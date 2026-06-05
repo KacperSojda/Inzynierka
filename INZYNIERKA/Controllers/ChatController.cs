@@ -28,6 +28,7 @@ namespace INZYNIERKA.Controllers
         {
             if (string.IsNullOrEmpty(friendId))
             {
+                TempData["ErrorMessage"] = "Wrong friend ID.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -41,13 +42,14 @@ namespace INZYNIERKA.Controllers
 
                 if(model == null)
                 {
-                    return NotFound("Cannot find the user.");
+                    TempData["ErrorMessage"] = "User not found or you do not have access to chat.";
+                    return RedirectToAction("Index", "Home");
                 }
 
                 return View(model);
             }
-            catch (Exception ex)
-            {
+            catch (Exception)
+            {   
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -66,7 +68,7 @@ namespace INZYNIERKA.Controllers
                 var olderMessages = await chatService.OlderMessages(userId, friendId, skip);
                 return Json(olderMessages);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new List<object>());
             }
@@ -77,6 +79,7 @@ namespace INZYNIERKA.Controllers
         {
             if (groupId <= 0)
             {
+                TempData["ErrorMessage"] = "Wrong group ID.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -89,13 +92,15 @@ namespace INZYNIERKA.Controllers
                 var model = await chatService.GroupChat(userId, groupId, userMessage, geminiAnswer);
                 if (model == null)
                 {
-                    return NotFound("Cannot find the group.");
+                    TempData["ErrorMessage"] = "Group not found or you do not have access to chat.";
+                    return RedirectToAction("Index", "Home");
                 }
 
                 return View(model);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load group chat.";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -110,7 +115,7 @@ namespace INZYNIERKA.Controllers
                 var olderMessages = await chatService.OlderGroupMessages(groupId, skip);
                 return Json(olderMessages);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new List<object>());
             }
@@ -122,15 +127,20 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> CorrectMessage(ChatViewModel model)
         {
-            if (model == null || string.IsNullOrEmpty(model.FriendId)) return RedirectToAction("Index", "Home");
+            if (model == null || string.IsNullOrEmpty(model.FriendId))
+            {
+                TempData["ErrorMessage"] = "Wrong friend ID.";
+                return RedirectToAction("Index", "Home");
+            }
 
             try
             {
                 TempData["UserMessage"] = await chatAiService.CorrectMessage(model.UserMessage);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["UserMessage"] = model.UserMessage;
+                TempData["ErrorMessage"] = "Error during correcting message.";
             }
 
             return RedirectToAction("Chat", new { friendId = model.FriendId });
@@ -140,7 +150,8 @@ namespace INZYNIERKA.Controllers
         public async Task<IActionResult> TranslateMessage(ChatViewModel model)
         {
             if (model == null || string.IsNullOrEmpty(model.FriendId))
-            { 
+            {
+                TempData["ErrorMessage"] = "Chat session expired.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -149,9 +160,10 @@ namespace INZYNIERKA.Controllers
                 var userId = userManager.GetUserId(User);
                 TempData["UserMessage"] = await chatAiService.TranslateMessage(userId, model.FriendId, model.UserMessage);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["UserMessage"] = model.UserMessage;
+                TempData["ErrorMessage"] = "Error during translating message.";
             }
 
             return RedirectToAction("Chat", new {friendId = model.FriendId});
@@ -160,7 +172,11 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> GroupResponseHelp(GroupChatViewModel model)
         {
-            if (model == null || model.GroupId <= 0) return RedirectToAction("Index", "Home");
+            if (model == null || model.GroupId <= 0)
+            {
+                TempData["ErrorMessage"] = "Group session error";
+                return RedirectToAction("Index", "Home");
+            }
 
             try
             {
@@ -168,10 +184,10 @@ namespace INZYNIERKA.Controllers
                 TempData["GeminiAnswer"] = await chatAiService.GroupResponseHelp(userId, model.GroupId);
                 TempData["UserMessage"] = model.UserMessage;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["UserMessage"] = model.UserMessage;
-                TempData["GeminiAnswer"] = "Error during helping with response.";
+                TempData["ErrorMessage"] = "Error during getting response help";
             }
 
             return RedirectToAction("GroupChat", new {groupId = model.GroupId});
@@ -182,6 +198,7 @@ namespace INZYNIERKA.Controllers
         {
             if (model == null || model.GroupId <= 0)
             {
+                TempData["ErrorMessage"] = "Group session error";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -190,9 +207,10 @@ namespace INZYNIERKA.Controllers
                 TempData["UserMessage"] = await chatAiService.CorrectMessage(model.UserMessage);
 
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 TempData["UserMessage"] = model.UserMessage;
+                TempData["ErrorMessage"] = "Error during correcting message.";
             }
             return RedirectToAction("GroupChat", new {groupId = model.GroupId});
         }
@@ -200,15 +218,20 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> GroupTranslateMessage(GroupChatViewModel model)
         {
-            if (model == null || model.GroupId <= 0) return RedirectToAction("Index", "Home");
+            if (model == null || model.GroupId <= 0)
+            {
+                TempData["ErrorMessage"] = "Group session error";
+                return RedirectToAction("Index", "Home");
+            }
 
             try
             {
                 TempData["UserMessage"] = await chatAiService.TranslateGroupMessage(model.GroupId, model.UserMessage);
             }
-            catch (Exception ex) 
+            catch (Exception) 
             {
                 TempData["UserMessage"] = model.UserMessage;
+                TempData["ErrorMessage"] = "Error during translating message.";
             }
 
             return RedirectToAction("GroupChat", new {groupId = model.GroupId});

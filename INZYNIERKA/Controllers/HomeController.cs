@@ -14,8 +14,9 @@ namespace INZYNIERKA.Controllers
                 }
                 return View();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Unexpected error occurred.";
                 return RedirectToAction("Error");
             }
         }

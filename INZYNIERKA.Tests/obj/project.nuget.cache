@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ERumAdP2nmE=",
+  "dgSpecHash": "xr+8n6tu9Po=",
   "success": true,
   "projectFilePath": "G:\\Inzynierka\\Inzynierka\\INZYNIERKA.Tests\\INZYNIERKA.Tests.csproj",
   "expectedPackageFiles": [
@@ -11,7 +11,7 @@
     "C:\\Users\\JA\\.nuget\\packages\\fluentassertions\\8.9.0\\fluentassertions.8.9.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\inzynierka.data\\1.0.0\\inzynierka.data.1.0.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\inzynierka.domain\\1.0.0\\inzynierka.domain.1.0.0.nupkg.sha512",
-    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.services\\1.0.1\\inzynierka.services.1.0.1.nupkg.sha512",
+    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.services\\1.0.2\\inzynierka.services.1.0.2.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.0\\microsoft.aspnetcore.authentication.abstractions.2.3.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authorization\\2.3.0\\microsoft.aspnetcore.authorization.2.3.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authorization.policy\\2.3.0\\microsoft.aspnetcore.authorization.policy.2.3.0.nupkg.sha512",

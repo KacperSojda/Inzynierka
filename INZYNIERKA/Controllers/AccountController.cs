@@ -120,6 +120,7 @@ namespace INZYNIERKA.Controllers
                     return View(model);
                 }
 
+                TempData["SuccessMessage"] = "Verification code has been sent to your email address.";
                 return RedirectToAction("ChangePassword", "Account", new { email = model.Email });
             }
             catch (Exception)
@@ -134,6 +135,7 @@ namespace INZYNIERKA.Controllers
         {
             if (string.IsNullOrEmpty(email))
             {
+                TempData["ErrorMessage"] = "Email is required.";
                 return RedirectToAction("VerifyEmail", "Account");
             }
             return View(new ChangePasswordViewModel { Email = email });
@@ -150,6 +152,7 @@ namespace INZYNIERKA.Controllers
 
                 if (succeeded)
                 {
+                    TempData["SuccessMessage"] = "Your password has been changed successfully.";
                     return RedirectToAction("Login", "Account");
                 }
 
@@ -173,10 +176,11 @@ namespace INZYNIERKA.Controllers
             try
             {
                 await accountService.LogoutAsync();
+                TempData["SuccessMessage"] = "You have been successfully logged out.";
             }
             catch (Exception)
             {
-                ModelState.AddModelError("", "Server Error");
+                TempData["ErrorMessage"] = "Server error occurred during logout.";
             }
 
             return RedirectToAction("Index", "Home");
@@ -190,7 +194,7 @@ namespace INZYNIERKA.Controllers
                 var user = await userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    ModelState.AddModelError("", "User not found.");
+                    TempData["ErrorMessage"] = "User not found or session expired.";
                     return NotFound();
                 }
 
@@ -198,15 +202,16 @@ namespace INZYNIERKA.Controllers
 
                 if (succeeded)
                 {
+                    TempData["SuccessMessage"] = "Your account has been locked out.";
                     return RedirectToAction("Index", "Home");
                 }
 
-                ModelState.AddModelError("", errorMessage ?? "Server Error");
+                TempData["ErrorMessage"] = "Failed to delete account.";
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception)
             {
-                ModelState.AddModelError("", "Server Error");
+                TempData["ErrorMessage"] = "Server error";
                 return RedirectToAction("Index", "Home");
             }
         }

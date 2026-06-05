@@ -37,9 +37,10 @@ namespace INZYNIERKA.Controllers
 
                 return View(browserViewModel);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return RedirectToAction("SearchUsersByTags");
+                TempData["ErrorMessage"] = "Failed to load browser";
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -65,7 +66,7 @@ namespace INZYNIERKA.Controllers
 
                 if (matchedUsersIds.Count == 0)
                 {
-                    return View("NoSearchResults");
+                    return RedirectToAction("SearchUsersByTags");
                 }
 
                 HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchedUsersIds));
@@ -74,7 +75,7 @@ namespace INZYNIERKA.Controllers
 
                 return RedirectToAction("ShowUser", "Browser");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return RedirectToAction("SearchUsersByTags");
             }
@@ -89,6 +90,7 @@ namespace INZYNIERKA.Controllers
 
                 if (string.IsNullOrEmpty(users))
                 {
+                    TempData["ErrorMessage"] = "Your search session has expired";
                     return RedirectToAction("SearchUsersByTags");
                 }
 
@@ -113,8 +115,9 @@ namespace INZYNIERKA.Controllers
                 return View("SearchResults", model);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load user profile.";
                 return View("NoSearchResults");
             }
         }
@@ -128,6 +131,7 @@ namespace INZYNIERKA.Controllers
 
                 if (string.IsNullOrEmpty(users))
                 {
+                    TempData["ErrorMessage"] = "Your search session has expired.";
                     return RedirectToAction("SearchUsersByTags");
                 }
 
@@ -146,8 +150,9 @@ namespace INZYNIERKA.Controllers
 
                 return RedirectToAction("ShowUser");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load user.";
                 return RedirectToAction("SearchUsersByTags");
             }
         }
@@ -159,6 +164,7 @@ namespace INZYNIERKA.Controllers
         {
             if (string.IsNullOrEmpty(userId))
             {
+                TempData["ErrorMessage"] = "Could not identify the user.";
                 return NextUser();
             }
 
@@ -166,10 +172,11 @@ namespace INZYNIERKA.Controllers
             {
                 var currentUserId = userManager.GetUserId(User);
                 await friendshipService.SendRequest(currentUserId, userId);
+                TempData["SuccessMessage"] = "Friend request sent successfully!";
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
+                TempData["ErrorMessage"] = "Failed to send friend request.";
             }
 
             return NextUser();
@@ -190,7 +197,7 @@ namespace INZYNIERKA.Controllers
 
                 return RedirectToAction("ShowUserWithAI");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View("NoSearchResults");
             }
@@ -201,10 +208,11 @@ namespace INZYNIERKA.Controllers
         {
             try
             {
-                var users = HttpContext.Session.GetString("MatchingUsers");
+                var users = HttpContext.Session.GetString("matchingUsers");
 
                 if (string.IsNullOrEmpty(users))
                 {
+                    TempData["ErrorMessage"] = "Your search session has expired.";
                     return RedirectToAction("SearchUsersByTags");
                 }
 
@@ -235,8 +243,9 @@ namespace INZYNIERKA.Controllers
                 HttpContext.Session.SetInt32("currentIndex", -1);
                 return View("NoSearchResults");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                TempData["ErrorMessage"] = "Failed to load user profile";
                 return View("NoSearchResults");
             }
         }

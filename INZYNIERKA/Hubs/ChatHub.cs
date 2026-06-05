@@ -140,13 +140,20 @@ namespace INZYNIERKA.Hubs
         public async Task SaveSmartReplySettings(string friendId, string tone, string custom, bool auto)
         {
             var userId = Context.UserIdentifier;
-            if (userId == null) return;
+            if (userId == null)
+            {
+                await Clients.Caller.SendAsync("ErrorNotification", "Authorization error");
+                return;
+            }
 
             try
             {
                 await chatAiService.SaveSRSettings(userId, friendId, tone, custom, auto);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                await Clients.Caller.SendAsync("ErrorNotification", "Failed to save settings.");
+            }
         }
 
         public async Task<string> ChatSummary(string friendId, DateTime start, DateTime end)
