@@ -34,6 +34,7 @@ namespace INZYNIERKA.Controllers
 
         // Matchmaking Service //
 
+        [HttpGet]
         public async Task<IActionResult> SearchUsersByTags()
         {
             var userId = userManager.GetUserId(User);

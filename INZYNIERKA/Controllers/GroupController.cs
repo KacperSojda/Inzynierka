@@ -36,6 +36,7 @@ namespace INZYNIERKA.Controllers
             return View();
         }
 
+        [HttpGet]
         public async Task<IActionResult> ShowAvailableGroups(string? searchQuery, int page = 1)
         {
             var userId = userManager.GetUserId(User);
@@ -60,6 +61,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> ShowUserGroups(string? searchQuery, int page = 1)
         {
             var userId = userManager.GetUserId(User);
@@ -83,6 +85,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public IActionResult CreateGroup()
         {
             return View();
@@ -169,6 +172,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditGroup(int groupID)
         {
             var userId = userManager.GetUserId(User);
@@ -257,6 +261,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> SelectGroupTags(int groupId)
         {
             var userId = userManager.GetUserId(User);
@@ -325,6 +330,7 @@ namespace INZYNIERKA.Controllers
 
         // GroupMember Service //
 
+        [HttpGet]
         public async Task<IActionResult> ShowGroupMembers(int groupId)
         {
             var userId = userManager.GetUserId(User);

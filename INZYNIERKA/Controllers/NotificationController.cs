@@ -19,6 +19,8 @@ namespace INZYNIERKA.Controllers
             this.notificationService = notificationService;
             this.logger = logger;
         }
+
+        [HttpGet]
         public async Task<IActionResult> Notifications(int page = 1)
         {
             var userId = userManager.GetUserId(User);

@@ -11,6 +11,7 @@ namespace INZYNIERKA.Controllers
             this.logger = logger;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             try

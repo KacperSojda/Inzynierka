@@ -20,6 +20,8 @@ namespace INZYNIERKA.Controllers
             this.tagService = tagService;
             this.logger = logger;
         }
+
+        [HttpGet]
         public async Task<IActionResult> SelectTags()
         {
             var userId = userManager.GetUserId(User);
@@ -71,6 +73,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public IActionResult AddTag()
         {
             return View();
@@ -108,6 +111,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> ShowTags()
         {
             var userId = userManager.GetUserId(User);

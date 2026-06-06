@@ -39,6 +39,7 @@ namespace INZYNIERKA.Controllers
         }
 
         // Profile Service //
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var userId = userManager.GetUserId(User);
@@ -65,6 +66,7 @@ namespace INZYNIERKA.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditProfile()
         {
             var userId = userManager.GetUserId(User);
