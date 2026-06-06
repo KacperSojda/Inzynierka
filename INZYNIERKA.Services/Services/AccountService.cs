@@ -124,9 +124,10 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<(bool Result, string? ErrorMessage)> DeleteAccount(TUser user)
         {
-            var currentUser = _userManager.GetUserAsync(_signInManager.Context.User).Result;
+            var currentUser = await _userManager.GetUserAsync(_signInManager.Context.User);
 
-            if (currentUser != user) {
+            if (currentUser == null || currentUser.Id != user.Id)
+            {
                 return (false, "You can only delete your own account.");
             }
 
