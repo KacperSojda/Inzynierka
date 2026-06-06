@@ -5,22 +5,22 @@ namespace INZYNIERKA.Services.Services
 {
     public class FileService : IFileService
     {
-        public async Task<(bool IsSuccess, string Result)> UploadAvatar(IFormFile avatarFile)
+        public async Task<(bool IsSuccess, string Result)> UploadFile(IFormFile file)
         {
-            if (avatarFile == null || avatarFile.Length == 0)
+            if (file == null || file.Length == 0)
             {
                 return (false, "Nie wybrano pliku.");
             }
 
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-            var extension = Path.GetExtension(avatarFile.FileName).ToLowerInvariant();
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
             if (!allowedExtensions.Contains(extension))
             {
                 return (false, "Nieobsługiwany format pliku. Dozwolone formaty: .jpg, .jpeg, .png");
             }
 
-            if (avatarFile.Length > 2 * 1024 * 1024)
+            if (file.Length > 2 * 1024 * 1024)
             {
                 return (false, "Plik jest zbyt duży. Maksymalny rozmiar to 2MB.");
             }
@@ -29,12 +29,11 @@ namespace INZYNIERKA.Services.Services
             {
                 using (var memoryStream = new MemoryStream())
                 {
-                    await avatarFile.CopyToAsync(memoryStream);
+                    await file.CopyToAsync(memoryStream);
 
                     byte[] fileBytes = memoryStream.ToArray();
                     string base64String = Convert.ToBase64String(fileBytes);
-                    string dataUrl = $"data:{avatarFile.ContentType};base64,{base64String}";
-
+                    string dataUrl = $"data:{file.ContentType};base64,{base64String}";
                     return (true, dataUrl);
                 }
             }

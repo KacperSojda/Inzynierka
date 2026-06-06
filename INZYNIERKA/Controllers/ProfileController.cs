@@ -208,7 +208,7 @@ namespace INZYNIERKA.Controllers
 
             try
             {
-                var (result, avatar) = await fileService.UploadAvatar(AvatarFile);
+                var (result, avatar) = await fileService.UploadFile(AvatarFile);
 
                 if (!result)
                 {
@@ -245,7 +245,7 @@ namespace INZYNIERKA.Controllers
 
             try
             {
-                var (result, cover) = await fileService.UploadAvatar(CoverFile);
+                var (result, cover) = await fileService.UploadFile(CoverFile);
 
                 if (!result)
                 {
