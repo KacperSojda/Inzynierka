@@ -7,21 +7,21 @@ namespace INZYNIERKA.Services.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration configuration;
+        private readonly IConfiguration _configuration;
 
         public EmailService(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            _configuration = configuration;
         }
 
         public async Task<bool> SendEmail(string email, string subject, string htmlMessage)
         {
             try
             {
-                var host = configuration["EmailConfiguration:SmtpServer"];
-                var port = int.Parse(configuration["EmailConfiguration:SmtpPort"]);
-                var mail = configuration["EmailConfiguration:SmtpUsername"];
-                var pw = configuration["EmailConfiguration:SmtpPassword"];
+                var host = _configuration["EmailConfiguration:SmtpServer"];
+                var port = int.Parse(_configuration["EmailConfiguration:SmtpPort"]);
+                var mail = _configuration["EmailConfiguration:SmtpUsername"];
+                var pw = _configuration["EmailConfiguration:SmtpPassword"];
 
                 using var client = new SmtpClient(host, port)
                 {

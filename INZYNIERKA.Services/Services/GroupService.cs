@@ -8,21 +8,21 @@ namespace INZYNIERKA.Services.Services
 {
     public class GroupService<TUser> : IGroupService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
+        private readonly INZDbContext<TUser> _context;
 
         public GroupService(INZDbContext<TUser> context)
         {
-            this.context = context;
+            _context = context;
         }
 
         public async Task<(GroupViewModel Model, int TotalCount)> AvailableGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10)
         {
-            var userGroupIds = await context.UserGroups
+            var userGroupIds = await _context.UserGroups
                 .Where(ug => ug.UserId == userId)
                 .Select(ug => ug.ChatGroupId)
                 .ToListAsync();
 
-            var availableGroupsQuery = context.Groups
+            var availableGroupsQuery = _context.Groups
                 .Include(g => g.GroupTags).ThenInclude(gt => gt.Tag)
                 .Where(g => !userGroupIds.Contains(g.Id));
 
@@ -52,7 +52,7 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<(GroupViewModel Model, int TotalCount)> UserGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10)
         {
-            var query = context.UserGroups
+            var query = _context.UserGroups
                 .Include(ug => ug.ChatGroup).ThenInclude(g => g.GroupTags).ThenInclude(gt => gt.Tag)
                 .Where(ug => ug.UserId == userId);
 
@@ -89,45 +89,45 @@ namespace INZYNIERKA.Services.Services
                 Members = new List<UserGroup> { new UserGroup { UserId = creatorUserId, Type = MemberType.Administrator } }
             };
 
-            context.Groups.Add(group);
-            await context.SaveChangesAsync();
+            _context.Groups.Add(group);
+            await _context.SaveChangesAsync();
         }
 
         public async Task JoinGroup(int groupId, string userId)
         {
-            var alreadyMember = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
+            var alreadyMember = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
 
             if (alreadyMember == null)
             {
-                context.UserGroups.Add(new UserGroup { UserId = userId, ChatGroupId = groupId, Type = MemberType.Member });
-                await context.SaveChangesAsync();
+                _context.UserGroups.Add(new UserGroup { UserId = userId, ChatGroupId = groupId, Type = MemberType.Member });
+                await _context.SaveChangesAsync();
             }
         }
 
         public async Task LeaveGroup(int groupId, string userId)
         {
-            var membership = await context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
+            var membership = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
 
             if (membership == null) return;
 
             if (membership.Type == MemberType.Administrator)
             {
-                var adminCount = await context.UserGroups.CountAsync(ug => ug.ChatGroupId == groupId && ug.Type == MemberType.Administrator);
+                var adminCount = await _context.UserGroups.CountAsync(ug => ug.ChatGroupId == groupId && ug.Type == MemberType.Administrator);
                 if (adminCount <= 1)
                 {
                     throw new InvalidOperationException("You cannot leave the group as the last administrator. Please transfer admin rights or delete the group.");
                 }
             }
 
-            context.UserGroups.Remove(membership);
-            await context.SaveChangesAsync();
+            _context.UserGroups.Remove(membership);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<EditGroupViewModel> EditGroup(int groupId, string userId)
         {
             if (!await IsAdminAsync(groupId, userId)) throw new UnauthorizedAccessException();
 
-            var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
 
             if (group == null) return null;
 
@@ -144,12 +144,12 @@ namespace INZYNIERKA.Services.Services
             if (model == null || model.Id <= 0) return;
             if (!await IsAdminAsync(model.Id, userId)) throw new UnauthorizedAccessException();
 
-            var group = await context.Groups.FindAsync(model.Id);
+            var group = await _context.Groups.FindAsync(model.Id);
             if (group != null)
             {
                 group.Name = model.Name;
                 group.Description = model.Description;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -157,12 +157,12 @@ namespace INZYNIERKA.Services.Services
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
-            var group = await context.Groups.Include(g => g.Members).Include(g => g.Messages).FirstOrDefaultAsync(g => g.Id == groupId);
+            var group = await _context.Groups.Include(g => g.Members).Include(g => g.Messages).FirstOrDefaultAsync(g => g.Id == groupId);
 
             if (group != null)
             {
-                context.Groups.Remove(group);
-                await context.SaveChangesAsync();
+                _context.Groups.Remove(group);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -170,8 +170,8 @@ namespace INZYNIERKA.Services.Services
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
-            var groupTagIds = await context.GroupTags.Where(ut => ut.GroupId == groupId).Select(ut => ut.TagId).ToListAsync();
-            var tags = await context.Tags.ToListAsync();
+            var groupTagIds = await _context.GroupTags.Where(ut => ut.GroupId == groupId).Select(ut => ut.TagId).ToListAsync();
+            var tags = await _context.Tags.ToListAsync();
 
             return new SelectGroupTagsViewModel
             {
@@ -184,19 +184,19 @@ namespace INZYNIERKA.Services.Services
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
 
-            var existingGroupTags = await context.GroupTags.Where(ut => ut.GroupId == groupId).ToListAsync();
-            context.GroupTags.RemoveRange(existingGroupTags);
+            var existingGroupTags = await _context.GroupTags.Where(ut => ut.GroupId == groupId).ToListAsync();
+            _context.GroupTags.RemoveRange(existingGroupTags);
 
             foreach (var tagId in selectedTagIds)
             {
-                context.GroupTags.Add(new GroupTag { GroupId = groupId, TagId = tagId });
+                _context.GroupTags.Add(new GroupTag { GroupId = groupId, TagId = tagId });
             }
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         private async Task<bool> IsAdminAsync(int groupId, string userId)
         {
-            return await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId && ug.Type == MemberType.Administrator);
+            return await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId && ug.Type == MemberType.Administrator);
         }
 
         private GroupItem MapToGroupItem(UserGroup ug)

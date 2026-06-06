@@ -6,18 +6,18 @@ namespace INZYNIERKA.Domain.Models
 {
     public enum ZodiacSign
     {
-        Aries,          // Baran
-        Taurus,         // Byk
-        Gemini,         // Bliźnięta
-        Cancer,         // Rak
-        Leo,            // Lew
-        Virgo,          // Panna
-        Libra,          // Waga
-        Scorpio,        // Skorpion
-        Sagittarius,    // Strzelec
-        Capricorn,      // Koziorożec
-        Aquarius,       // Wodnik
-        Pisces          // Ryby
+        Aries,
+        Taurus,
+        Gemini,
+        Cancer,
+        Leo,
+        Virgo,
+        Libra,
+        Scorpio,
+        Sagittarius,
+        Capricorn,
+        Aquarius,
+        Pisces
     }
     public class User : IdentityUser
     {

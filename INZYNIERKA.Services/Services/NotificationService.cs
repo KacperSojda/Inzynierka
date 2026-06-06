@@ -8,11 +8,11 @@ namespace INZYNIERKA.Services.Services
 {
     public class NotificationService<TUser> : INotificationService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
+        private readonly INZDbContext<TUser> _context;
 
         public NotificationService(INZDbContext<TUser> context)
         {
-            this.context = context;
+            _context = context;
         }
 
         public async Task<(NotificationListViewModel Model, int TotalCount)> Notifications(string userId, int page = 1, int pageSize = 10)
@@ -22,7 +22,7 @@ namespace INZYNIERKA.Services.Services
                 return (new NotificationListViewModel { Notifications = new List<NotificationViewModel>() }, 0);
             }
 
-            var query = context.Notifications
+            var query = _context.Notifications
                 .Include(n => n.Sender)
                 .Include(n => n.Group)
                 .Where(n => n.ReceiverId == userId);
@@ -56,24 +56,24 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(currentUserId) || notificationId <= 0) return false;
 
-            var notification = await context.Notifications
+            var notification = await _context.Notifications
                 .FirstOrDefaultAsync(n => n.Id == notificationId && n.ReceiverId == currentUserId);
 
             if (notification == null) return false;
 
             if (notification.Type == NotificationType.FriendRequest)
             {
-                var record = await context.UserFriends.FirstOrDefaultAsync(f =>
+                var record = await _context.UserFriends.FirstOrDefaultAsync(f =>
                     (f.UserId == notification.SenderId && f.FriendId == notification.ReceiverId));
 
                 if (record != null)
                 {
-                    context.UserFriends.Remove(record);
+                    _context.UserFriends.Remove(record);
                 }
             }
 
-            context.Notifications.Remove(notification);
-            await context.SaveChangesAsync();
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
 
             return true;
         }

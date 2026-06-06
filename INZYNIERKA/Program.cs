@@ -59,7 +59,7 @@ try
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"Wyst¹pi³ b³¹d podczas seedowania bazy danych: {ex.Message}");
+    Console.WriteLine($"An error occurred while seeding the database: {ex.Message}");
 }
 
 app.UseHttpsRedirection();
@@ -86,11 +86,11 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<INZDbContext>();
         context.Database.Migrate();
-        Console.WriteLine("Migracje bazy danych zosta³y pomyœlnie na³o¿one.");
+        Console.WriteLine("Migrations applied.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Wyst¹pi³ b³¹d podczas nak³adania migracji: {ex.Message}");
+        Console.WriteLine($"An error occurred while applying migrations: {ex.Message}");
     }
 }
 

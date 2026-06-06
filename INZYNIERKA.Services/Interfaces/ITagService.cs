@@ -7,7 +7,7 @@ namespace INZYNIERKA.Services.Interfaces
     {
         Task<SelectTagsViewModel> UserTags(string userId);
         Task UpdateUserTags(string userId, List<int> selectedTagIds);
-        Task<(bool result, string ErrorMessage)> NewTag(string tagName);
+        Task<(bool Result, string ErrorMessage)> NewTag(string tagName);
         Task<List<Tag>> AllTags();
     }
 }

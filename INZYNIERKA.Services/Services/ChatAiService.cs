@@ -9,26 +9,26 @@ namespace INZYNIERKA.Services.Services
 {
     public class ChatAiService<TUser> : IChatAiService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
-        private readonly IGeminiService geminiService;
-        private readonly IConfiguration configuration;
+        private readonly INZDbContext<TUser> _context;
+        private readonly IGeminiService _geminiService;
+        private readonly IConfiguration _configuration;
 
         public ChatAiService(INZDbContext<TUser> context, IGeminiService geminiService, IConfiguration configuration)
         {
-            this.context = context;
-            this.geminiService = geminiService;
-            this.configuration = configuration;
+            _context = context;
+            _geminiService = geminiService;
+            _configuration = configuration;
         }
 
         public async Task<List<string>> ResponseHelp(string currentUserId, string friendId)
         {
-            var relation = await context.UserFriends
+            var relation = await _context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
 
             string tone = relation?.Tone ?? "casual";
             string? custom = relation?.Custom;
 
-            var messages = await context.Messages.Include(m => m.Sender)
+            var messages = await _context.Messages.Include(m => m.Sender)
                 .Where(m => (m.SenderId == currentUserId && m.ReceiverId == friendId) ||
                             (m.SenderId == friendId && m.ReceiverId == currentUserId))
                 .OrderByDescending(m => m.Timestamp)
@@ -45,30 +45,30 @@ namespace INZYNIERKA.Services.Services
             }
             string chatHistory = historyBuilder.ToString();
 
-            string styleInstruction = configuration["Prompts:StyleBase"];
+            string styleInstruction = _configuration["Prompts:StyleBase"];
 
             if (tone == "custom" && !string.IsNullOrWhiteSpace(custom))
             {
-                string customprompt = configuration["Prompts:Custom"];
+                string customprompt = _configuration["Prompts:Custom"];
                 styleInstruction = $"{customprompt}'{custom}'.";
             }
             else if (tone == "casual")
             {
-                styleInstruction = configuration["Prompts:Casual"];
+                styleInstruction = _configuration["Prompts:Casual"];
             }
             else if (tone == "formal")
             {
-                styleInstruction = configuration["Prompts:Formal"];
+                styleInstruction = _configuration["Prompts:Formal"];
             }
             else if (tone == "funny")
             {
-                styleInstruction = configuration["Prompts:Funny"];
+                styleInstruction = _configuration["Prompts:Funny"];
             }
 
-            string basePrompt = configuration["Prompts:ResponseHelp"];
+            string basePrompt = _configuration["Prompts:ResponseHelp"];
             string fullSystemPrompt = $"{basePrompt}{styleInstruction}\n\nCHAT HISTORY:";
 
-            var ans = await geminiService.AskAsync(chatHistory, fullSystemPrompt);
+            var ans = await _geminiService.AskAsync(chatHistory, fullSystemPrompt);
 
             if (string.IsNullOrWhiteSpace(ans))
             {
@@ -80,7 +80,7 @@ namespace INZYNIERKA.Services.Services
 
         public async Task SaveSRSettings(string currentUserId, string friendId, string tone, string custom, bool auto)
         {
-            var relation = await context.UserFriends
+            var relation = await _context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
 
             if (relation != null)
@@ -89,19 +89,19 @@ namespace INZYNIERKA.Services.Services
                 relation.Custom = custom;
                 relation.SmartReplies = auto;
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
 
         public async Task<List<string>> GroupResponseHelp(string currentUserId, int groupId)
         {
-            var relation = await context.UserGroups
+            var relation = await _context.UserGroups
                 .FirstOrDefaultAsync(ug => ug.UserId == currentUserId && ug.ChatGroupId == groupId);
 
             string tone = relation?.Tone ?? "casual";
             string? custom = relation?.Custom;
 
-            var messages = await context.GroupMessages.Include(m => m.Sender)
+            var messages = await _context.GroupMessages.Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId)
                 .OrderByDescending(m => m.Timestamp)
                 .Take(30)
@@ -118,29 +118,29 @@ namespace INZYNIERKA.Services.Services
 
             string chatHistory = historyBuilder.ToString();
 
-            string styleInstruction = configuration["Prompts:StyleBase"];
+            string styleInstruction = _configuration["Prompts:StyleBase"];
             if (tone == "custom" && !string.IsNullOrWhiteSpace(custom))
             {
-                string customprompt = configuration["Prompts:Custom"];
+                string customprompt = _configuration["Prompts:Custom"];
                 styleInstruction = $"{customprompt}'{custom}'.";
             }
             else if (tone == "casual")
             {
-                styleInstruction = configuration["Prompts:Casual"];
+                styleInstruction = _configuration["Prompts:Casual"];
             }
             else if (tone == "formal")
             {
-                styleInstruction = configuration["Prompts:Formal"];
+                styleInstruction = _configuration["Prompts:Formal"];
             }
             else if (tone == "funny")
             {
-                styleInstruction = configuration["Prompts:Funny"];
+                styleInstruction = _configuration["Prompts:Funny"];
             }
 
-            string basePrompt = configuration["Prompts:ResponseHelp"];
+            string basePrompt = _configuration["Prompts:ResponseHelp"];
             string fullSystemPrompt = $"{basePrompt}{styleInstruction}\n\nCHAT HISTORY:";
 
-            var ans = await geminiService.AskAsync(chatHistory, fullSystemPrompt);
+            var ans = await _geminiService.AskAsync(chatHistory, fullSystemPrompt);
 
             if (string.IsNullOrWhiteSpace(ans))
             {
@@ -154,7 +154,7 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
 
-            var correctedMessage = await geminiService.AskAsync(userMessage, configuration["Prompts:CorrectMessage"]);
+            var correctedMessage = await _geminiService.AskAsync(userMessage, _configuration["Prompts:CorrectMessage"]);
 
             return string.IsNullOrEmpty(correctedMessage) ? userMessage : correctedMessage;
 
@@ -164,7 +164,7 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
 
-            var messages = await context.Messages
+            var messages = await _context.Messages
                 .Where(m => (m.SenderId == currentUserId && m.ReceiverId == friendId) || (m.SenderId == friendId && m.ReceiverId == currentUserId))
                 .OrderByDescending(m => m.Timestamp).Take(30).Select(m => m.Content).ToListAsync();
 
@@ -173,12 +173,12 @@ namespace INZYNIERKA.Services.Services
             if (messages.Any())
             {
                 string messagesToString = string.Join(", ", messages);
-                language = await geminiService.AskAsync(messagesToString, configuration["Prompts:Language"]) ?? "English";
+                language = await _geminiService.AskAsync(messagesToString, _configuration["Prompts:Language"]) ?? "English";
             }
 
-            string translatePrompt = configuration["Prompts:Translate"].Replace("{language}", language);
+            string translatePrompt = _configuration["Prompts:Translate"].Replace("{language}", language);
 
-            var translatedResult = await geminiService.AskAsync(userMessage, translatePrompt);
+            var translatedResult = await _geminiService.AskAsync(userMessage, translatePrompt);
 
             return string.IsNullOrEmpty(translatedResult) ? userMessage : translatedResult;
         }
@@ -187,15 +187,15 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(message)) return message;
 
-            var targetUser = await context.Users.FirstOrDefaultAsync(u => u.Id == targetUserId);
+            var targetUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == targetUserId);
 
             string targetLanguage = string.IsNullOrWhiteSpace(targetUser?.PreferredLanguages)
                 ? "English"
                 : targetUser.PreferredLanguages;
 
-            string translatePrompt = configuration["Prompts:Translate"].Replace("{language}", targetLanguage);
+            string translatePrompt = _configuration["Prompts:Translate"].Replace("{language}", targetLanguage);
 
-            var translatedResult = await geminiService.AskAsync(message, translatePrompt);
+            var translatedResult = await _geminiService.AskAsync(message, translatePrompt);
 
             return string.IsNullOrEmpty(translatedResult) ? message : translatedResult;
         }
@@ -204,7 +204,7 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
 
-            var messages = await context.GroupMessages
+            var messages = await _context.GroupMessages
                 .Where(m => m.GroupId == groupId).OrderByDescending(m => m.Timestamp).Take(30).Select(m => m.Content).ToListAsync();
 
             messages.Reverse();
@@ -214,12 +214,12 @@ namespace INZYNIERKA.Services.Services
             if (messages.Any())
             {
                 string messagesToString = string.Join(", ", messages);
-                language = await geminiService.AskAsync(messagesToString, configuration["Prompts:Language"]) ?? "English";
+                language = await _geminiService.AskAsync(messagesToString, _configuration["Prompts:Language"]) ?? "English";
             }
 
-            string translatePrompt = configuration["Prompts:Translate"].Replace("{language}", language);
+            string translatePrompt = _configuration["Prompts:Translate"].Replace("{language}", language);
 
-            var translatedResult = await geminiService.AskAsync(userMessage, translatePrompt);
+            var translatedResult = await _geminiService.AskAsync(userMessage, translatePrompt);
             return string.IsNullOrEmpty(translatedResult) ? userMessage : translatedResult;
         }
 
@@ -230,14 +230,14 @@ namespace INZYNIERKA.Services.Services
                 return message;
             }
 
-            string censorPrompt = configuration["Prompts:Censor"];
-            var censoredMessage = await geminiService.AskAsync(message, censorPrompt);
+            string censorPrompt = _configuration["Prompts:Censor"];
+            var censoredMessage = await _geminiService.AskAsync(message, censorPrompt);
             return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
         }
 
         public async Task<string> SummarizeChat(string currentUserId, string friendId, DateTime startDate, DateTime endDate)
         {
-            var messages = await context.Messages.Include(m => m.Sender)
+            var messages = await _context.Messages.Include(m => m.Sender)
                 .Where(m => ((m.SenderId == currentUserId && m.ReceiverId == friendId) ||
                              (m.SenderId == friendId && m.ReceiverId == currentUserId))
                              && m.Timestamp.Date >= startDate.Date
@@ -255,22 +255,22 @@ namespace INZYNIERKA.Services.Services
                     historyBuilder.AppendLine($"{senderLabel}: {msg.Content}");
             }
 
-            var prompt = configuration["Prompts:SummarizeChat"];
-            var summary = await geminiService.AskAsync(historyBuilder.ToString(), prompt);
+            var prompt = _configuration["Prompts:SummarizeChat"];
+            var summary = await _geminiService.AskAsync(historyBuilder.ToString(), prompt);
 
             return string.IsNullOrEmpty(summary) ? "AI was unable to generate a summary." : summary;
         }
 
         public async Task<string> SummarizeGroupChat(string currentUserId, int groupId, DateTime startDate, DateTime endDate)
         {
-            var messages = await context.GroupMessages.Include(m => m.Sender)
+            var messages = await _context.GroupMessages.Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId
                              && m.Timestamp.Date >= startDate.Date
                              && m.Timestamp.Date <= endDate.Date)
                 .OrderBy(m => m.Timestamp)
                 .ToListAsync();
 
-            if (!messages.Any()) return "Brak wiadomości w wybranym okresie czasu.";
+            if (!messages.Any()) return "No messages in the selected period.";
 
             var historyBuilder = new StringBuilder();
             foreach (var msg in messages)
@@ -281,15 +281,15 @@ namespace INZYNIERKA.Services.Services
                     historyBuilder.AppendLine($"{senderLabel}: {msg.Content}");
             }
 
-            var prompt = configuration["Prompts:SummarizeChat"];
-            var summary = await geminiService.AskAsync(historyBuilder.ToString(), prompt);
+            var prompt = _configuration["Prompts:SummarizeChat"];
+            var summary = await _geminiService.AskAsync(historyBuilder.ToString(), prompt);
 
-            return string.IsNullOrEmpty(summary) ? "Sztuczna inteligencja nie mogła wygenerować podsumowania." : summary;
+            return string.IsNullOrEmpty(summary) ? "AI was unable to generate a summary." : summary;
         }
 
         public async Task SaveGroupSRSettings(string currentUserId, int groupId, string tone, string custom, bool auto)
         {
-            var relation = await context.UserGroups
+            var relation = await _context.UserGroups
                 .FirstOrDefaultAsync(ug => ug.UserId == currentUserId && ug.ChatGroupId == groupId);
 
             if (relation != null)
@@ -298,7 +298,7 @@ namespace INZYNIERKA.Services.Services
                 relation.Custom = custom;
                 relation.SmartReplies = auto;
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
     }

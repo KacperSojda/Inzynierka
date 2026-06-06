@@ -5,11 +5,11 @@ namespace INZYNIERKA.Services.Services
 {
     public class FileService : IFileService
     {
-        public async Task<(bool IsSuccess, string Result)> UploadFile(IFormFile file)
+        public async Task<(bool Result, string ErrorMessage)> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
-                return (false, "Nie wybrano pliku.");
+                return (false, "File is empty.");
             }
 
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
@@ -17,12 +17,12 @@ namespace INZYNIERKA.Services.Services
 
             if (!allowedExtensions.Contains(extension))
             {
-                return (false, "Nieobsługiwany format pliku. Dozwolone formaty: .jpg, .jpeg, .png");
+                return (false, "Unsupported file format. Allowed formats: .jpg, .jpeg, .png");
             }
 
             if (file.Length > 2 * 1024 * 1024)
             {
-                return (false, "Plik jest zbyt duży. Maksymalny rozmiar to 2MB.");
+                return (false, "File is too large. Maximum size is 2MB.");
             }
 
             try
@@ -39,7 +39,7 @@ namespace INZYNIERKA.Services.Services
             }
             catch (Exception ex)
             {
-                return (false, $"Błąd przetwarzania pliku: {ex.Message}");
+                return (false, $"Error processing file: {ex.Message}");
             }
         }
     }

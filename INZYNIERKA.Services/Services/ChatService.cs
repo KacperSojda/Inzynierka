@@ -11,27 +11,27 @@ namespace INZYNIERKA.Services.Services
 {
     public class ChatService<TUser> : IChatService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
-        private readonly UserManager<TUser> userManager;
-        private readonly SignInManager<TUser> signInManager;
-        private readonly IChatAiService<TUser> chatAiService;
+        private readonly INZDbContext<TUser> _context;
+        private readonly UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly IChatAiService<TUser> _chatAiService;
 
         public ChatService(INZDbContext<TUser> context, UserManager<TUser> userManager, SignInManager<TUser> signInManager, IChatAiService<TUser> chatAiService)
         {
-            this.context = context;
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.chatAiService = chatAiService;
+            _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _chatAiService = chatAiService;
         }
 
         public async Task<ChatViewModel> Chat(string currentUserId, string friendId, string userMessage, string geminiAnswer)
         {
-            var user = await userManager.FindByIdAsync(currentUserId);
-            var friend = await userManager.FindByIdAsync(friendId);
+            var user = await _userManager.FindByIdAsync(currentUserId);
+            var friend = await _userManager.FindByIdAsync(friendId);
 
             if (user == null || friend == null) return null;
 
-            var messages = await context.Messages
+            var messages = await _context.Messages
                 .Include(m => m.Sender)
                 .Include(m => m.Receiver)
                 .Where(m => (m.SenderId == currentUserId && m.ReceiverId == friendId) ||
@@ -42,7 +42,7 @@ namespace INZYNIERKA.Services.Services
 
             messages.Reverse();
 
-            var relation = await context.UserFriends
+            var relation = await _context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
 
             return new ChatViewModel
@@ -61,7 +61,7 @@ namespace INZYNIERKA.Services.Services
                     Timestamp = m.Timestamp,
                     ImageData = m.ImageData != null ? Convert.ToBase64String(m.ImageData) : null,
                     ImageType = m.ImageType,
-                    Readed = m.Readed
+                    Read = m.Read
                 }).ToList(),
                 UserMessage = userMessage,
                 GeminiAnswer = geminiAnswer,
@@ -74,7 +74,7 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<List<MessageViewModel>> OlderMessages(string userId, string friendId, int skip, int take = 30)
         {
-            var messages = await context.Messages
+            var messages = await _context.Messages
                 .Include(m => m.Sender)
                 .Include(m => m.Receiver)
                 .Where(m => (m.SenderId == userId && m.ReceiverId == friendId) ||
@@ -101,14 +101,14 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<GroupChatViewModel> GroupChat(string currentUserId, int groupId, string userMessage, string geminiAnswer)
         {
-            var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
             if (group == null) return null;
 
-            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
+            var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
-            var messages = await context.GroupMessages
+            var messages = await _context.GroupMessages
                 .Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId)
                 .OrderByDescending(m => m.Timestamp)
@@ -138,13 +138,13 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<List<GroupMessageViewModel>> OlderGroupMessages(int groupId, int skip, int take = 30)
         {
-            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
+            var currentUser = await _userManager.GetUserAsync(_signInManager.Context.User);
 
-            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
+            var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
-            var messages = await context.GroupMessages
+            var messages = await _context.GroupMessages
                 .Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId)
                 .OrderByDescending(m => m.Timestamp)
@@ -171,7 +171,7 @@ namespace INZYNIERKA.Services.Services
 
             if (autoTranslate)
             {
-                var translated = await chatAiService.AutoTranslateToUserLanguage(receiverId, finalMessage);
+                var translated = await _chatAiService.AutoTranslateToUserLanguage(receiverId, finalMessage);
                 if (!string.IsNullOrWhiteSpace(translated))
                 {
                     finalMessage = translated;
@@ -192,9 +192,9 @@ namespace INZYNIERKA.Services.Services
                 Timestamp = DateTime.UtcNow
             };
 
-            context.Messages.Add(msg);
+            _context.Messages.Add(msg);
 
-            var existingNotification = await context.Notifications
+            var existingNotification = await _context.Notifications
                 .FirstOrDefaultAsync(n => n.SenderId == senderId && n.ReceiverId == receiverId && n.Type == NotificationType.Message);
 
             if (existingNotification == null)
@@ -207,10 +207,10 @@ namespace INZYNIERKA.Services.Services
                     Timestamp = DateTime.UtcNow
                 };
 
-                context.Notifications.Add(notification);
+                _context.Notifications.Add(notification);
             }
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return finalMessage;
         }
 
@@ -234,17 +234,17 @@ namespace INZYNIERKA.Services.Services
 
             };
 
-            context.Messages.Add(message);
-            await context.SaveChangesAsync();
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<string> SaveGroupMessage(int groupId, string senderId, string content)
         {
-            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
+            var currentUser = await _userManager.GetUserAsync(_signInManager.Context.User);
 
-            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
+            var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
@@ -256,7 +256,7 @@ namespace INZYNIERKA.Services.Services
                 finalMessage = censored;
             }
 
-            var group = await context.Groups
+            var group = await _context.Groups
                 .Include(g => g.Members)
                 .FirstOrDefaultAsync(g => g.Id == groupId);
 
@@ -268,13 +268,13 @@ namespace INZYNIERKA.Services.Services
                 Timestamp = DateTime.UtcNow
             };
 
-            context.GroupMessages.Add(groupMessage);
+            _context.GroupMessages.Add(groupMessage);
 
             foreach (var member in group.Members)
             {
                 if (member.UserId == senderId) continue;
 
-                var existingNotification = await context.Notifications.FirstOrDefaultAsync(n =>
+                var existingNotification = await _context.Notifications.FirstOrDefaultAsync(n =>
                     n.GroupId == groupId &&
                     n.ReceiverId == member.UserId &&
                     n.Type == NotificationType.GroupMessage);
@@ -290,17 +290,17 @@ namespace INZYNIERKA.Services.Services
                         Timestamp = DateTime.UtcNow
                     };
 
-                    context.Notifications.Add(notification);
+                    _context.Notifications.Add(notification);
                 }
             }
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return finalMessage;
         }
 
         public async Task<bool> SaveGroupImage(string senderId, int groupId, string imageData, string imageType)
         {
-            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == senderId);
+            var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == senderId);
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
@@ -323,49 +323,49 @@ namespace INZYNIERKA.Services.Services
 
             };
 
-            context.GroupMessages.Add(message);
-            await context.SaveChangesAsync();
+            _context.GroupMessages.Add(message);
+            await _context.SaveChangesAsync();
 
             return true;
         }
 
         public async Task ClearNotification(string userId, string friendId)
         {
-            var notification = await context.Notifications
+            var notification = await _context.Notifications
                 .FirstOrDefaultAsync(n => n.SenderId == friendId && n.ReceiverId == userId && n.Type == NotificationType.Message);
 
             if (notification != null)
             {
-                context.Notifications.Remove(notification);
-                await context.SaveChangesAsync();
+                _context.Notifications.Remove(notification);
+                await _context.SaveChangesAsync();
             }
         }
 
         public async Task ClearGroupNotification(string userId, int groupId)
         {
-            var notification = await context.Notifications
+            var notification = await _context.Notifications
                 .FirstOrDefaultAsync(n => n.GroupId == groupId && n.ReceiverId == userId && n.Type == NotificationType.GroupMessage);
 
             if (notification != null)
             {
-                context.Notifications.Remove(notification);
-                await context.SaveChangesAsync();
+                _context.Notifications.Remove(notification);
+                await _context.SaveChangesAsync();
             }
         }
 
         public async Task MarkAsReaded(string userId, string friendId)
         {
-            var unreadMessages = await context.Messages
-                .Where(m => m.SenderId == friendId && m.ReceiverId == userId && !m.Readed)
+            var unreadMessages = await _context.Messages
+                .Where(m => m.SenderId == friendId && m.ReceiverId == userId && !m.Read)
                 .ToListAsync();
 
             if (unreadMessages.Any())
             {
                 foreach (var msg in unreadMessages)
                 {
-                    msg.Readed = true;
+                    msg.Read = true;
                 }
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
     }

@@ -7,16 +7,16 @@ using Microsoft.EntityFrameworkCore;
 namespace INZYNIERKA.Services.Services{
     public class MatchmakingService<TUser> : IMatchmakingService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
+        private readonly INZDbContext<TUser> _context;
 
         public MatchmakingService(INZDbContext<TUser> context)
         {
-            this.context = context;
+            _context = context;
         }
 
         public async Task<SearchByTagsViewModel> Tags()
         {
-            var tags = await context.Tags.ToListAsync();
+            var tags = await _context.Tags.ToListAsync();
 
             return new SearchByTagsViewModel
             {
@@ -33,12 +33,12 @@ namespace INZYNIERKA.Services.Services{
         {
             if (string.IsNullOrWhiteSpace(currentUserId)) return new List<string>();
 
-            var connectedUserIds = await context.UserFriends
+            var connectedUserIds = await _context.UserFriends
                 .Where(f => f.UserId == currentUserId || f.FriendId == currentUserId)
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
                 .ToListAsync();
 
-            var query = context.Users.Where(u => u.Id != currentUserId && !connectedUserIds.Contains(u.Id));
+            var query = _context.Users.Where(u => u.Id != currentUserId && !connectedUserIds.Contains(u.Id));
 
             if (!string.IsNullOrWhiteSpace(searchName))
             {
@@ -70,7 +70,7 @@ namespace INZYNIERKA.Services.Services{
         {
             if (string.IsNullOrWhiteSpace(targetUserId)) return null;
 
-            var user = await context.Users
+            var user = await _context.Users
                 .Include(u => u.UserTags)
                     .ThenInclude(ut => ut.Tag)
                 .FirstOrDefaultAsync(u => u.Id == targetUserId);

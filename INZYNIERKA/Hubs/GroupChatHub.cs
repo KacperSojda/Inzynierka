@@ -9,15 +9,15 @@ namespace INZYNIERKA.Hubs
     [Authorize]
     public class GroupChatHub<TUser> : Hub where TUser : User
     {
-        private readonly IChatService<TUser> chatService;
-        private readonly IChatAiService<TUser> chatAiService;
-        private readonly ILogger<GroupChatHub<TUser>> logger;
+        private readonly IChatService<TUser> _chatService;
+        private readonly IChatAiService<TUser> _chatAiService;
+        private readonly ILogger<GroupChatHub<TUser>> _logger;
 
         public GroupChatHub(IChatService<TUser> chatService, IChatAiService<TUser> chatAiService, ILogger<GroupChatHub<TUser>> logger)
         {
-            this.chatService = chatService;
-            this.chatAiService = chatAiService;
-            this.logger = logger;
+            _chatService = chatService;
+            _chatAiService = chatAiService;
+            _logger = logger;
         }
 
         public async Task JoinGroup(string groupName)
@@ -28,188 +28,188 @@ namespace INZYNIERKA.Hubs
             {
                 var connectionId = Context.ConnectionId;
                 await Groups.AddToGroupAsync(connectionId, groupName);
-                logger.LogInformation("User {UserId} joined SignalR group channel '{GroupName}' with connection {ConnectionId}.", userId, groupName, connectionId);
+                _logger.LogInformation("User {UserId} joined SignalR group channel '{GroupName}' with connection {ConnectionId}.", userId, groupName, connectionId);
             }
             catch (Exception ex)
             { 
-                logger.LogError(ex, "Failed to add user {UserId} to SignalR group channel '{GroupName}'.", userId, groupName);
+                _logger.LogError(ex, "Failed to add user {UserId} to SignalR group channel '{GroupName}'.", userId, groupName);
             }
         }
 
-        public async Task SendMessageToGroup(string groupIDString, string senderId, string message)
+        public async Task SendMessageToGroup(string groupIdString, string senderId, string message)
         {
             var userId = Context.UserIdentifier;
 
             if (senderId != userId)
             {
-                logger.LogWarning("SendMessageToGroup blocked: SenderId {SenderId} does not match Context UserIdentifier {UserId}.", senderId, userId);
+                _logger.LogWarning("SendMessageToGroup blocked: SenderId {SenderId} does not match Context UserIdentifier {UserId}.", senderId, userId);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(message) || message.Length > 1000)
             {
-                logger.LogWarning("SendMessageToGroup failed: User {UserId} attempted to send an empty or too long message.", userId);
+                _logger.LogWarning("SendMessageToGroup failed: User {UserId} attempted to send an empty or too long message.", userId);
                 await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty or too long.");
                 return;
             }
 
-            if (!int.TryParse(groupIDString, out int groupId))
+            if (!int.TryParse(groupIdString, out int groupId))
             {
-                logger.LogWarning("SendMessageToGroup failed: Invalid group ID '{GroupIDString}' from user {UserId}.", groupIDString, userId);
+                _logger.LogWarning("SendMessageToGroup failed: Invalid group ID '{GroupIdString}' from user {UserId}.", groupIdString, userId);
                 return;
             }
 
             try
             {
-                string finalMessage = await chatService.SaveGroupMessage(groupId, senderId, message);
+                string finalMessage = await _chatService.SaveGroupMessage(groupId, senderId, message);
                 string senderName = Context.User?.Identity?.Name ?? "Użytkownik";
 
                 await Clients.Group($"group_{groupId}").SendAsync("ReceiveGroupMessage", groupId, senderId, senderName, finalMessage);
-                logger.LogInformation("User {SenderId} successfully sent a message to group {GroupId}.", senderId, groupId);
+                _logger.LogInformation("User {SenderId} successfully sent a message to group {GroupId}.", senderId, groupId);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to send message from user {SenderId} to group {GroupId}.", senderId, groupId);
+                _logger.LogError(ex, "Failed to send message from user {SenderId} to group {GroupId}.", senderId, groupId);
                 await Clients.User(senderId).SendAsync("ErrorNotification", "Failed to send message.");
             }
         }
 
-        public async Task SendGroupImage(string groupIDString, string senderId, string image, string imageType)
+        public async Task SendGroupImage(string groupIdString, string senderId, string image, string imageType)
         {
             var userId = Context.UserIdentifier;
 
             if (senderId != userId)
             {
-                logger.LogWarning("SendGroupImage blocked: SenderId {SenderId} does not match Context UserIdentifier {UserId}.", senderId, userId);
+                _logger.LogWarning("SendGroupImage blocked: SenderId {SenderId} does not match Context UserIdentifier {UserId}.", senderId, userId);
                 return;
             }
 
             if (string.IsNullOrEmpty(image) || image.Length > 2 * 1024 * 1024)
             {
-                logger.LogWarning("SendGroupImage blocked: Empty or too large image data provided by user {UserId}.", userId);
+                _logger.LogWarning("SendGroupImage blocked: Empty or too large image data provided by user {UserId}.", userId);
                 await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty or too long.");
                 return;
             }
 
             try
             {
-                if (!int.TryParse(groupIDString, out int groupId))
+                if (!int.TryParse(groupIdString, out int groupId))
                 {
-                    logger.LogWarning("SendGroupImage blocked: Invalid group ID '{GroupIDString}' from user {UserId}.", groupIDString, userId);
+                    _logger.LogWarning("SendGroupImage blocked: Invalid group ID '{GroupIdString}' from user {UserId}.", groupIdString, userId);
                     return;
                 }
 
-                var result = await chatService.SaveGroupImage(senderId, groupId, image, imageType);
+                var result = await _chatService.SaveGroupImage(senderId, groupId, image, imageType);
 
                 if (!result)
                 {
-                    logger.LogError("Failed to save image from user {SenderId} for group {GroupId}.", senderId, groupId);
+                    _logger.LogError("Failed to save image from user {SenderId} for group {GroupId}.", senderId, groupId);
                     await Clients.Caller.SendAsync("ErrorNotification", "Failed to send image.");
                     return;
                 }
 
-                string senderName = Context.User?.Identity?.Name ?? "Użytkownik";
+                string senderName = Context.User?.Identity?.Name ?? "User";
 
                 await Clients.Group($"group_{groupId}").SendAsync("ReceiveGroupImage", groupId, senderId, senderName, image, imageType);
-                logger.LogInformation("User {SenderId} successfully sent an image to group {GroupId}.", senderId, groupId);
+                _logger.LogInformation("User {SenderId} successfully sent an image to group {GroupId}.", senderId, groupId);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to send image from user {SenderId} to group {GroupId}.", senderId, groupIDString);
+                _logger.LogError(ex, "Failed to send image from user {SenderId} to group {GroupId}.", senderId, groupIdString);
                 await Clients.User(senderId).SendAsync("ErrorNotification", "Failed to send image.");
             }
         }
 
-        public async Task<List<string>> GroupSmartReply(string groupIDString)
+        public async Task<List<string>> GroupSmartReply(string groupIdString)
         {
             var userId = Context.UserIdentifier;
 
-            if (userId == null || !int.TryParse(groupIDString, out int groupId))
+            if (userId == null || !int.TryParse(groupIdString, out int groupId))
             {
-                logger.LogWarning("GroupSmartReply failed: Unauthenticated user or invalid GroupId '{GroupIdString}'.", groupIDString);
+                _logger.LogWarning("GroupSmartReply failed: Unauthenticated user or invalid GroupId '{GroupIdString}'.", groupIdString);
                 return new List<string>();
             }
 
             try
             {
-                return await chatAiService.GroupResponseHelp(userId, groupId);
+                return await _chatAiService.GroupResponseHelp(userId, groupId);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "GroupSmartReply generation failed for user {UserId} in group {GroupIdString}.", userId, groupIDString);
+                _logger.LogError(ex, "GroupSmartReply generation failed for user {UserId} in group {GroupIdString}.", userId, groupIdString);
                 return new List<string>();
             }
         }
 
-        public async Task<string> GroupChatSummary(string groupIDString, DateTime start, DateTime end)
+        public async Task<string> GroupChatSummary(string groupIdString, DateTime start, DateTime end)
         {
             var userId = Context.UserIdentifier;
 
-            if (Context.UserIdentifier == null || !int.TryParse(groupIDString, out int groupId))
+            if (Context.UserIdentifier == null || !int.TryParse(groupIdString, out int groupId))
             {
-                logger.LogWarning("GroupChatSummary failed: Unauthenticated user or invalid GroupId '{GroupIdString}'.", groupIDString);
-                return "Błąd autoryzacji lub nieprawidłowe ID grupy.";
+                _logger.LogWarning("GroupChatSummary failed: Unauthenticated user or invalid GroupId '{GroupIdString}'.", groupIdString);
+                return "Error: Unauthenticated user or invalid GroupId.";
             }
 
             try
             {
-                string answer = await chatAiService.SummarizeGroupChat(userId, groupId, start, end);
-                logger.LogInformation("User {UserId} successfully generated chat summary for group {GroupId}.", userId, groupId);
+                string answer = await _chatAiService.SummarizeGroupChat(userId, groupId, start, end);
+                _logger.LogInformation("User {UserId} successfully generated chat summary for group {GroupId}.", userId, groupId);
                 return answer;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "GroupChatSummary generation failed for user {UserId} in group {GroupIdString}.", userId, groupIDString);
-                return "Nie udało się wygenerować podsumowania. Spróbuj ponownie później.";
+                _logger.LogError(ex, "GroupChatSummary generation failed for user {UserId} in group {GroupIdString}.", userId, groupIdString);
+                return "Failed to generate chat summary.";
             }
         }
 
-        public async Task ClearGroupNotifications(string userId, string groupIDString)
+        public async Task ClearGroupNotifications(string userId, string groupIdString)
         {
             var currentUserId = Context.UserIdentifier;
 
             if (userId != currentUserId)
             {
-                logger.LogWarning("ClearGroupNotifications blocked: target UserId {TargetId} does not match Context UserIdentifier {CurrentId}.", userId, currentUserId);
+                _logger.LogWarning("ClearGroupNotifications blocked: target UserId {TargetId} does not match Context UserIdentifier {CurrentId}.", userId, currentUserId);
                 return;
             }
 
             try
             {
-                if (int.TryParse(groupIDString, out int groupId))
+                if (int.TryParse(groupIdString, out int groupId))
                 {
-                    await chatService.ClearGroupNotification(userId, groupId);
+                    await _chatService.ClearGroupNotification(userId, groupId);
                 }
                 else
                 {
-                    logger.LogWarning("ClearGroupNotifications failed: Invalid GroupId string '{GroupIdString}' from user {UserId}.", groupIDString, userId);
+                    _logger.LogWarning("ClearGroupNotifications failed: Invalid GroupId string '{GroupIdString}' from user {UserId}.", groupIdString, userId);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to clear group notifications for user {UserId} in group {GroupIdString}.", userId, groupIDString);
+                _logger.LogError(ex, "Failed to clear group notifications for user {UserId} in group {GroupIdString}.", userId, groupIdString);
             }
         }
 
-        public async Task SaveGroupSRSettings(string groupIDString, string tone, string custom, bool auto)
+        public async Task SaveGroupSRSettings(string groupIdString, string tone, string custom, bool auto)
         {
             var userId = Context.UserIdentifier;
 
-            if (userId == null || !int.TryParse(groupIDString, out int groupId))
+            if (userId == null || !int.TryParse(groupIdString, out int groupId))
             {
-                logger.LogWarning("SaveGroupSRSettings failed: Unauthenticated user or invalid GroupId '{GroupIdString}'.", groupIDString);
+                _logger.LogWarning("SaveGroupSRSettings failed: Unauthenticated user or invalid GroupId '{GroupIdString}'.", groupIdString);
                 await Clients.Caller.SendAsync("ErrorNotification", "Authorization error");
                 return;
             }
 
             try
             {
-                await chatAiService.SaveGroupSRSettings(userId, groupId, tone, custom, auto);
-                logger.LogInformation("User {UserId} saved Smart Reply settings for group {GroupId}.", userId, groupId);
+                await _chatAiService.SaveGroupSRSettings(userId, groupId, tone, custom, auto);
+                _logger.LogInformation("User {UserId} saved Smart Reply settings for group {GroupId}.", userId, groupId);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to save AI settings for user {UserId} in group {GroupIdString}.", userId, groupIDString);
+                _logger.LogError(ex, "Failed to save AI settings for user {UserId} in group {GroupIdString}.", userId, groupIdString);
                 await Clients.Caller.SendAsync("ErrorNotification", "Failed to save AI settings.");
             }
         }

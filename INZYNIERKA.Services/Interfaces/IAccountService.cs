@@ -5,11 +5,11 @@ namespace INZYNIERKA.Services.Interfaces
 {
     public interface IAccountService<TUser> where TUser : User
     {
-        Task<(bool Succeeded, bool IsLockedOut, string? ErrorMessage)> LoginAsync(LoginViewModel model);
-        Task<(bool Succeeded, IEnumerable<string> Errors)> RegisterAsync(RegisterViewModel model);
-        Task<(bool Succeeded, string? ErrorMessage)> VerifyEmailAsync(VerifyEmailViewModel model);
-        Task<(bool Succeeded, IEnumerable<string> Errors)> ChangePasswordAsync(ChangePasswordViewModel model);
-        Task LogoutAsync();
-        Task<(bool Succeeded, string? ErrorMessage)> DeleteAccountAsync(TUser user);
+        Task<(bool Result, bool IsLockedOut, string? ErrorMessage)> Login(LoginViewModel model);
+        Task<(bool Result, IEnumerable<string> Errors)> Register(RegisterViewModel model);
+        Task<(bool Result, string? ErrorMessage)> VerifyEmail(VerifyEmailViewModel model);
+        Task<(bool Result, IEnumerable<string> Errors)> ChangePassword(ChangePasswordViewModel model);
+        Task Logout();
+        Task<(bool Result, string? ErrorMessage)> DeleteAccount(TUser user);
     }
 }

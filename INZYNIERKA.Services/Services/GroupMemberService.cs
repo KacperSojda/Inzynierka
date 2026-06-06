@@ -9,25 +9,25 @@ namespace INZYNIERKA.Services.Services
 {
     public class GroupMemberService<TUser> : IGroupMemberService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
-        private readonly UserManager<TUser> userManager;
-        private readonly SignInManager<TUser> signInManager;
+        private readonly INZDbContext<TUser> _context;
+        private readonly UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
 
 
         public GroupMemberService(INZDbContext<TUser> context, UserManager<TUser> userManager, SignInManager<TUser> signInManager)
         {
-            this.context = context;
-            this.userManager = userManager;
-            this.signInManager = signInManager;
+            _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public async Task<GroupMembersViewModel> GroupMembers(int groupId, string currentUserId)
         {
-            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
+            var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
-            var group = await context.Groups
+            var group = await _context.Groups
                 .Include(g => g.Members)
                 .ThenInclude(ug => ug.User)
                 .FirstOrDefaultAsync(g => g.Id == groupId);
@@ -46,9 +46,9 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<bool> GiveAdmin(int groupId, string targetUserId, string currentUserId)
         {
-            await EnsureIsAdminAsync(groupId, currentUserId);
+            await EnsureIsAdmin(groupId, currentUserId);
 
-            var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
+            var userGroup = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
 
             if (userGroup == null) return false;
 
@@ -57,7 +57,7 @@ namespace INZYNIERKA.Services.Services
             if (userGroup.Type != MemberType.Administrator)
             {
                 userGroup.Type = MemberType.Administrator;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
 
             return true;
@@ -65,60 +65,60 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<bool> DemoteAdmin(int groupId, string targetUserId, string currentUserId)
         {
-            await EnsureIsAdminAsync(groupId, currentUserId);
+            await EnsureIsAdmin(groupId, currentUserId);
 
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot demote yourself.");
 
-            var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
+            var userGroup = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
 
             if (userGroup.Type != MemberType.Member)
             {
                 userGroup.Type = MemberType.Member;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             return true;
         }
 
         public async Task<bool> KickUser(int groupId, string targetUserId, string currentUserId)
         {
-            await EnsureIsAdminAsync(groupId, currentUserId);
+            await EnsureIsAdmin(groupId, currentUserId);
 
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot kick yourself.");
 
-            var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
+            var userGroup = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
 
-            context.UserGroups.Remove(userGroup);
-            await context.SaveChangesAsync();
+            _context.UserGroups.Remove(userGroup);
+            await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> BanUser(int groupId, string targetUserId, string currentUserId)
         {
-            await EnsureIsAdminAsync(groupId, currentUserId);
+            await EnsureIsAdmin(groupId, currentUserId);
 
             if (targetUserId == currentUserId) throw new UnauthorizedAccessException("You cannot ban yourself.");
 
-            var userGroup = await context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
+            var userGroup = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == targetUserId);
             if (userGroup == null) return false;
 
             if (userGroup.Type != MemberType.Banned)
             {
                 userGroup.Type = MemberType.Banned;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             return true;
         }
 
-        public async Task<BannedMembersViewModel> GetBannedUsersViewModel(int groupId)
+        public async Task<BannedMembersViewModel> GetBannedUsers(int groupId)
         {
-            var groupName = await context.Groups
+            var groupName = await _context.Groups
                 .Where(g => g.Id == groupId)
                 .Select(g => g.Name)
-                .FirstOrDefaultAsync() ?? "Nieznana grupa";
+                .FirstOrDefaultAsync() ?? "Unknown Group";
 
-            var bannedUsers = await context.UserGroups
+            var bannedUsers = await _context.UserGroups
                 .Include(ug => ug.User)
                 .Where(ug => ug.ChatGroupId == groupId && ug.Type == MemberType.Banned)
                 .Select(ug => new BannedUserDto
@@ -138,19 +138,19 @@ namespace INZYNIERKA.Services.Services
 
         public async Task UnbanUser(int groupId, string userId)
         {
-            var userGroup = await context.UserGroups
+            var userGroup = await _context.UserGroups
                 .FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId);
 
             if (userGroup != null && userGroup.Type == MemberType.Banned)
             {
                 userGroup.Type = MemberType.Member;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
 
-        private async Task EnsureIsAdminAsync(int groupId, string userId)
+        private async Task EnsureIsAdmin(int groupId, string userId)
         {
-            var isAdmin = await context.UserGroups
+            var isAdmin = await _context.UserGroups
                 .AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId && ug.Type == MemberType.Administrator);
 
             if (!isAdmin)

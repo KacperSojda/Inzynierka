@@ -8,23 +8,23 @@ namespace INZYNIERKA.Services.Services
 {
     public class TagService<TUser> : ITagService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
+        private readonly INZDbContext<TUser> _context;
 
         public TagService(INZDbContext<TUser> context)
         {
-            this.context = context;
+            _context = context;
         }
 
         public async Task<SelectTagsViewModel> UserTags(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return new SelectTagsViewModel { Tags = new List<TagItem>() };
 
-            var userTagIds = await context.UserTags
+            var userTagIds = await _context.UserTags
                 .Where(ut => ut.UserId == userId)
                 .Select(ut => ut.TagId)
                 .ToListAsync();
 
-            var tags = await context.Tags.ToListAsync();
+            var tags = await _context.Tags.ToListAsync();
 
             return new SelectTagsViewModel
             {
@@ -41,7 +41,7 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
 
-            var existingUserTags = await context.UserTags
+            var existingUserTags = await _context.UserTags
                 .Where(ut => ut.UserId == userId)
                 .ToListAsync();
 
@@ -54,23 +54,23 @@ namespace INZYNIERKA.Services.Services
                 .Select(tagId => new UserTag { UserId = userId, TagId = tagId })
                 .ToList();
 
-            if (tagsToRemove.Any()) context.UserTags.RemoveRange(tagsToRemove);
-            if (tagsToAdd.Any()) context.UserTags.AddRange(tagsToAdd);
+            if (tagsToRemove.Any()) _context.UserTags.RemoveRange(tagsToRemove);
+            if (tagsToAdd.Any()) _context.UserTags.AddRange(tagsToAdd);
 
             if (tagsToRemove.Any() || tagsToAdd.Any())
             {
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public async Task<(bool result, string ErrorMessage)> NewTag(string tagName)
+        public async Task<(bool Result, string ErrorMessage)> NewTag(string tagName)
         {
             if (string.IsNullOrWhiteSpace(tagName)) return (false, "Tag name cannot be empty");
 
             var normalizedTagName = tagName.Trim();
             var searchName = normalizedTagName.ToLower();
 
-            var tagExists = await context.Tags
+            var tagExists = await _context.Tags
                 .AnyAsync(t => t.Name.ToLower() == searchName);
 
             if (tagExists)
@@ -83,14 +83,14 @@ namespace INZYNIERKA.Services.Services
                 Name = normalizedTagName
             };
 
-            context.Tags.Add(tag);
-            await context.SaveChangesAsync();
+            _context.Tags.Add(tag);
+            await _context.SaveChangesAsync();
             return (true, "");
         }
 
         public async Task<List<Tag>> AllTags()
         {
-            return await context.Tags.ToListAsync();
+            return await _context.Tags.ToListAsync();
         }
     }
 }

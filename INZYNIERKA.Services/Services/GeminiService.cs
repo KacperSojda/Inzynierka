@@ -7,15 +7,15 @@ namespace INZYNIERKA.Services.Services
 {
     public class GeminiService : IGeminiService
     {
-        private readonly IConfiguration configuration;
-        private readonly string apiKey;
-        private readonly HttpClient httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly string _apiKey;
+        private readonly HttpClient _httpClient;
 
         public GeminiService(IConfiguration configuration, HttpClient httpClient)
         {
-            this.configuration = configuration;
-            this.apiKey = configuration["ApiKeys:Gemini"] ?? throw new Exception("No API key found for Gemini.");
-            this.httpClient = httpClient;
+            _configuration = configuration;
+            _apiKey = _configuration["ApiKeys:Gemini"] ?? throw new Exception("No API key found for Gemini.");
+            _httpClient = httpClient;
         }
 
         public async Task<string> AskAsync(string question, string prompt)
@@ -25,7 +25,7 @@ namespace INZYNIERKA.Services.Services
                 return string.Empty;
             }
 
-            string endpoint = configuration["EndPoints:Gemini"].Replace("{apiKey}", apiKey) ?? throw new Exception("No endpoint configured for Gemini.");
+            string endpoint = _configuration["EndPoints:Gemini"].Replace("{apiKey}", _apiKey) ?? throw new Exception("No endpoint configured for Gemini.");
 
             var fullPrompt = $"{prompt}\n{question}";
 
@@ -45,7 +45,7 @@ namespace INZYNIERKA.Services.Services
 
             try
             {
-                var response = await httpClient.PostAsync(endpoint, content);
+                var response = await _httpClient.PostAsync(endpoint, content);
 
                 if (!response.IsSuccessStatusCode)
                 {

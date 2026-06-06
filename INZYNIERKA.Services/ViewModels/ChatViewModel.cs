@@ -26,6 +26,6 @@
         public string? ImageData { get; set; }
         public string? ImageType { get; set; }
         public bool IsImage => !string.IsNullOrEmpty(ImageData);
-        public bool Readed { get; set; }
+        public bool Read { get; set; }
     }
 }

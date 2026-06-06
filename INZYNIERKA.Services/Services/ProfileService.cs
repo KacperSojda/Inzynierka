@@ -9,20 +9,20 @@ namespace INZYNIERKA.Services.Services
 {
     public class ProfileService<TUser> : IProfileService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
-        private readonly UserManager<TUser> userManager;
+        private readonly INZDbContext<TUser> _context;
+        private readonly UserManager<TUser> _userManager;
 
         public ProfileService(INZDbContext<TUser> context, UserManager<TUser> userManager)
         {
-            this.context = context;
-            this.userManager = userManager;
+            _context = context;
+            _userManager = userManager;
         }
 
         public async Task<UserViewModel> Profile(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
 
-            var user = await context.Users
+            var user = await _context.Users
                 .Include(u => u.UserTags)
                     .ThenInclude(ut => ut.Tag)
                 .FirstOrDefaultAsync(u => u.Id == userId);
@@ -51,7 +51,7 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
 
-            var user = await context.Users.FindAsync(userId);
+            var user = await _context.Users.FindAsync(userId);
             if (user == null) return null;
 
             return new UserViewModel
@@ -75,7 +75,7 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(targetUserId)) return null;
 
-            var user = await context.Users
+            var user = await _context.Users
                 .Include(u => u.UserTags)
                     .ThenInclude(ut => ut.Tag)
                 .FirstOrDefaultAsync(u => u.Id == targetUserId);
@@ -101,11 +101,11 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
-        public async Task<(bool result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model)
+        public async Task<(bool Result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model)
         {
             if (model == null) return (false, "No Data");
 
-            var user = await userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
@@ -129,7 +129,7 @@ namespace INZYNIERKA.Services.Services
             user.Zodiac = model.Zodiac;
             user.PreferredLanguages = model.Language;
 
-            var result = await userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
 
             if (result.Succeeded)
             {
@@ -143,12 +143,12 @@ namespace INZYNIERKA.Services.Services
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(avatarData))
                 return false;
 
-            var user = await userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 return false;
 
             user.Avatar = avatarData;
-            var result = await userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
 
             return result.Succeeded;
         }
@@ -158,12 +158,12 @@ namespace INZYNIERKA.Services.Services
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(coverData))
                 return false;
 
-            var user = await userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 return false;
 
             user.Cover = coverData;
-            var result = await userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
 
             return result.Succeeded;
         }

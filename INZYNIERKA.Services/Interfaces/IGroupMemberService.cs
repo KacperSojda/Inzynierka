@@ -10,7 +10,7 @@ namespace INZYNIERKA.Services.Interfaces
         Task<bool> DemoteAdmin(int groupId, string targetUserId, string currentUserId);
         Task<bool> KickUser(int groupId, string targetUserId, string currentUserId);
         Task<bool> BanUser(int groupId, string targetUserId, string currentUserId);
-        Task<BannedMembersViewModel> GetBannedUsersViewModel(int groupId);
+        Task<BannedMembersViewModel> GetBannedUsers(int groupId);
         Task UnbanUser(int groupId, string userId);
     }
 }

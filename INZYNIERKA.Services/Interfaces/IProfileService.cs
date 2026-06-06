@@ -8,7 +8,7 @@ namespace INZYNIERKA.Services.Interfaces
         Task<UserViewModel> Profile(string userId);
         Task<UserViewModel> EditProfile(string userId);
         Task<UserViewModel> OtherProfile(string targetUserId);
-        Task<(bool result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model);
+        Task<(bool Result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model);
         Task<bool> UpdateAvatar(string userId, string avatarData);
         Task<bool> UpdateCover(string userId, string coverData);
     }

@@ -9,25 +9,25 @@ namespace INZYNIERKA.Services.Services
 {
     public class AiMatchmakingService<TUser> : IAiMatchmakingService<TUser> where TUser : User
     {
-        private readonly INZDbContext<TUser> context;
-        private readonly IGeminiService geminiService;
-        private readonly IConfiguration configuration;
+        private readonly INZDbContext<TUser> _context;
+        private readonly IGeminiService _geminiService;
+        private readonly IConfiguration _configuration;
 
         public AiMatchmakingService(INZDbContext<TUser> context, IGeminiService geminiService, IConfiguration configuration)
         {
-            this.context = context;
-            this.geminiService = geminiService; 
-            this.configuration = configuration;
+            _context = context;
+            _geminiService = geminiService; 
+            _configuration = configuration;
         }
 
         public async Task<List<string>> AiMatches(string currentUserId)
         {
-            var connectedUserIds = await context.UserFriends
+            var connectedUserIds = await _context.UserFriends
                 .Where(f => f.UserId == currentUserId || f.FriendId == currentUserId)
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
                 .ToListAsync();
 
-            var matchingUsers = await context.Users
+            var matchingUsers = await _context.Users
                 .Where(u => u.Id != currentUserId && !connectedUserIds.Contains(u.Id))
                 .OrderBy(u => Guid.NewGuid())
                 .Select(u => u.Id)
@@ -38,7 +38,7 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<(UserViewModel MatchedUser, int LastProcessedIndex)> AiNext(string currentUserId, List<string> userIds, int startIndex)
         {
-            var user = await context.Users
+            var user = await _context.Users
                 .Include(u => u.UserTags).ThenInclude(ut => ut.Tag)
                 .FirstOrDefaultAsync(u => u.Id == currentUserId);
 
@@ -46,7 +46,7 @@ namespace INZYNIERKA.Services.Services
 
             var tags = user.UserTags.Select(ut => ut.Tag.Name).ToList();
             var combinedString = $"Description: {user.PublicDescription} {user.PrivateDescription} Hobby: {string.Join(", ", tags)}";
-            var browserPrompt = configuration["Prompts:Browser"];
+            var browserPrompt = _configuration["Prompts:Browser"];
 
             int currentIndex = startIndex;
 
@@ -55,7 +55,7 @@ namespace INZYNIERKA.Services.Services
                 var targetUserId = userIds[currentIndex];
                 currentIndex++;
 
-                var dbUser = await context.Users
+                var dbUser = await _context.Users
                     .Include(u => u.UserTags).ThenInclude(ut => ut.Tag)
                     .FirstOrDefaultAsync(u => u.Id == targetUserId);
 
@@ -68,7 +68,7 @@ namespace INZYNIERKA.Services.Services
                     .Replace("{person1}", combinedString)
                     .Replace("{person2}", friendCombinedString);
 
-                var geminiAns = await geminiService.AskAsync(string.Empty, finalPrompt);
+                var geminiAns = await _geminiService.AskAsync(string.Empty, finalPrompt);
 
                 if (!string.IsNullOrWhiteSpace(geminiAns) && geminiAns.Trim().ToUpper().Contains("YES"))
                 {
