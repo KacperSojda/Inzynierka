@@ -295,6 +295,7 @@ namespace INZYNIERKA.Services.Services
             }
 
             await context.SaveChangesAsync();
+            return finalMessage;
         }
 
         public async Task<bool> SaveGroupImage(string senderId, int groupId, string imageData, string imageType)
