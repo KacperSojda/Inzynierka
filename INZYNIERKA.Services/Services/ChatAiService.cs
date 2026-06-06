@@ -45,23 +45,24 @@ namespace INZYNIERKA.Services.Services
             }
             string chatHistory = historyBuilder.ToString();
 
-            string styleInstruction = "Match the language and general style of the conversation.";
+            string styleInstruction = configuration["Prompts:StyleBase"];
 
             if (tone == "custom" && !string.IsNullOrWhiteSpace(custom))
             {
-                styleInstruction = $"Apply the following custom style strictly as described by the user: '{custom}'.";
+                string customprompt = configuration["Prompts:Custom"];
+                styleInstruction = $"{customprompt}'{custom}'.";
             }
             else if (tone == "casual")
             {
-                styleInstruction = "Reply in a very casual, relaxed, and friendly tone (use emojis if appropriate).";
+                styleInstruction = configuration["Prompts:Casual"];
             }
             else if (tone == "formal")
             {
-                styleInstruction = "Reply in a formal, polite, and highly professional tone. Avoid slang and emojis.";
+                styleInstruction = configuration["Prompts:Formal"];
             }
             else if (tone == "funny")
             {
-                styleInstruction = "Reply in a funny, humorous, sarcastic, or playful tone.";
+                styleInstruction = configuration["Prompts:Funny"];
             }
 
             string basePrompt = configuration["Prompts:ResponseHelp"];
@@ -117,22 +118,23 @@ namespace INZYNIERKA.Services.Services
 
             string chatHistory = historyBuilder.ToString();
 
-            string styleInstruction = "Match the language and general style of the conversation.";
+            string styleInstruction = configuration["Prompts:StyleBase"];
             if (tone == "custom" && !string.IsNullOrWhiteSpace(custom))
             {
-                styleInstruction = $"Apply the following custom style strictly as described by the user: '{custom}'.";
+                string customprompt = configuration["Prompts:Custom"];
+                styleInstruction = $"{customprompt}'{custom}'.";
             }
             else if (tone == "casual")
             {
-                styleInstruction = "Reply in a very casual, relaxed, and friendly tone (use emojis if appropriate).";
+                styleInstruction = configuration["Prompts:Casual"];
             }
             else if (tone == "formal")
             {
-                styleInstruction = "Reply in a formal, polite, and highly professional tone. Avoid slang and emojis.";
+                styleInstruction = configuration["Prompts:Formal"];
             }
             else if (tone == "funny")
             {
-                styleInstruction = "Reply in a funny, humorous, sarcastic, or playful tone.";
+                styleInstruction = configuration["Prompts:Funny"];
             }
 
             string basePrompt = configuration["Prompts:ResponseHelp"];
