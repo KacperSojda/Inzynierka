@@ -54,7 +54,7 @@ namespace INZYNIERKA.Data
 
             builder.Entity<Notification>()
                 .HasOne(n => n.Group)
-                .WithMany(g => g.SendedNotifications)
+                .WithMany(g => g.SentNotifications)
                 .HasForeignKey(n => n.GroupId)
                 .OnDelete(DeleteBehavior.SetNull);
 
