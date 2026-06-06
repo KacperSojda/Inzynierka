@@ -111,6 +111,43 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
+        public async Task<BannedMembersViewModel> GetBannedUsersViewModel(int groupId)
+        {
+            var groupName = await context.Groups
+                .Where(g => g.Id == groupId)
+                .Select(g => g.Name)
+                .FirstOrDefaultAsync() ?? "Nieznana grupa";
+
+            var bannedUsers = await context.UserGroups
+                .Include(ug => ug.User)
+                .Where(ug => ug.ChatGroupId == groupId && ug.Type == MemberType.Banned)
+                .Select(ug => new BannedUserDto
+                {
+                    UserId = ug.UserId,
+                    UserName = ug.User.UserName
+                })
+                .ToListAsync();
+
+            return new BannedMembersViewModel
+            {
+                GroupId = groupId,
+                GroupName = groupName,
+                BannedUsers = bannedUsers
+            };
+        }
+
+        public async Task UnbanUser(int groupId, string userId)
+        {
+            var userGroup = await context.UserGroups
+                .FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == userId);
+
+            if (userGroup != null && userGroup.Type == MemberType.Banned)
+            {
+                userGroup.Type = MemberType.Member;
+                await context.SaveChangesAsync();
+            }
+        }
+
         private async Task EnsureIsAdminAsync(int groupId, string userId)
         {
             var isAdmin = await context.UserGroups

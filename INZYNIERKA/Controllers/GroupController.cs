@@ -502,7 +502,7 @@ namespace INZYNIERKA.Controllers
 
             try
             {
-                var viewModel = await groupService.GetBannedUsersViewModel(groupId);
+                var viewModel = await groupMemberService.GetBannedUsersViewModel(groupId);
                 logger.LogInformation("User {UserId} requested banned members list for group {GroupId}.", userId, groupId);
                 return View(viewModel);
             }
@@ -520,7 +520,7 @@ namespace INZYNIERKA.Controllers
             var currentUserId = userManager.GetUserId(User);
             try
             {
-                await groupService.UnbanUser(groupId, userId);
+                await groupMemberService.UnbanUser(groupId, userId);
 
                 logger.LogInformation("User {CurrentUserId} successfully unbanned user {TargetUserId} in group {GroupId}.", currentUserId, userId, groupId);
                 TempData["SuccessMessage"] = "User has been successfully unbanned and restored as a member.";
