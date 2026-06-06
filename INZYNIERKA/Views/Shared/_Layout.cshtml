@@ -50,7 +50,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Profile" asp-action="Index" class="nav-link sidebar-link @(currentController == "Profile" && currentAction != "Notifications" ? "active" : "")">
+                        <a asp-controller="Profile" asp-action="Index" class="nav-link sidebar-link @(currentController == "Profile" ? "active" : "")">
                             <i class="bi bi-person me-2"></i> Profile
                         </a>
                     </li>
@@ -64,13 +64,18 @@
                             <i class="bi bi-collection me-2"></i> Groups
                         </a>
                     </li>
+                    <li>
+                        <a asp-controller="Friendship" asp-action="FriendList" class="nav-link sidebar-link @(currentController == "Friendship" ? "active" : "")">
+                            <i class="bi bi-people me-2"></i> Friends
+                        </a>
+                    </li>
                 </ul>
-                
+    
                 <hr class="text-muted" />
-                
+    
                 <ul class="nav nav-pills flex-column">
                     <li>
-                        <a asp-controller="Profile" asp-action="Notifications" class="nav-link sidebar-link @(currentController == "Profile" && currentAction == "Notifications" ? "active" : "")">
+                        <a asp-controller="Notifications" asp-action="Index" class="nav-link sidebar-link @(currentController == "Notifications" ? "active" : "")">
                             <i class="bi bi-bell me-2"></i> Notifications
                         </a>
                     </li>

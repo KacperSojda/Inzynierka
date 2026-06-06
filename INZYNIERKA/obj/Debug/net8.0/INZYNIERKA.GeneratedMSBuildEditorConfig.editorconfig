@@ -66,6 +66,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hhdFxHcm91cENoYXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Friendship/FriendList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRnJpZW5kc2hpcFxGcmllbmRMaXN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Friendship/RequestList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRnJpZW5kc2hpcFxSZXF1ZXN0TGlzdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Group/CreateGroup.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR3JvdXBcQ3JlYXRlR3JvdXAuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -106,8 +114,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/AddTag.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxBZGRUYWcuY3NodG1s
+[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Notifications/Notifications.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTm90aWZpY2F0aW9uc1xOb3RpZmljYXRpb25zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/EditMedia.cshtml]
@@ -118,32 +126,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxFZGl0UHJvZmlsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/FriendList.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxGcmllbmRMaXN0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/Notifications.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxOb3RpZmljYXRpb25zLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/RequestList.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxSZXF1ZXN0TGlzdC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/SelectTags.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTZWxlY3RUYWdzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/ShowProfile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTaG93UHJvZmlsZS5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Profile/ShowTags.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZmlsZVxTaG93VGFncy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Shared/Error.cshtml]
@@ -156,6 +144,18 @@ build_metadata.AdditionalFiles.CssScope =
 
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Tags/AddTag.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFnc1xBZGRUYWcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Tags/SelectTags.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFnc1xTZWxlY3RUYWdzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[G:/Inzynierka/Inzynierka/INZYNIERKA/Views/Tags/ShowTags.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFnc1xTaG93VGFncy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [G:/Inzynierka/Inzynierka/INZYNIERKA/Views/_ViewImports.cshtml]
