@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 
 namespace INZYNIERKA.Controllers
 {
@@ -15,30 +16,36 @@ namespace INZYNIERKA.Controllers
         private readonly IMatchmakingService<User> matchmakingService;
         private readonly IFriendshipService<User> friendshipService;
         private readonly IAiMatchmakingService<User> aiMatchmakingService;
+        private readonly ILogger<BrowserController> logger;
+
         public BrowserController(
             UserManager<User> userManager, 
             IMatchmakingService<User> matchmakingService,
             IFriendshipService<User> friendshipService,
-            IAiMatchmakingService<User> aiMatchmakingService)
+            IAiMatchmakingService<User> aiMatchmakingService,
+            ILogger<BrowserController> logger)
         {
             this.userManager = userManager;
             this.matchmakingService = matchmakingService;
             this.friendshipService = friendshipService;
             this.aiMatchmakingService = aiMatchmakingService;
+            this.logger = logger;
         }
 
         // Matchmaking Service //
 
         public async Task<IActionResult> SearchUsersByTags()
         {
+            var userId = userManager.GetUserId(User);
             try
             {
                 var browserViewModel = await matchmakingService.Tags();
-
+                logger.LogInformation("User {UserId} accessed the tag search browser.", userId);
                 return View(browserViewModel);
             }
-            catch(Exception)
+            catch(Exception ex)
             {
+                logger.LogError(ex, "Failed to load browser filters for user {UserId}.", userId);
                 TempData["ErrorMessage"] = "Failed to load browser";
                 return RedirectToAction("Index", "Home");
             }
@@ -47,10 +54,9 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchUsersByTags(SearchByTagsViewModel model)
         {
+            var userId = userManager.GetUserId(User);
             try
             {
-                var userId = userManager.GetUserId(User);
-
                 var tagIds = model.AvailableTags
                     .Where(t => t.Selected)
                     .Select(t => t.TagId)
@@ -66,17 +72,20 @@ namespace INZYNIERKA.Controllers
 
                 if (matchedUsersIds.Count == 0)
                 {
+                    logger.LogInformation("Search by user {UserId} yielded 0 results.", userId);
                     return RedirectToAction("SearchUsersByTags");
                 }
 
-                HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchedUsersIds));
+                logger.LogInformation("Search by user {UserId} yielded {Count} results.", userId, matchedUsersIds.Count);
 
+                HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchedUsersIds));
                 HttpContext.Session.SetInt32("currentIndex", 0);
 
                 return RedirectToAction("ShowUser", "Browser");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "An error occurred during the search process for user {UserId}.", userId);
                 return RedirectToAction("SearchUsersByTags");
             }
         }
@@ -84,12 +93,14 @@ namespace INZYNIERKA.Controllers
         [HttpGet]
         public async Task<IActionResult> ShowUser()
         {
+            var userId = userManager.GetUserId(User);
             try
             {
                 var users = HttpContext.Session.GetString("matchingUsers");
 
                 if (string.IsNullOrEmpty(users))
                 {
+                    logger.LogWarning("ShowUser failed: Search session expired or is empty for user {UserId}.", userId);
                     TempData["ErrorMessage"] = "Your search session has expired";
                     return RedirectToAction("SearchUsersByTags");
                 }
@@ -109,14 +120,16 @@ namespace INZYNIERKA.Controllers
 
                 if (model == null)
                 {
+                    logger.LogWarning("Matched user {TargetUserId} not found in database.", targetUserId);
                     return View("NoSearchResults");
                 }
 
                 return View("SearchResults", model);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to load matched user profile for user {UserId}.", userId);
                 TempData["ErrorMessage"] = "Failed to load user profile.";
                 return View("NoSearchResults");
             }
@@ -125,12 +138,14 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public IActionResult NextUser()
         {
+            var userId = userManager.GetUserId(User);
             try
             {
                 var users = HttpContext.Session.GetString("matchingUsers");
 
                 if (string.IsNullOrEmpty(users))
                 {
+                    logger.LogWarning("NextUser failed: Search session expired for user {UserId}.", userId);
                     TempData["ErrorMessage"] = "Your search session has expired.";
                     return RedirectToAction("SearchUsersByTags");
                 }
@@ -143,6 +158,7 @@ namespace INZYNIERKA.Controllers
 
                 if (currentIndex >= usersIds.Count)
                 {
+                    logger.LogInformation("User {UserId} reached the end of the search results.", userId);
                     currentIndex = -1;
                 }
 
@@ -150,8 +166,9 @@ namespace INZYNIERKA.Controllers
 
                 return RedirectToAction("ShowUser");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "An error occurred while loading the next user for user {UserId}.", userId);
                 TempData["ErrorMessage"] = "Failed to load user.";
                 return RedirectToAction("SearchUsersByTags");
             }
@@ -162,20 +179,23 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> SendFriendRequest(string userId)
         {
+            var currentUserId = userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId))
             {
+                logger.LogWarning("User {CurrentUserId} attempted to send a friend request without specifying a target user.", currentUserId);
                 TempData["ErrorMessage"] = "Could not identify the user.";
                 return NextUser();
             }
 
             try
             {
-                var currentUserId = userManager.GetUserId(User);
+                logger.LogInformation("User {CurrentUserId} successfully sent a friend request to {TargetUserId}.", currentUserId, userId);
                 await friendshipService.SendRequest(currentUserId, userId);
                 TempData["SuccessMessage"] = "Friend request sent successfully!";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to send friend request from user {CurrentUserId} to {TargetUserId}.", currentUserId, userId);
                 TempData["ErrorMessage"] = "Failed to send friend request.";
             }
 
@@ -187,18 +207,22 @@ namespace INZYNIERKA.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchWithAI()
         {
+            var userId = userManager.GetUserId(User);
             try
             {
-                var userId = userManager.GetUserId(User);
+                logger.LogInformation("User {UserId} initiated AI matchmaking.", userId);
                 var matchingUsers = await aiMatchmakingService.AiMatches(userId);
 
                 HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchingUsers));
                 HttpContext.Session.SetInt32("currentIndex", 0);
 
+                logger.LogInformation("AI matchmaking for user {UserId} found {Count} results.", userId, matchingUsers.Count);
+
                 return RedirectToAction("ShowUserWithAI");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "AI matchmaking failed for user {UserId}.", userId);
                 return View("NoSearchResults");
             }
         }
@@ -206,12 +230,14 @@ namespace INZYNIERKA.Controllers
         [HttpGet]
         public async Task<IActionResult> ShowUserWithAI()
         {
+            var currentUserId = userManager.GetUserId(User);
             try
             {
                 var users = HttpContext.Session.GetString("matchingUsers");
 
                 if (string.IsNullOrEmpty(users))
                 {
+                    logger.LogWarning("ShowUserWithAI failed: AI search session expired for user {UserId}.", currentUserId);
                     TempData["ErrorMessage"] = "Your search session has expired.";
                     return RedirectToAction("SearchUsersByTags");
                 }
@@ -230,8 +256,6 @@ namespace INZYNIERKA.Controllers
                     return View("NoSearchResults");
                 }
 
-                var currentUserId = userManager.GetUserId(User);
-
                 var (matchedUser, newIndex) = await aiMatchmakingService.AiNext(currentUserId, usersIds, currentIndex);
 
                 if (matchedUser != null)
@@ -240,11 +264,13 @@ namespace INZYNIERKA.Controllers
                     return View("SearchAiResults", matchedUser);
                 }
 
+                logger.LogInformation("User {UserId} reached the end of the AI search results.", currentUserId);
                 HttpContext.Session.SetInt32("currentIndex", -1);
                 return View("NoSearchResults");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to load AI matched user profile for user {UserId}.", currentUserId);
                 TempData["ErrorMessage"] = "Failed to load user profile";
                 return View("NoSearchResults");
             }
