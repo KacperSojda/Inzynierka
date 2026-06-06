@@ -4,6 +4,8 @@ using INZYNIERKA.Services.Interfaces;
 using INZYNIERKA.Services.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace INZYNIERKA.Services.Services
 {
@@ -12,12 +14,14 @@ namespace INZYNIERKA.Services.Services
         private readonly INZDbContext<TUser> context;
         private readonly UserManager<TUser> userManager;
         private readonly SignInManager<TUser> signInManager;
+        private readonly IChatAiService<TUser> chatAiService;
 
-        public ChatService(INZDbContext<TUser> context, UserManager<TUser> userManager, SignInManager<TUser> signInManager)
+        public ChatService(INZDbContext<TUser> context, UserManager<TUser> userManager, SignInManager<TUser> signInManager, IChatAiService<TUser> chatAiService)
         {
             this.context = context;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.chatAiService = chatAiService;
         }
 
         public async Task<ChatViewModel> Chat(string currentUserId, string friendId, string userMessage, string geminiAnswer)
@@ -161,13 +165,30 @@ namespace INZYNIERKA.Services.Services
             }).ToList();
         }
 
-        public async Task SaveMessage(string senderId, string receiverId, string content)
+        public async Task<string> SaveMessage(string senderId, string receiverId, string content, bool autoTranslate)
         {
+            string finalMessage = content;
+
+            if (autoTranslate)
+            {
+                var translated = await chatAiService.AutoTranslateToUserLanguage(receiverId, finalMessage);
+                if (!string.IsNullOrWhiteSpace(translated))
+                {
+                    finalMessage = translated;
+                }
+            }
+
+            var censored = ""; //await chatAiService.CensorMessage(finalMessage);
+            if (!string.IsNullOrEmpty(censored))
+            {
+                finalMessage = censored;
+            }
+
             var msg = new Message
             {
                 SenderId = senderId,
                 ReceiverId = receiverId,
-                Content = content,
+                Content = finalMessage,
                 Timestamp = DateTime.UtcNow
             };
 
@@ -190,19 +211,24 @@ namespace INZYNIERKA.Services.Services
             }
 
             await context.SaveChangesAsync();
+            return finalMessage;
         }
 
-        public async Task<bool> SaveImage(string senderId, string receiverId, byte[] imageData, string imageType)
+        public async Task<bool> SaveImage(string senderId, string receiverId, string imageData, string imageType)
         {
-            if (imageData == null || imageData.Length == 0)
+            if (string.IsNullOrEmpty(imageData))
+            {
                 return false;
+            }
+
+            byte[] imageDataBytes = Convert.FromBase64String(imageData);
 
             var message = new Message
             {
                 SenderId = senderId,
                 ReceiverId = receiverId,
                 Content = null,
-                ImageData = imageData,
+                ImageData = imageDataBytes,
                 ImageType = imageType,
                 Timestamp = DateTime.UtcNow,
 
@@ -214,7 +240,7 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
-        public async Task SaveGroupMessage(int groupId, string senderId, string content)
+        public async Task<string> SaveGroupMessage(int groupId, string senderId, string content)
         {
             var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
 
@@ -222,11 +248,17 @@ namespace INZYNIERKA.Services.Services
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
+            string finalMessage = content;
+
+            var censored = ""; //await chatAiService.CensorMessage(finalMessage);
+            if (!string.IsNullOrEmpty(censored))
+            {
+                finalMessage = censored;
+            }
+
             var group = await context.Groups
                 .Include(g => g.Members)
                 .FirstOrDefaultAsync(g => g.Id == groupId);
-
-            if (group == null) return;
 
             var groupMessage = new GroupMessage
             {
@@ -265,16 +297,18 @@ namespace INZYNIERKA.Services.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<bool> SaveGroupImage(string senderId, int groupId, byte[] imageData, string imageType)
+        public async Task<bool> SaveGroupImage(string senderId, int groupId, string imageData, string imageType)
         {
-            var currentUser = await userManager.GetUserAsync(signInManager.Context.User);
-
-            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUser.Id);
+            var isMember = await context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == senderId);
 
             if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
 
-            if (imageData == null || imageData.Length == 0)
+            if (string.IsNullOrEmpty(imageData))
+            {
                 return false;
+            }
+
+            byte[] imageDataBytes = Convert.FromBase64String(imageData);
 
             var message = new GroupMessage
             {
@@ -282,7 +316,7 @@ namespace INZYNIERKA.Services.Services
                 GroupId = groupId,
                 SenderId = senderId,
                 Content = null,
-                ImageData = imageData,
+                ImageData = imageDataBytes,
                 ImageType = imageType,
                 Timestamp = DateTime.UtcNow,
 

@@ -31,56 +31,25 @@ namespace INZYNIERKA.Hubs
                 logger.LogWarning("SendMessage blocked: SenderId {SenderId} does not match Context UserIdentifier {UserId}.", senderId, userId);
                 return;
             }
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                logger.LogWarning("SendMessage failed: User {UserId} attempted to send an empty message.", userId);
-                await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty.");
-                return;
-            }
 
-            if (message.Length > 1000)
+            if (string.IsNullOrWhiteSpace(message) || message.Length > 1000)
             {
-                logger.LogWarning("SendMessage failed: User {UserId} attempted to send a message exceeding length limit.", userId);
-                await Clients.User(senderId).SendAsync("ErrorNotification", "Message is too long.");
+                logger.LogWarning("SendMessage failed: User {UserId} attempted to send empty or too long message.", userId);
+                await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty or too long.");
                 return;
             }
 
             try
             {
-                string finalMessage = message;
+                string finalMessage = await chatService.SaveMessage(senderId, receiverId, message, autoTranslate);
 
-                if (autoTranslate)
-                {
-                    var translated = await chatAiService.AutoTranslateToUserLanguage(receiverId, finalMessage);
-                    if (!string.IsNullOrWhiteSpace(translated))
-                    {
-                        finalMessage = translated;
-                    }
-                }
-
-                try
-                {
-                    var censored = ""; //await chatAiService.CensorMessage(finalMessage);
-                    if (!string.IsNullOrEmpty(censored))
-                    {
-                        finalMessage = censored;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Censorship failed for message from {SenderId} to {ReceiverId}.", senderId, receiverId);
-                }
-
-                await chatService.SaveMessage(senderId, receiverId, finalMessage);
                 await Clients.Users(senderId, receiverId).SendAsync("ReceiveMessage", senderId, receiverId, finalMessage);
-
-                logger.LogInformation("User {SenderId} successfully sent a message to {ReceiverId}.", senderId, receiverId);
-
+                logger.LogInformation("User {SenderId} sent message to {ReceiverId}.", senderId, receiverId);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "SendMessage failed for user {SenderId} to {ReceiverId}.", senderId, receiverId);
-                await Clients.User(senderId).SendAsync("ErrorNotification", "Failed to send message.");
+                logger.LogError(ex, "SendMessage failed.");
+                await Clients.User(senderId).SendAsync("ErrorNotification", "Nie udało się wysłać wiadomości.");
             }
         }
 
@@ -92,18 +61,17 @@ namespace INZYNIERKA.Hubs
                 return;
             }
 
+            if (image.Length > 2 * 1024 * 1024)
+            {
+                logger.LogWarning("SendImage failed: Image too large from user {UserId}.", senderId);
+                await Clients.Caller.SendAsync("ErrorNotification", "File is too large.");
+                return;
+            }
+
             try
             {
-                if (image.Length > 2 * 1024 * 1024)
-                {
-                    logger.LogWarning("SendImage failed: Image too large from user {UserId}.", senderId);
-                    await Clients.Caller.SendAsync("ErrorNotification", "File is too large.");
-                    return;
-                }
 
-                byte[] imageBytes = Convert.FromBase64String(image);
-
-                var result = await chatService.SaveImage(senderId, receiverId, imageBytes, imageType);
+                var result = await chatService.SaveImage(senderId, receiverId, image, imageType);
 
                 if (!result)
                 {
@@ -132,20 +100,8 @@ namespace INZYNIERKA.Hubs
             try
             {
                 var userId = Context.UserIdentifier;
-                string answer = await chatAiService.ResponseHelp(userId, friendId);
 
-                if (string.IsNullOrWhiteSpace(answer))
-                {
-                    logger.LogInformation("SmartReply: AI returned empty response for user {UserId}.", userId);
-                    return new List<string>();
-                }
-
-                var replies = answer.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                    .Take(3)
-                                    .ToList();
-
-                logger.LogInformation("SmartReply generated {Count} suggestions for user {UserId}.", replies.Count, userId);
-                return replies;
+                return await chatAiService.ResponseHelp(userId, friendId);
             }
             catch (Exception ex)
             {

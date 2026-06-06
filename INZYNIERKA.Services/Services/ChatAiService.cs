@@ -20,7 +20,7 @@ namespace INZYNIERKA.Services.Services
             this.configuration = configuration;
         }
 
-        public async Task<string> ResponseHelp(string currentUserId, string friendId)
+        public async Task<List<string>> ResponseHelp(string currentUserId, string friendId)
         {
             var relation = await context.UserFriends
                 .FirstOrDefaultAsync(f => f.UserId == currentUserId && f.FriendId == friendId);
@@ -69,7 +69,12 @@ namespace INZYNIERKA.Services.Services
 
             var ans = await geminiService.AskAsync(chatHistory, fullSystemPrompt);
 
-            return string.IsNullOrEmpty(ans) ? string.Empty : ans;
+            if (string.IsNullOrWhiteSpace(ans))
+            {
+                return new List<string>();
+            }
+
+            return ans.Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(3).ToList();
         }
 
         public async Task SaveSRSettings(string currentUserId, string friendId, string tone, string custom, bool auto)
@@ -87,7 +92,7 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
-        public async Task<string> GroupResponseHelp(string currentUserId, int groupId)
+        public async Task<List<string>> GroupResponseHelp(string currentUserId, int groupId)
         {
             var relation = await context.UserGroups
                 .FirstOrDefaultAsync(ug => ug.UserId == currentUserId && ug.ChatGroupId == groupId);
@@ -135,7 +140,12 @@ namespace INZYNIERKA.Services.Services
 
             var ans = await geminiService.AskAsync(chatHistory, fullSystemPrompt);
 
-            return string.IsNullOrEmpty(ans) ? string.Empty : ans;
+            if (string.IsNullOrWhiteSpace(ans))
+            {
+                return new List<string>();
+            }
+
+            return ans.Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(3).ToList();
         }
 
         public async Task<string> CorrectMessage(string userMessage)

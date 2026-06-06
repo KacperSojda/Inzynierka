@@ -46,17 +46,10 @@ namespace INZYNIERKA.Hubs
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(message))
+            if (string.IsNullOrWhiteSpace(message) || message.Length > 1000)
             {
-                logger.LogWarning("SendMessageToGroup failed: User {UserId} attempted to send an empty message.", userId);
-                await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty.");
-                return;
-            }
-
-            if (message.Length > 1000)
-            {
-                logger.LogWarning("SendMessageToGroup failed: User {UserId} attempted to send a message exceeding length limit.", userId);
-                await Clients.User(senderId).SendAsync("ErrorNotification", "Message is too long.");
+                logger.LogWarning("SendMessageToGroup failed: User {UserId} attempted to send an empty or too long message.", userId);
+                await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty or too long.");
                 return;
             }
 
@@ -68,22 +61,7 @@ namespace INZYNIERKA.Hubs
 
             try
             {
-                string finalMessage = message;
-                try
-                {
-                    var censored = ""; //await chatAiService.CensorMessage(finalMessage);
-                    if (!string.IsNullOrEmpty(censored))
-                    {
-                        finalMessage = censored;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to censor group message for user {UserId} in group {GroupId}. Proceeding with original.", userId, groupId);
-                }
-
-                await chatService.SaveGroupMessage(groupId, senderId, finalMessage);
-                
+                string finalMessage = await chatService.SaveGroupMessage(groupId, senderId, message);
                 string senderName = Context.User?.Identity?.Name ?? "Użytkownik";
 
                 await Clients.Group($"group_{groupId}").SendAsync("ReceiveGroupMessage", groupId, senderId, senderName, finalMessage);
@@ -106,30 +84,22 @@ namespace INZYNIERKA.Hubs
                 return;
             }
 
-            if (string.IsNullOrEmpty(image))
+            if (string.IsNullOrEmpty(image) || image.Length > 2 * 1024 * 1024)
             {
-                logger.LogWarning("SendGroupImage blocked: Empty image data provided by user {UserId}.", userId);
+                logger.LogWarning("SendGroupImage blocked: Empty or too large image data provided by user {UserId}.", userId);
+                await Clients.User(senderId).SendAsync("ErrorNotification", "Message cannot be empty or too long.");
                 return;
             }
 
             try
             {
-                if (image.Length > 2 * 1024 * 1024)
-                {
-                    logger.LogWarning("SendGroupImage blocked: Image data from user {UserId} exceeds size limit.", userId);
-                    await Clients.Caller.SendAsync("ErrorNotification", "File is too large.");
-                    return;
-                }
-
                 if (!int.TryParse(groupIDString, out int groupId))
                 {
                     logger.LogWarning("SendGroupImage blocked: Invalid group ID '{GroupIDString}' from user {UserId}.", groupIDString, userId);
                     return;
                 }
 
-                byte[] imageBytes = Convert.FromBase64String(image);
-
-                var result = await chatService.SaveGroupImage(senderId, groupId, imageBytes, imageType);
+                var result = await chatService.SaveGroupImage(senderId, groupId, image, imageType);
 
                 if (!result)
                 {
@@ -162,20 +132,7 @@ namespace INZYNIERKA.Hubs
 
             try
             {
-                string answer = await chatAiService.GroupResponseHelp(userId, groupId);
-
-                if (string.IsNullOrWhiteSpace(answer))
-                {
-                    logger.LogInformation("GroupSmartReply: AI returned empty response for user {UserId} in group {GroupId}.", userId, groupId);
-                    return new List<string>();
-                }
-
-                var replies = answer.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                    .Take(3)
-                                    .ToList();
-
-                logger.LogInformation("GroupSmartReply generated {Count} suggestions for user {UserId} in group {GroupId}.", replies.Count, userId, groupId);
-                return replies;
+                return await chatAiService.GroupResponseHelp(userId, groupId);
             }
             catch (Exception ex)
             {
