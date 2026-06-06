@@ -7,7 +7,7 @@
 
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageId>Inzynierka.Domain</PackageId>
-	<Version>1.0.0</Version>
+	<Version>1.0.1</Version>
 	<Authors>Kacper Sojda</Authors>
 	<Description>Modele domenowe dla systemu chatu.</Description>
   </PropertyGroup>

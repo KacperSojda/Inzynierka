@@ -32,7 +32,6 @@ namespace INZYNIERKA.Domain.Models
         [MaxLength(30)]
         public string? Status { get; set; }
         public string? Cover { get; set; }
-        public string? SocialMedia { get; set; }
         public ZodiacSign? Zodiac { get; set; }
         [MaxLength(30)]
         public string? PreferredLanguages { get; set; }

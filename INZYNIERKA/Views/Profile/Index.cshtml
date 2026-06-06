@@ -103,27 +103,7 @@
                     </a>
                 </div>
             </div> 
-
-            @if (!string.IsNullOrEmpty(Model.SocialMedia))
-            {
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Social Media</h5>
-                        <div class="d-flex flex-column gap-2">
-                            @foreach (var link in Model.SocialMedia.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                            {
-                                var cleanLink = link.Trim();
-                                <a href="@cleanLink" target="_blank" class="text-decoration-none text-primary text-truncate">
-                                    <i class="bi bi-link-45deg"></i> @cleanLink.Replace("https://", "").Replace("http://", "").TrimEnd('/')
-                                </a>
-                            }
-                        </div>
-                    </div>
-                </div>
-            }
-
         </div>
-
     </div>
 </div>
 

@@ -90,7 +90,7 @@
           "lib/net8.0/INZYNIERKA.Domain.dll": {}
         }
       },
-      "Inzynierka.Services/1.0.2": {
+      "Inzynierka.Services/1.0.3": {
         "type": "package",
         "dependencies": {
           "Inzynierka.Data": "1.0.0",
@@ -2231,13 +2231,13 @@
         "lib/net8.0/INZYNIERKA.Domain.dll"
       ]
     },
-    "Inzynierka.Services/1.0.2": {
-      "sha512": "mHVL4686HadqmEXwFS4M9AaGzWxyfueo8U0lkGg47vF9A6LGEXXhfTblvH72AIHLlnSnpGPh8c1a7tWbgVO3QA==",
+    "Inzynierka.Services/1.0.3": {
+      "sha512": "+J+rNYMmSajQ5nrytp1HyldYSUPt+ZcSdezY90tX51FBAaFGPQBGsWpmnaty5Fltfc1VifOO1LOaN+F9UO5oyA==",
       "type": "package",
-      "path": "inzynierka.services/1.0.2",
+      "path": "inzynierka.services/1.0.3",
       "files": [
         ".nupkg.metadata",
-        "inzynierka.services.1.0.2.nupkg.sha512",
+        "inzynierka.services.1.0.3.nupkg.sha512",
         "inzynierka.services.nuspec",
         "lib/net8.0/INZYNIERKA.Services.dll"
       ]
@@ -5367,7 +5367,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "Inzynierka.Services >= 1.0.2",
+      "Inzynierka.Services >= 1.0.3",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 8.0.4",
       "Microsoft.AspNetCore.SignalR >= 1.2.0",
       "Microsoft.EntityFrameworkCore >= 8.0.4",
@@ -5432,7 +5432,7 @@
         "dependencies": {
           "Inzynierka.Services": {
             "target": "Package",
-            "version": "[1.0.2, )"
+            "version": "[1.0.3, )"
           },
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
             "target": "Package",

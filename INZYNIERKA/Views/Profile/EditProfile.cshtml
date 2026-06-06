@@ -75,16 +75,6 @@
                 <span asp-validation-for="Language" class="text-danger"></span>
             </div>
 
-            <div class="mb-5">
-                <label class="form-label fw-bold text-muted">Social Media Links</label>
-                <div id="links-container">
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 fw-bold rounded-pill" id="add-link-btn">
-                    + Add another link
-                </button>
-                <span asp-validation-for="SocialMedia" class="text-danger"></span>
-            </div>
-
             <button type="submit" class="btn-main gradient-main">Save changes</button>
         </form>
 
@@ -155,53 +145,6 @@
                     hiddenLangInput.value = btn.dataset.lang;
                 });
             });
-
-            const linksContainer = document.getElementById('links-container');
-            const hiddenLinksInput = document.getElementById('HiddenSocialMedia');
-            const addLinkBtn = document.getElementById('add-link-btn');
-
-            let currentLinks = hiddenLinksInput.value ? hiddenLinksInput.value.split(',').map(s => s.trim()).filter(s => s !== '') : [];
-            
-            if(currentLinks.length === 0) currentLinks.push('');
-
-            function renderLinks() {
-                linksContainer.innerHTML = '';
-                currentLinks.forEach((link, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'd-flex mb-2 gap-2 align-items-center';
-                    
-                    row.innerHTML = `
-                        <input type="url" class="form-control custom-input link-input w-100" value="${link}" placeholder="https://..." />
-                        <button type="button" class="btn btn-outline-danger btn-sm remove-link-btn rounded-circle" style="width: 38px; height: 38px;" title="Usuń link">
-                            <i class="fa-solid fa-xmark">✖</i>
-                        </button>
-                    `;
-
-                    row.querySelector('.remove-link-btn').addEventListener('click', () => {
-                        row.remove();
-                        updateHiddenLinksInput();
-                    });
-
-                    row.querySelector('.link-input').addEventListener('input', updateHiddenLinksInput);
-
-                    linksContainer.appendChild(row);
-                });
-            }
-
-            function updateHiddenLinksInput() {
-                const inputs = Array.from(document.querySelectorAll('.link-input'))
-                                    .map(i => i.value.trim())
-                                    .filter(v => v !== '');
-                hiddenLinksInput.value = inputs.join(',');
-            }
-
-            addLinkBtn.addEventListener('click', () => {
-                currentLinks = Array.from(document.querySelectorAll('.link-input')).map(i => i.value);
-                currentLinks.push('');
-                renderLinks();
-            });
-
-            renderLinks();
         });
     </script>
 }

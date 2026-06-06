@@ -43,7 +43,6 @@ namespace INZYNIERKA.Services.Services
                 Status = user.Status,
                 Zodiac = user.Zodiac,
                 Cover = user.Cover,
-                SocialMedia = user.SocialMedia,
                 Language = user.PreferredLanguages
             };
         }
@@ -68,7 +67,6 @@ namespace INZYNIERKA.Services.Services
                 Status = user.Status,
                 Zodiac = user.Zodiac,
                 Cover = user.Cover,
-                SocialMedia = user.SocialMedia,
                 Language = user.PreferredLanguages
             };
         }
@@ -99,7 +97,6 @@ namespace INZYNIERKA.Services.Services
                 Status = user.Status,
                 Zodiac = user.Zodiac,
                 Cover = user.Cover,
-                SocialMedia = user.SocialMedia,
                 Language = user.PreferredLanguages
             };
         }
@@ -130,7 +127,6 @@ namespace INZYNIERKA.Services.Services
             user.Country = model.Country;
             user.Status = model.Status;
             user.Zodiac = model.Zodiac;
-            user.SocialMedia = model.SocialMedia;
             user.PreferredLanguages = model.Language;
 
             var result = await userManager.UpdateAsync(user);
