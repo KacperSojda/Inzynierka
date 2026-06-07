@@ -282,13 +282,13 @@
         };
 
         function parseEmoticons(text) {
-        if (!text) return text;
-        let parsedText = text;
-        for (const [emoticon, emoji] of Object.entries(emoticonsMap)) {
-        const regex = new RegExp(emoticon.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"), "g");
-        parsedText = parsedText.replace(regex, emoji);
-        }
-        return parsedText;
+            if (!text) return text;
+            let parsedText = text;
+            for (const [emoticon, emoji] of Object.entries(emoticonsMap)) {
+                const regex = new RegExp(emoticon.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"), "g");
+                parsedText = parsedText.replace(regex, emoji);
+            }
+            return parsedText;
         }
 
         // SMART REPLIES //
@@ -304,9 +304,10 @@
             if (!isAuto) return;
 
             if (connection && connection.state === signalR.HubConnectionState.Connected) {
-            generateSmartReply();
-            } else {
-            setTimeout(tryGenerateReplyWhenConnected, 50);
+                generateSmartReply();
+            } 
+            else{
+                setTimeout(tryGenerateReplyWhenConnected, 50);
             }
         }
 
@@ -321,10 +322,10 @@
             const custom = document.getElementById("customStyleInput").value;
             
             const refreshContainer = document.getElementById("refreshRepliesContainer");
-            if (isAuto) {
+            if (isAuto){
                 refreshContainer.classList.remove("d-none");
             } 
-            else {
+            else{
                 refreshContainer.classList.add("d-none");
             }
             
@@ -408,7 +409,8 @@
                         </div>
                         ${summary}
                     </div>`;
-            } catch (err) {
+            } 
+            catch (err) {
                 container.innerHTML = `<div class="alert alert-danger small p-2">Błąd generowania.</div>`;
             }
         }
@@ -524,7 +526,8 @@
             
             if (isHtml) {
                 innerContent += content;
-            } else {
+            } 
+            else {
                 const tempDiv = document.createElement("div");
                 tempDiv.innerText = content;
                 innerContent += `<span class="ms-1">${tempDiv.innerHTML}</span>`;

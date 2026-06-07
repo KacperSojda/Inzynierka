@@ -237,11 +237,14 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<string> SummarizeChat(string currentUserId, string friendId, DateTime startDate, DateTime endDate)
         {
+            DateTime utcStart = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
+            DateTime utcEnd = DateTime.SpecifyKind(endDate.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+
             var messages = await _context.Messages.Include(m => m.Sender)
                 .Where(m => ((m.SenderId == currentUserId && m.ReceiverId == friendId) ||
                              (m.SenderId == friendId && m.ReceiverId == currentUserId))
-                             && m.Timestamp.Date >= startDate.Date
-                             && m.Timestamp.Date <= endDate.Date)
+                             && m.Timestamp.Date >= utcStart
+                             && m.Timestamp.Date <= utcEnd)
                 .OrderBy(m => m.Timestamp)
                 .ToListAsync();
 
@@ -263,10 +266,13 @@ namespace INZYNIERKA.Services.Services
 
         public async Task<string> SummarizeGroupChat(string currentUserId, int groupId, DateTime startDate, DateTime endDate)
         {
+            DateTime utcStart = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
+            DateTime utcEnd = DateTime.SpecifyKind(endDate.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+
             var messages = await _context.GroupMessages.Include(m => m.Sender)
                 .Where(m => m.GroupId == groupId
-                             && m.Timestamp.Date >= startDate.Date
-                             && m.Timestamp.Date <= endDate.Date)
+                             && m.Timestamp.Date >= utcStart
+                             && m.Timestamp.Date <= utcEnd)
                 .OrderBy(m => m.Timestamp)
                 .ToListAsync();
 
