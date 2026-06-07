@@ -104,9 +104,9 @@ namespace INZYNIERKA.Services.Services
             var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
             if (group == null) return null;
 
-            var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
+            var member = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.ChatGroupId == groupId && ug.UserId == currentUserId);
 
-            if (!isMember) throw new UnauthorizedAccessException("You are not a member of this group.");
+            if (member == null) throw new UnauthorizedAccessException("You are not a member of this group.");
 
             var messages = await _context.GroupMessages
                 .Include(m => m.Sender)
@@ -133,9 +133,9 @@ namespace INZYNIERKA.Services.Services
                 }).ToList(),
                 UserMessage = userMessage,
                 GeminiAnswer = geminiAnswer,
-                Tone = isMember.Tone ?? "casual",
-                Custom = isMember.Custom,
-                Auto = isMember.SmartReplies
+                Tone = member.Tone ?? "casual",
+                Custom = member.Custom,
+                Auto = member.SmartReplies
             };
         }
 
