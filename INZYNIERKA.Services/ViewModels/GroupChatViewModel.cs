@@ -8,6 +8,9 @@
         public List<GroupMessageViewModel> Messages { get; set; }
         public string UserMessage { get; set; }
         public string GeminiAnswer { get; set; }
+        public string Tone { get; set; } = "casual";
+        public string? Custom { get; set; }
+        public bool Auto { get; set; } = true;
     }
 
     public class GroupMessageViewModel

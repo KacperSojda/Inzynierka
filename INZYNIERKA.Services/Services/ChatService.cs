@@ -132,7 +132,10 @@ namespace INZYNIERKA.Services.Services
                     ImageType = m.ImageType
                 }).ToList(),
                 UserMessage = userMessage,
-                GeminiAnswer = geminiAnswer
+                GeminiAnswer = geminiAnswer,
+                Tone = isMember.Tone ?? "casual",
+                Custom = isMember.Custom,
+                Auto = isMember.SmartReplies
             };
         }
 

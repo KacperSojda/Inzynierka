@@ -70,10 +70,14 @@ namespace INZYNIERKA.Controllers
                     model.SearchCountry
                 );
 
-                if (matchedUsersIds.Count == 0)
+                if (matchedUsersIds == null || matchedUsersIds.Count == 0)
                 {
                     _logger.LogInformation("Search by user {UserId} had 0 results.", userId);
-                    return RedirectToAction("SearchUsersByTags");
+            
+                    HttpContext.Session.SetString("matchingUsers", "[]");
+                    HttpContext.Session.SetInt32("currentIndex", -1);
+            
+                    return RedirectToAction("ShowUser", "Browser"); 
                 }
 
                 _logger.LogInformation("Search by user {UserId} had {Count} results.", userId, matchedUsersIds.Count);
@@ -211,6 +215,17 @@ namespace INZYNIERKA.Controllers
             {
                 _logger.LogInformation("User {UserId} initiated AI matchmaking.", userId);
                 var matchingUsers = await _aiMatchmakingService.AiMatches(userId);
+
+                if (matchingUsers == null || matchingUsers.Count == 0)
+                {
+                    _logger.LogInformation("AI matchmaking for user {UserId} found 0 results.", userId);
+
+                    HttpContext.Session.SetString("matchingUsers", "[]");
+                    HttpContext.Session.SetInt32("currentIndex", -1);
+
+                    return RedirectToAction("ShowUserWithAI");
+                }
+
                 HttpContext.Session.SetString("matchingUsers", JsonConvert.SerializeObject(matchingUsers));
                 HttpContext.Session.SetInt32("currentIndex", 0);
 
@@ -220,7 +235,11 @@ namespace INZYNIERKA.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AI matchmaking failed for user {UserId}.", userId);
-                return View("NoSearchResults");
+
+                HttpContext.Session.SetString("matchingUsers", "[]");
+                HttpContext.Session.SetInt32("currentIndex", -1);
+
+                return RedirectToAction("ShowUserWithAI");
             }
         }
 

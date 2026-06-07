@@ -49,7 +49,7 @@
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
                                         <button type="submit" class="action-btn btn-join" title="Join Group"><i class="bi bi-person-plus-fill me-1"></i> Join</button>
                                     </form>
-                                    <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                                    <form asp-action="ShowGroupMembers" method="get" class="m-0">
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
                                         <button type="submit" class="action-btn btn-show" title="Show Members"><i class="bi bi-people"></i></button>
                                     </form>

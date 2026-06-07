@@ -36,10 +36,9 @@
                 <button type="submit" class="action-btn next">Next &rarr;</button>
             </form>
 
-            <form asp-controller="Profile" asp-action="ShowProfile" method="post" style="display:inline;">
-                <input type="hidden" name="userId" value="@Model.Id" />
-                <button type="submit" class="action-btn show-profile">Profile</button>
-            </form>
+            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.Id" class="action-btn show-profile">
+                <i class="bi bi-person"></i> Profile
+            </a>
         </div>
     </div>
 </div>

@@ -176,28 +176,28 @@
                 <div class="collapse mb-3" id="smartRepliesConfig">
                     <div class="card card-body border-0 shadow-sm bg-light p-3 rounded-3" style="font-size: 0.85rem;">
                         <h6 class="fw-bold mb-3 text-dark border-bottom pb-2">AI Settings</h6>
-                        
+        
                         <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="autoGenerateSwitch" onchange="saveGroupSmartReplySettings()">
+                            <input class="form-check-input" type="checkbox" id="autoGenerateSwitch" @(Model.Auto ? "checked" : "") onchange="saveGroupSmartReplySettings()">
                             <label class="form-check-label text-muted fw-bold" for="autoGenerateSwitch">Auto-generate</label>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label text-muted fw-bold mb-1">Response Style:</label>
                             <select class="form-select form-select-sm border-0 shadow-sm" id="smartReplyTone" onchange="onToneChange()">
-                                <option value="casual" selected>Casual</option>
-                                <option value="formal">Formal</option>
-                                <option value="funny">Funny</option>
-                                <option value="custom">Custom...</option>
+                                <option value="casual" selected="@(Model.Tone == "casual")">Casual</option>
+                                <option value="formal" selected="@(Model.Tone == "formal")">Formal</option>
+                                <option value="funny" selected="@(Model.Tone == "funny")">Funny</option>
+                                <option value="custom" selected="@(Model.Tone == "custom")">Custom...</option>
                             </select>
                         </div>
 
-                        <div id="customStyleContainer" class="d-none">
+                        <div id="customStyleContainer" class="@(Model.Tone == "custom" ? "" : "d-none")">
                             <label class="form-label text-muted fw-bold mb-1">Describe your style:</label>
-                            <textarea class="form-control form-control-sm border-0 shadow-sm rounded-3 py-2" id="customStyleInput" rows="3" placeholder="e.g. Respond very briefly..." onchange="saveGroupSmartReplySettings()"></textarea>
+                            <textarea class="form-control form-control-sm border-0 shadow-sm rounded-3 py-2" id="customStyleInput" rows="3" placeholder="e.g. Respond very briefly..." onchange="saveGroupSmartReplySettings()">@Model.Custom</textarea>
                         </div>
 
-                        <div id="refreshRepliesContainer" class="mt-3 border-top pt-3 d-none">
+                        <div id="refreshRepliesContainer" class="mt-3 border-top pt-3 @(Model.Auto ? "" : "d-none")">
                             <button type="button" class="btn btn-sm btn-gradient-ai w-100 shadow-sm" onclick="generateGroupSmartReply()">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Refresh Suggestions
                             </button>
@@ -279,13 +279,13 @@
         };
 
         function parseEmoticons(text) {
-        if (!text) return text;
-        let parsedText = text;
-        for (const [emoticon, emoji] of Object.entries(emoticonsMap)) {
-        const regex = new RegExp(emoticon.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"), "g");
-        parsedText = parsedText.replace(regex, emoji);
-        }
-        return parsedText;
+            if (!text) return text;
+            let parsedText = text;
+            for (const [emoticon, emoji] of Object.entries(emoticonsMap)) {
+                const regex = new RegExp(emoticon.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1"), "g");
+                parsedText = parsedText.replace(regex, emoji);
+            }
+            return parsedText;
         }
 
         const chatWindow = document.getElementById("chatWindow");
@@ -323,35 +323,39 @@
         }
 
         function onToneChange() {
-        toggleCustomStyleField();
-        saveGroupSmartReplySettings();
+            toggleCustomStyleField();
+            saveGroupSmartReplySettings();
         }
 
         function toggleCustomStyleField() {
-        const toneSelect = document.getElementById("smartReplyTone");
-        const customContainer = document.getElementById("customStyleContainer");
-        if (toneSelect.value === "custom") {
-        customContainer.classList.remove("d-none");
-        document.getElementById("customStyleInput").focus();
-        } else {
-        customContainer.classList.add("d-none");
-        }
+            const toneSelect = document.getElementById("smartReplyTone");
+            const customContainer = document.getElementById("customStyleContainer");
+            if (toneSelect.value === "custom") {
+                customContainer.classList.remove("d-none");
+                document.getElementById("customStyleInput").focus();
+            } 
+            else {
+                customContainer.classList.add("d-none");
+            }
         }
 
         async function saveGroupSmartReplySettings() {
-        const isAuto = document.getElementById("autoGenerateSwitch").checked;
-        const tone = document.getElementById("smartReplyTone").value;
-        const custom = document.getElementById("customStyleInput").value;
+            const isAuto = document.getElementById("autoGenerateSwitch").checked;
+            const tone = document.getElementById("smartReplyTone").value;
+            const custom = document.getElementById("customStyleInput").value;
 
-        const refreshContainer = document.getElementById("refreshRepliesContainer");
-        if (isAuto) refreshContainer.classList.remove("d-none");
-        else refreshContainer.classList.add("d-none");
+            const refreshContainer = document.getElementById("refreshRepliesContainer");
+            if (isAuto) refreshContainer.classList.remove("d-none");
+            else refreshContainer.classList.add("d-none");
 
-        if (connection && connection.state === signalR.HubConnectionState.Connected) {
-        try {
-        await connection.invoke("SaveGroupSmartReplySettings", currentgroupID, tone, custom, isAuto);
-        } catch (err) { console.error("Błąd zapisu AI:", err); }
-        }
+            if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                try {
+                    await connection.invoke("SaveGroupSRSettings", currentgroupID, tone, custom, isAuto);
+                } 
+                catch (err) { 
+                    console.error("Błąd zapisu AI:", err); 
+                }
+            }
         }
 
         function useSmartReply(text) {
@@ -381,7 +385,8 @@
                         </div>
                         ${summary}
                     </div>`;
-            } catch (err) {
+            } 
+            catch (err) {
                 container.innerHTML = `<div class="alert alert-danger small p-2">Błąd generowania. Sprawdź backend.</div>`;
             }
         }
@@ -422,9 +427,11 @@
                             hasMoreMessages = false;
                         }
                     }
-                } catch (err) {
+                } 
+                catch (err) {
                     console.error("Błąd przy ładowaniu starszych wiadomości", err);
-                } finally {
+                } 
+                finally {
                     isLoadingOlder = false;
                 }
             }
@@ -464,7 +471,8 @@
             let innerContent = `<strong style="${colorStyle}">${senderLabel}:</strong> `;
             if (isHtml) {
                 innerContent += content;
-            } else {
+            } 
+            else {
                 const tempDiv = document.createElement("div");
                 tempDiv.innerText = content;
                 innerContent += `<span class="ms-1">${tempDiv.innerHTML}</span>`;
@@ -476,15 +484,15 @@
         }
 
         connection.on("ReceiveGroupMessage", function(groupId, senderId, senderName, message) {
-        if (groupId != currentgroupID) return;
-        appendGroupMessage(senderId, senderName || senderId, message, false);
+            if (groupId != currentgroupID) return;
+            appendGroupMessage(senderId, senderName || senderId, message, false);
 
-        if (senderId !== currentUserId) {
-        const isAuto = document.getElementById("autoGenerateSwitch").checked;
-        if (isAuto) {
-        generateGroupSmartReply();
-        }
-        }
+            if (senderId !== currentUserId) {
+                const isAuto = document.getElementById("autoGenerateSwitch").checked;
+                if (isAuto) {
+                    generateGroupSmartReply();
+                }
+            }
         });
 
         connection.on("ReceiveGroupImage", function(groupId, senderId, senderName, base64Data, contentType) {

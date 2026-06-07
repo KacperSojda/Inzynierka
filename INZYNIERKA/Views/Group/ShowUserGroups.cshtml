@@ -72,7 +72,7 @@
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
                                         <button type="submit" class="action-btn btn-leave" title="Leave"><i class="bi bi-box-arrow-right"></i></button>
                                     </form>
-                                    <form asp-action="ShowGroupMembers" method="post" class="m-0">
+                                    <form asp-action="ShowGroupMembers" method="get" class="m-0">
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
                                         <button type="submit" class="action-btn btn-show" title="Members"><i class="bi bi-people"></i></button>
                                     </form>
