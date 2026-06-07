@@ -63,6 +63,9 @@
 
             <div class="mb-4">
                 <label class="form-label fw-bold text-muted">Language</label>
+
+                <input type="hidden" asp-for="Language" id="HiddenPreferredLanguage" />
+
                 <div id="flag-container" class="d-flex flex-wrap gap-2">
                     <button type="button" class="flag-btn" data-lang="Polish">🇵🇱 Polish</button>
                     <button type="button" class="flag-btn" data-lang="English">🇬🇧 English</button>

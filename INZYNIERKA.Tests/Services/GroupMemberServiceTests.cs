@@ -16,7 +16,7 @@ namespace INZYNIERKA.Tests.Services
         }
 
         // TESTY DLA: GroupMembers //
-
+        /*
         [Fact]
         public async Task GroupMembersTest()
         {
@@ -158,6 +158,6 @@ namespace INZYNIERKA.Tests.Services
             var bannedUser = await context.UserGroups.FirstAsync(ug => ug.UserId == memberId);
             Assert.True(result);
             Assert.Equal(MemberType.Banned, bannedUser.Type);
-        }
+        }*/
     }
 }

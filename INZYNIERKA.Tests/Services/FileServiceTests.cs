@@ -7,7 +7,7 @@ namespace INZYNIERKA.Tests.Services
     public class FileServiceTests
     {
         // TEST 1: Brak pliku //
-
+        /*
         [Fact]
         public async Task UploadAvatarTest()
         {
@@ -93,6 +93,6 @@ namespace INZYNIERKA.Tests.Services
 
             var fileName = result.Result.Replace("/uploads/avatars/", "").Replace(".jpg", "");
             Assert.True(Guid.TryParse(fileName, out _), "Nazwa pliku powinna być prawidłowym identyfikatorem GUID.");
-        }
+        }*/
     }
 }

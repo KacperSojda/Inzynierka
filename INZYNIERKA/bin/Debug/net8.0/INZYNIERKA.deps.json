@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "INZYNIERKA/1.0.0": {
         "dependencies": {
-          "Inzynierka.Services": "1.0.0",
+          "Inzynierka.Services": "1.0.9",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.AspNetCore.SignalR": "1.2.0",
           "Microsoft.EntityFrameworkCore": "8.0.4",
@@ -54,42 +54,42 @@
           }
         }
       },
-      "Inzynierka.Data/1.0.0": {
+      "Inzynierka.Data/1.0.1": {
         "dependencies": {
-          "Inzynierka.Domain": "1.0.0",
+          "Inzynierka.Domain": "1.0.2",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4"
         },
         "runtime": {
           "lib/net8.0/INZYNIERKA.Data.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
           }
         }
       },
-      "Inzynierka.Domain/1.0.0": {
+      "Inzynierka.Domain/1.0.2": {
         "dependencies": {
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4"
         },
         "runtime": {
           "lib/net8.0/INZYNIERKA.Domain.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
           }
         }
       },
-      "Inzynierka.Services/1.0.0": {
+      "Inzynierka.Services/1.0.9": {
         "dependencies": {
-          "Inzynierka.Data": "1.0.0",
-          "Inzynierka.Domain": "1.0.0",
+          "Inzynierka.Data": "1.0.1",
+          "Inzynierka.Domain": "1.0.2",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore": "8.0.4"
         },
         "runtime": {
           "lib/net8.0/INZYNIERKA.Services.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
+            "assemblyVersion": "1.0.9.0",
+            "fileVersion": "1.0.9.0"
           }
         }
       },
@@ -962,26 +962,26 @@
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
     },
-    "Inzynierka.Data/1.0.0": {
+    "Inzynierka.Data/1.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1VgzeK5C8xcgcSeFKGUhaubNx1LkXHkXy4HFFcXAcxo1QZwxgjBT9ZsqvIL9y4209etOPmD3JfW2rEXJJEiSqA==",
-      "path": "inzynierka.data/1.0.0",
-      "hashPath": "inzynierka.data.1.0.0.nupkg.sha512"
+      "sha512": "sha512-jx7yFc22pA1WyjCWBYaGrPawCfbZlLQAJfGtzl5oWq6soJvlnz4X72xJQeDhsLsPXTwrxxEfs3rTNz0IYdWNkQ==",
+      "path": "inzynierka.data/1.0.1",
+      "hashPath": "inzynierka.data.1.0.1.nupkg.sha512"
     },
-    "Inzynierka.Domain/1.0.0": {
+    "Inzynierka.Domain/1.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bQMafiXqcQaJCoHwJoAsKBxvpNvY3kTKu+Af7aP+mlGJbkVWXneeY0OMa7hfy+V3zIn4XD17W2rAQ/3JBMNwGQ==",
-      "path": "inzynierka.domain/1.0.0",
-      "hashPath": "inzynierka.domain.1.0.0.nupkg.sha512"
+      "sha512": "sha512-nlhM5t0TZJ1ZkPkYDeBgh7g0IYDrzBfv8DXwNcz+SaoR96qL3jlTVgB7pTHzO2xMhKtCKdshW9S2SBHsFpJicw==",
+      "path": "inzynierka.domain/1.0.2",
+      "hashPath": "inzynierka.domain.1.0.2.nupkg.sha512"
     },
-    "Inzynierka.Services/1.0.0": {
+    "Inzynierka.Services/1.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-oTxcRqowV1gQB1S7n8yG8msAB0EBYnQup0sLk/8nNHepxwy420d0iMP3rBKD5+DEwcKP1Z8kiMALqG8IwDlxig==",
-      "path": "inzynierka.services/1.0.0",
-      "hashPath": "inzynierka.services.1.0.0.nupkg.sha512"
+      "sha512": "sha512-t6Sw4R/TlLQGL5H0dD693SqJBZnFdox/eluNrbThiuA0ecRvzI7ulzR1vAh+pQb2+ARMTlFZOlla728GQfl3qg==",
+      "path": "inzynierka.services/1.0.9",
+      "hashPath": "inzynierka.services.1.0.9.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Cryptography.Internal/8.0.4": {
       "type": "package",
