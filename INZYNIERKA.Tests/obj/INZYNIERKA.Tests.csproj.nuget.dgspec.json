@@ -63,7 +63,7 @@
             },
             "Inzynierka.Services": {
               "target": "Package",
-              "version": "[1.0.8, )"
+              "version": "[1.0.9, )"
             },
             "Microsoft.EntityFrameworkCore.InMemory": {
               "target": "Package",
@@ -175,7 +175,7 @@
           "dependencies": {
             "Inzynierka.Services": {
               "target": "Package",
-              "version": "[1.0.8, )"
+              "version": "[1.0.9, )"
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",

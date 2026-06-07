@@ -219,33 +219,33 @@ namespace INZYNIERKA.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAccount()
         {
-            var userId = _userManager.GetUserId(User);
+            var user = await _userManager.GetUserAsync(User);
 
             try
             {
-                if (userId == null)
+                if (user == null)
                 {
-                    _logger.LogWarning("Delete account failed: User {UserId} not found or session expired.", userId);
+                    _logger.LogWarning("Delete account failed: User not found or session expired.");
                     TempData["ErrorMessage"] = "User not found or session expired.";
                     return NotFound();
                 }
 
-                var (result, errorMessage) = _accountService.DeleteAccount(userId);
+                var (result, errorMessage) = await _accountService.DeleteAccount(user);
 
                 if (result)
                 {
-                    _logger.LogInformation("User account {UserId} was successfully locked out/deleted.", userId);
+                    _logger.LogInformation("User account {UserId} was successfully locked out/deleted.", user.Id);
                     TempData["SuccessMessage"] = "Your account has been locked out.";
                     return RedirectToAction("Index", "Home");
                 }
 
-                _logger.LogWarning("Failed to delete account for user {UserId}. Reason: {ErrorMessage}", userId, errorMessage);
+                _logger.LogWarning("Failed to delete account for user {UserId}. Reason: {ErrorMessage}", user.Id, errorMessage);
                 TempData["ErrorMessage"] = "Failed to delete account.";
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unexpected server error occurred while deleting account for user {UserId}.", userId);
+                _logger.LogError(ex, "An unexpected server error occurred while deleting account for user {UserId}.", user.Id);
                 TempData["ErrorMessage"] = "Server error";
                 return RedirectToAction("Index", "Home");
             }

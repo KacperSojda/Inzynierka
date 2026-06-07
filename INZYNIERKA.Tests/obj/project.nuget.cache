@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "JigDa/ndofU=",
+  "dgSpecHash": "ir8OsrQg3oU=",
   "success": true,
   "projectFilePath": "G:\\Inzynierka\\Inzynierka\\INZYNIERKA.Tests\\INZYNIERKA.Tests.csproj",
   "expectedPackageFiles": [
@@ -9,9 +9,9 @@
     "C:\\Users\\JA\\.nuget\\packages\\castle.core\\5.1.1\\castle.core.5.1.1.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\coverlet.collector\\6.0.2\\coverlet.collector.6.0.2.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\fluentassertions\\8.9.0\\fluentassertions.8.9.0.nupkg.sha512",
-    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.data\\1.0.0\\inzynierka.data.1.0.0.nupkg.sha512",
-    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.domain\\1.0.1\\inzynierka.domain.1.0.1.nupkg.sha512",
-    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.services\\1.0.8\\inzynierka.services.1.0.8.nupkg.sha512",
+    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.data\\1.0.1\\inzynierka.data.1.0.1.nupkg.sha512",
+    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.domain\\1.0.2\\inzynierka.domain.1.0.2.nupkg.sha512",
+    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.services\\1.0.9\\inzynierka.services.1.0.9.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.0\\microsoft.aspnetcore.authentication.abstractions.2.3.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authorization\\2.3.0\\microsoft.aspnetcore.authorization.2.3.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authorization.policy\\2.3.0\\microsoft.aspnetcore.authorization.policy.2.3.0.nupkg.sha512",
