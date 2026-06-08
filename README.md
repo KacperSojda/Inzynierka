@@ -22,24 +22,24 @@ Instalacja:
 1. Sklonuj repozytorium: >> git clone https://github.com/KacperSojda/Inzynierka.git
 2. Przywróć pakiety: >> dotnet restore
 3. Uzupełnij plik appsettings.json:
-  - Baza danych:
-  "ConnectionStrings": {
-    "DefaultConnection": "ConnectionStrings twojej bazy danych"
-  },
-  Konfiguracja Sztucznej inteligencji:
-  "ApiKeys": {
-    "Gemini": "Klucz API Gemini"
-  },
-  "EndPoints": {
-    "Gemini": "EndPoint wybranej wersji Gemini"
-  },
-  Konfiguracja skrzynki pocztowej:
-  "EmailConfiguration": {
-    "SmtpServer": "SerwerSmtp",
-    "SmtpPort": 0,
-    "SmtpUsername": "Adres email",
-    "SmtpPassword": "hasło"
-}
+  - Baza danych: <br /> <br />
+  "ConnectionStrings": { <br />
+  &emsp; "DefaultConnection": "ConnectionStrings twojej bazy danych" <br />
+  }, <br /> <br />
+  Konfiguracja Sztucznej inteligencji: <br /> <br />
+  "ApiKeys": { <br />
+  &emsp; "Gemini": "Klucz API Gemini" <br />
+  }, <br />
+  "EndPoints": { <br />
+  &emsp; "Gemini": "EndPoint wybranej wersji Gemini" <br />
+  }, <br /> <br />
+  Konfiguracja skrzynki pocztowej: <br /> <br />
+  "EmailConfiguration": { <br />
+  &emsp; "SmtpServer": "Serwer Smtp", <br />
+  &emsp; "SmtpPort": "Port Smtp", <br />
+  &emsp; "SmtpUsername": "Adres email", <br />
+  &emsp; "SmtpPassword": "hasło" <br />
+} <br />
 5. Zaaktualizuj baze danych: >> dotnet ef database update
 6. Uruchom aplikacje >> dotnet run
 
