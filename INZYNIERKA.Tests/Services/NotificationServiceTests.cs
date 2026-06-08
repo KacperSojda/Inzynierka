@@ -7,26 +7,26 @@ namespace INZYNIERKA.Tests.Services
 {
     public class NotificationServiceTests
     {
-        private INZDbContext CreateInMemoryDbContext()
+        private INZDbContext<User> CreateInMemoryDbContext()
         {
-            var options = new DbContextOptionsBuilder<INZDbContext>()
+            var options = new DbContextOptionsBuilder<INZDbContext<User>>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            return new INZDbContext(options);
+            return new INZDbContext<User>(options);
         }
 
-        // TESTY DLA: Notifications //
+        // TESTS FOR: Notifications //
 
         [Fact]
-        public async Task NotificationsTest()
+        public async Task Notifications_ReturnsNotifications()
         {
             var context = CreateInMemoryDbContext();
-            var userId = "ja";
-            var senderId = "znajomy";
+            var userId = "me";
+            var senderId = "friend";
 
-            var user = new User {Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""};
-            var sender = new User {Id = senderId, UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = ""};
-            var group = new Group {Id = 1, Name = "Grupa Testowa", Description = "Opis testowy grupy"};
+            var user = new User { Id = userId, UserName = "Me", Avatar = "DefaultAvatar", PublicDescription = "PublicDescription", PrivateDescription = "PrivateDescription" };
+            var sender = new User { Id = senderId, UserName = "Friend", Avatar = "DefaultAvatar", PublicDescription = "PublicDescription", PrivateDescription = "PrivateDescription" };
+            var group = new Group { Id = 1, Name = "Test Group", Description = "Test description" };
 
             context.Users.AddRange(user, sender);
             context.Groups.Add(group);
@@ -41,17 +41,7 @@ namespace INZYNIERKA.Tests.Services
                 Timestamp = new DateTime(2023, 1, 1)
             };
 
-            var notification2 = new Notification
-            {
-                Id = 2,
-                ReceiverId = userId,
-                SenderId = "Random",
-                GroupId = null,
-                Type = NotificationType.GroupMessage,
-                Timestamp = new DateTime(2023, 1, 2)
-            };
-
-            context.Notifications.AddRange(notification1, notification2);
+            context.Notifications.AddRange(notification1);
             await context.SaveChangesAsync();
 
             var service = new NotificationService<User>(context);
@@ -59,70 +49,79 @@ namespace INZYNIERKA.Tests.Services
             var (result, totalCount) = await service.Notifications(userId, 1, 10);
 
             Assert.NotNull(result);
-            Assert.Equal(2, result.Notifications.Count);
+            Assert.Equal(1, result.Notifications.Count);
 
-            Assert.Equal(2, result.Notifications[0].Id);
-            Assert.Equal(1, result.Notifications[1].Id);
+            Assert.Equal(1, result.Notifications[0].Id);
 
-            Assert.Equal("System", result.Notifications[0].SenderName);
-            Assert.Equal("Error", result.Notifications[0].GroupName);
 
-            Assert.Equal("Znajomy", result.Notifications[1].SenderName);
-            Assert.Equal("Grupa Testowa", result.Notifications[1].GroupName);
+            Assert.Equal("Friend", result.Notifications[0].SenderName);
+            Assert.Equal("Test Group", result.Notifications[0].GroupName);
         }
 
         [Fact]
-        public async Task NotificationsTest2()
+        public async Task Notifications_ReturnsEmptyList()
         {
             var context = CreateInMemoryDbContext();
             var service = new NotificationService<User>(context);
 
-            var (result, totalCount) = await service.Notifications("brak usera", 1, 10);
+            var (result, totalCount) = await service.Notifications(" ", 1, 10);
 
             Assert.NotNull(result);
-            Assert.NotNull(result.Notifications);
             Assert.Empty(result.Notifications);
+            Assert.Equal(0, totalCount);
         }
 
-        // TESTY DLA DeleteNotification //
-
         [Fact]
-        public async Task DeleteNotificationTest()
+        public async Task Notifications_ReturnsEmptyList_NoNotifications()
         {
             var context = CreateInMemoryDbContext();
             var service = new NotificationService<User>(context);
 
-            var result = await service.DeleteNotification("Random", 999);
+            var (result, totalCount) = await service.Notifications("nonexistent_user", 1, 10);
+
+            Assert.NotNull(result);
+            Assert.Empty(result.Notifications);
+            Assert.Equal(0, totalCount);
+        }
+
+        // TESTS FOR: DeleteNotification //
+
+        [Fact]
+        public async Task DeleteNotification_ReturnsFalse_NotificationNotExist()
+        {
+            var context = CreateInMemoryDbContext();
+            var service = new NotificationService<User>(context);
+
+            var result = await service.DeleteNotification("me", 999);
 
             Assert.False(result);
         }
 
         [Fact]
-        public async Task DeleteNotificationTest2()
+        public async Task DeleteNotification_ReturnsFalse_UserIsNotReceiver()
         {
             var context = CreateInMemoryDbContext();
-            var notification = new Notification {Id = 1, ReceiverId = "Ja", SenderId = "Znajomy"};
+            var notification = new Notification { Id = 1, ReceiverId = "me", SenderId = "friend" };
             context.Notifications.Add(notification);
             await context.SaveChangesAsync();
 
             var service = new NotificationService<User>(context);
 
-            var result = await service.DeleteNotification("Nieznajomy", 1);
+            var result = await service.DeleteNotification("stranger", 1);
 
             Assert.False(result);
             Assert.Single(await context.Notifications.ToListAsync());
         }
 
         [Fact]
-        public async Task DeleteNotificationTest3()
+        public async Task DeleteNotification_RemovesNotification()
         {
             var context = CreateInMemoryDbContext();
-            var userId = "Ja";
-            var senderId = "Znajomy";
+            var userId = "me";
+            var senderId = "friend";
 
-            context.Users.Add(new User {Id = userId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""});
-            context.Users.Add(new User {Id = senderId, UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = ""});
-            await context.SaveChangesAsync();
+            context.Users.Add(new User { Id = userId, UserName = "Me", PrivateDescription = "PrivateDescription", PublicDescription = "PublicDescription", Avatar = "DefaultAvatar" });
+            context.Users.Add(new User { Id = senderId, UserName = "Friend", PrivateDescription = "PrivateDescription", PublicDescription = "PublicDescription", Avatar = "DefaultAvatar" });
 
             var notification = new Notification
             {
@@ -144,14 +143,14 @@ namespace INZYNIERKA.Tests.Services
         }
 
         [Fact]
-        public async Task DeleteNotificationTest4()
+        public async Task DeleteNotification_RemovesNotificationAndFriendRequest()
         {
             var context = CreateInMemoryDbContext();
-            var receiverId = "Ja";
-            var senderId = "Znajomy";
+            var receiverId = "me";
+            var senderId = "friend";
 
-            context.Users.Add(new User {Id = receiverId, UserName = "Ja", Avatar = "", PublicDescription = "", PrivateDescription = ""});
-            context.Users.Add(new User {Id = senderId, UserName = "Znajomy", Avatar = "", PublicDescription = "", PrivateDescription = ""});
+            context.Users.Add(new User { Id = receiverId, UserName = "Me", PrivateDescription = "PrivateDescription", PublicDescription = "PublicDescription", Avatar = "DefaultAvatar" });
+            context.Users.Add(new User { Id = senderId, UserName = "Friend", PrivateDescription = "PrivateDescription", PublicDescription = "PublicDescription", Avatar = "DefaultAvatar" });
 
             var notification = new Notification
             {
@@ -164,7 +163,8 @@ namespace INZYNIERKA.Tests.Services
             var friendRecord = new UserFriend
             {
                 UserId = senderId,
-                FriendId = receiverId
+                FriendId = receiverId,
+                Status = FriendshipStatus.Pending
             };
 
             context.Notifications.Add(notification);

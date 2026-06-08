@@ -10,36 +10,38 @@ namespace INZYNIERKA.Tests.Services
 {
     public class ProfileServiceTests
     {
-        private INZDbContext CreateInMemoryDbContext()
+        private INZDbContext<User> CreateInMemoryDbContext()
         {
-            var options = new DbContextOptionsBuilder<INZDbContext>()
+            var options = new DbContextOptionsBuilder<INZDbContext<User>>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            return new INZDbContext(options);
+            return new INZDbContext<User>(options);
         }
+
         private Mock<UserManager<User>> CreateMockUserManager()
         {
             var store = new Mock<IUserStore<User>>();
             return new Mock<UserManager<User>>(store.Object, null, null, null, null, null, null, null, null);
         }
 
-        // TESTY DLA Profile //
+        // TESTS FOR: Profile //
 
         [Fact]
-        public async Task ProfileTest()
+        public async Task Profile_ReturnsViewModel()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var userId = "Ja";
+            var userId = "me";
             var user = new User
             {
                 Id = userId,
-                UserName = "Ja",
-                PublicDescription = "Opis Publiczny",
-                PrivateDescription = "Opis Prywatny",
-                Avatar = "avatar.jpg"
+                UserName = "Me",
+                PublicDescription = "Public Desc",
+                PrivateDescription = "Private Desc",
+                Avatar = "avatar.jpg",
+                City = "Wroclaw"
             };
 
             dbContext.Users.Add(user);
@@ -48,40 +50,41 @@ namespace INZYNIERKA.Tests.Services
             var result = await service.Profile(userId);
 
             Assert.NotNull(result);
-            Assert.Equal("Ja", result.UserName);
-            Assert.Equal("Opis Publiczny", result.PublicDescription);
-            Assert.Equal("Opis Prywatny", result.PrivateDescription);
+            Assert.Equal("Me", result.UserName);
+            Assert.Equal("Public Desc", result.PublicDescription);
+            Assert.Equal("Private Desc", result.PrivateDescription);
             Assert.Equal("avatar.jpg", result.Avatar);
+            Assert.Equal("Wroclaw", result.City);
         }
 
         [Fact]
-        public async Task ProfileTest2()
+        public async Task Profile_ReturnsNull()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.Profile("nieistniejacy");
+            var result = await service.Profile("nonexistent");
 
             Assert.Null(result);
         }
 
-        // --- TESTY DLA OtherProfile //
+        // TESTS FOR: OtherProfile //
 
         [Fact]
-        public async Task OtherProfileTest()
+        public async Task OtherProfile_ReturnsViewModel()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var userId = "Znajomy";
+            var userId = "friend";
             var user = new User
             {
                 Id = userId,
-                UserName = "Znajomy",
-                PublicDescription = "Publiczny opis",
-                PrivateDescription = "Prywatny opis",
+                UserName = "Friend",
+                PublicDescription = "Public Desc",
+                PrivateDescription = "Secret Private Desc",
                 Avatar = "avatar.jpg"
             };
 
@@ -91,39 +94,39 @@ namespace INZYNIERKA.Tests.Services
             var result = await service.OtherProfile(userId);
 
             Assert.NotNull(result);
-            Assert.Equal("Znajomy", result.UserName);
-            Assert.Equal("Publiczny opis", result.PublicDescription);
+            Assert.Equal("Friend", result.UserName);
+            Assert.Equal("Public Desc", result.PublicDescription);
             Assert.Equal("", result.PrivateDescription);
         }
 
         [Fact]
-        public async Task OtherProfileTest2()
+        public async Task OtherProfile_ReturnsNull()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.OtherProfile("nieistniejacy");
+            var result = await service.OtherProfile("nonexistent");
 
             Assert.Null(result);
         }
 
-        // TESTY DLA EditProfile //
+        // TESTS FOR: EditProfile //
 
         [Fact]
-        public async Task EditProfileTest()
+        public async Task EditProfile_ReturnsViewModel()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var userId = "Ja";
+            var userId = "me";
             dbContext.Users.Add(new User
             {
                 Id = userId,
-                UserName = "Ja",
-                PublicDescription = "Publiczny Opis",
-                PrivateDescription = "Prywatny Opis",
+                UserName = "Me",
+                PublicDescription = "Public Desc",
+                PrivateDescription = "Private Desc",
                 Avatar = "avatar.jpg"
             });
             await dbContext.SaveChangesAsync();
@@ -131,32 +134,32 @@ namespace INZYNIERKA.Tests.Services
             var result = await service.EditProfile(userId);
 
             Assert.NotNull(result);
-            Assert.Equal("Ja", result.UserName);
-            Assert.Equal("Prywatny Opis", result.PrivateDescription);
+            Assert.Equal("Me", result.UserName);
+            Assert.Equal("Private Desc", result.PrivateDescription);
             Assert.Empty(result.Tags);
         }
 
         [Fact]
-        public async Task EditProfileTest2()
+        public async Task EditProfile_ReturnsNull()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.EditProfile("nieistniejacy");
+            var result = await service.EditProfile("nonexistent");
 
             Assert.Null(result);
         }
 
-        // TESTY DLA: UpdateProfile //
+        // TESTS FOR: UpdateProfile //
 
         [Fact]
-        public async Task UpdateProfileTest()
+        public async Task UpdateProfile_UpdatesFieldsAndReturnsTrue()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
-            var userId = "Ja";
-            var existingUser = new User {Id = userId, UserName = "Ja"};
+            var userId = "me";
+            var existingUser = new User { Id = userId, UserName = "Me" };
 
             mockUserManager.Setup(m => m.FindByIdAsync(userId))
                            .ReturnsAsync(existingUser);
@@ -166,24 +169,36 @@ namespace INZYNIERKA.Tests.Services
 
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
+            var testDate = new DateTime(1995, 5, 5);
             var updateModel = new UserViewModel
             {
-                Avatar = "Nowy avatar.jpg",
-                PublicDescription = "Nowy Opis Publiczny",
-                PrivateDescription = "Nowy Opis Prywatny"
+                Avatar = "new_avatar.jpg",
+                PublicDescription = "New Public Desc",
+                PrivateDescription = "New Private Desc",
+                City = "London",
+                Country = "UK",
+                Status = "Single",
+                Zodiac = ZodiacSign.Taurus,
+                Language = "English",
+                BirthDate = testDate
             };
 
             var (result, err) = await service.UpdateProfile(userId, updateModel);
 
             Assert.True(result);
-
-            Assert.Equal("Nowy avatar.jpg", existingUser.Avatar);
-            Assert.Equal("Nowy Opis Publiczny", existingUser.PublicDescription);
-            Assert.Equal("Nowy Opis Prywatny", existingUser.PrivateDescription);
+            Assert.Equal("new_avatar.jpg", existingUser.Avatar);
+            Assert.Equal("New Public Desc", existingUser.PublicDescription);
+            Assert.Equal("New Private Desc", existingUser.PrivateDescription);
+            Assert.Equal("London", existingUser.City);
+            Assert.Equal("UK", existingUser.Country);
+            Assert.Equal("Single", existingUser.Status);
+            Assert.Equal(ZodiacSign.Taurus, existingUser.Zodiac);
+            Assert.Equal("English", existingUser.PreferredLanguages);
+            Assert.Equal(DateTimeKind.Utc, existingUser.BirthDate?.Kind);
         }
 
         [Fact]
-        public async Task UpdateProfileTest2()
+        public async Task UpdateProfile_ReturnsFalse()
         {
             var dbContext = CreateInMemoryDbContext();
             var mockUserManager = CreateMockUserManager();
@@ -194,9 +209,50 @@ namespace INZYNIERKA.Tests.Services
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
             var model = new UserViewModel();
 
-            var (result, err) = await service.UpdateProfile("Nieistniejący", model);
+            var (result, err) = await service.UpdateProfile("nonexistent", model);
 
             Assert.False(result);
+            Assert.Equal("User not found", err);
+        }
+
+        // TESTS FOR: UpdateAvatar & UpdateCover //
+
+        [Fact]
+        public async Task UpdateAvatar_UpdatesAndReturnsTrue()
+        {
+            var dbContext = CreateInMemoryDbContext();
+            var mockUserManager = CreateMockUserManager();
+            var userId = "me";
+            var existingUser = new User { Id = userId };
+
+            mockUserManager.Setup(m => m.FindByIdAsync(userId)).ReturnsAsync(existingUser);
+            mockUserManager.Setup(m => m.UpdateAsync(existingUser)).ReturnsAsync(IdentityResult.Success);
+
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
+
+            var result = await service.UpdateAvatar(userId, "base64_avatar_data");
+
+            Assert.True(result);
+            Assert.Equal("base64_avatar_data", existingUser.Avatar);
+        }
+
+        [Fact]
+        public async Task UpdateCover_UpdatesAndReturnsTrue()
+        {
+            var dbContext = CreateInMemoryDbContext();
+            var mockUserManager = CreateMockUserManager();
+            var userId = "me";
+            var existingUser = new User { Id = userId };
+
+            mockUserManager.Setup(m => m.FindByIdAsync(userId)).ReturnsAsync(existingUser);
+            mockUserManager.Setup(m => m.UpdateAsync(existingUser)).ReturnsAsync(IdentityResult.Success);
+
+            var service = new ProfileService<User>(dbContext, mockUserManager.Object);
+
+            var result = await service.UpdateCover(userId, "base64_cover_data");
+
+            Assert.True(result);
+            Assert.Equal("base64_cover_data", existingUser.Cover);
         }
     }
 }

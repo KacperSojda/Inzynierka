@@ -21,7 +21,7 @@ namespace INZYNIERKA.Tests.Services
             return mockConfig;
         }
 
-        private HttpClient CreateMockHttpClient(HttpResponseMessage responseToReturn, Exception exceptionToThrow = null)
+        private HttpClient CreateMockHttpClient(HttpResponseMessage responseToReturn, Exception? exceptionToThrow = null)
         {
             var handlerMock = new Mock<HttpMessageHandler>();
 
@@ -32,31 +32,34 @@ namespace INZYNIERKA.Tests.Services
                     ItExpr.IsAny<CancellationToken>()
                 );
 
-            if (exceptionToThrow != null) setup.ThrowsAsync(exceptionToThrow);
-
-            else setup.ReturnsAsync(responseToReturn);
+            if (exceptionToThrow != null)
+            {
+                setup.ThrowsAsync(exceptionToThrow);
+            }
+            else
+            {
+                setup.ReturnsAsync(responseToReturn);
+            }
 
             return new HttpClient(handlerMock.Object);
         }
 
-        // TEST 1: Puste pytanie //
+        // TESTS FOR: AskAsync //
 
         [Fact]
-        public async Task AskAsyncTest()
+        public async Task AskAsync_ReturnsEmptyString()
         {
             var mockConfig = CreateMockConfiguration();
             var httpClient = new HttpClient();
             var service = new GeminiService(mockConfig.Object, httpClient);
 
-            var result = await service.AskAsync(" ", "Prompt: ");
+            var result = await service.AskAsync(" ", " ");
 
-            Assert.Equal("The question cannot be empty.", result);
+            Assert.Equal(string.Empty, result);
         }
 
-        // TEST 2: Udana odpowiedź z API //
-
         [Fact]
-        public async Task AskAsyncTest2()
+        public async Task AskAsync_ReturnsParsedText()
         {
             var mockConfig = CreateMockConfiguration();
 
@@ -65,7 +68,7 @@ namespace INZYNIERKA.Tests.Services
                     ""content"": {
                         ""parts"": [
                         {
-                            ""text"": ""Odpowiedz""
+                            ""text"": ""AI generated response""
                             }
                         ]
                     }
@@ -81,47 +84,43 @@ namespace INZYNIERKA.Tests.Services
             var httpClient = CreateMockHttpClient(fakeResponse);
             var service = new GeminiService(mockConfig.Object, httpClient);
 
-            var result = await service.AskAsync("Pytanie?", "Pytanie: ");
+            var result = await service.AskAsync("How are you?", "System prompt: ");
 
-            Assert.Equal("Odpowiedz", result);
+            Assert.Equal("AI generated response", result);
         }
 
-        // TEST 3: Błąd HTTP z API //
-
         [Fact]
-        public async Task AskAsync_WhenApiReturnsErrorStatusCode_ReturnsFormattedErrorString()
+        public async Task AskAsync_ReturnsNull()
         {
             var mockConfig = CreateMockConfiguration();
 
             var fakeResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.BadRequest,
-                Content = new StringContent("Zly format zapytania")
+                Content = new StringContent("Bad Request format")
             };
 
             var httpClient = CreateMockHttpClient(fakeResponse);
             var service = new GeminiService(mockConfig.Object, httpClient);
 
-            var result = await service.AskAsync("Pytanie?", "Prompt: ");
+            var result = await service.AskAsync("Question?", "Prompt: ");
 
-            Assert.Equal("Błąd API (Status: 400): Zly format zapytania", result);
+            Assert.Null(result);
         }
 
-        // TEST 4: Wyjątek podczas łączenia z API //
-
         [Fact]
-        public async Task AskAsync_WhenHttpClientThrowsException_ReturnsCaughtErrorMessage()
+        public async Task AskAsync_ReturnsNull_HttpClientException()
         {
             var mockConfig = CreateMockConfiguration();
 
-            var networkException = new HttpRequestException("Brak polaczenia z serwerem.");
+            var networkException = new HttpRequestException("No connection to server.");
             var httpClient = CreateMockHttpClient(null, networkException);
 
             var service = new GeminiService(mockConfig.Object, httpClient);
 
-            var result = await service.AskAsync("Pytanie?", "Prompt: ");
+            var result = await service.AskAsync("Question?", "Prompt: ");
 
-            Assert.Equal("Błąd Gemini: Brak polaczenia z serwerem.", result);
+            Assert.Null(result);
         }
     }
 }

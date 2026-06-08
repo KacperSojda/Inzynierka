@@ -6,39 +6,34 @@ namespace INZYNIERKA.Tests.Services
 {
     public class FileServiceTests
     {
-        // TEST 1: Brak pliku //
-        /*
+
         [Fact]
-        public async Task UploadAvatarTest()
+        public async Task UploadFile_ReturnsFalse_FileIsNull()
         {
             var service = new FileService();
 
-            var result = await service.UploadAvatar(null);
+            var result = await service.UploadFile(null);
 
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Nie wybrano pliku.", result.Result);
+            Assert.False(result.Result);
+            Assert.Equal("File is empty.", result.ErrorMessage);
         }
 
-        // TEST 2: Pusty plik //
-
         [Fact]
-        public async Task UploadAvatarTest2()
+        public async Task UploadFile_ReturnsFalse_FileIsEmpty()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
 
             fileMock.Setup(f => f.Length).Returns(0);
 
-            var result = await service.UploadAvatar(fileMock.Object);
+            var result = await service.UploadFile(fileMock.Object);
 
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Nie wybrano pliku.", result.Result);
+            Assert.False(result.Result);
+            Assert.Equal("File is empty.", result.ErrorMessage);
         }
 
-        // TEST 3: Nieprawidłowe rozszerzenie //
-
         [Fact]
-        public async Task UploadAvatarTest3()
+        public async Task UploadFile_ReturnsFalse_InvalidExtension()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
@@ -46,16 +41,14 @@ namespace INZYNIERKA.Tests.Services
             fileMock.Setup(f => f.Length).Returns(1024);
             fileMock.Setup(f => f.FileName).Returns("avatar.exe");
 
-            var result = await service.UploadAvatar(fileMock.Object);
+            var result = await service.UploadFile(fileMock.Object);
 
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Nieobsługiwany format pliku. Dozwolone formaty: .jpg, .jpeg, .png", result.Result);
+            Assert.False(result.Result);
+            Assert.Equal("Unsupported file format. Allowed formats: .jpg, .jpeg, .png", result.ErrorMessage);
         }
 
-        // TEST 4: Plik jest za duży //
-
         [Fact]
-        public async Task Test4()
+        public async Task UploadFile_ReturnsFalse_TooLargeFile()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
@@ -64,35 +57,32 @@ namespace INZYNIERKA.Tests.Services
             fileMock.Setup(f => f.Length).Returns(threeMegabytes);
             fileMock.Setup(f => f.FileName).Returns("avatar.png");
 
-            var result = await service.UploadAvatar(fileMock.Object);
+            var result = await service.UploadFile(fileMock.Object);
 
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Plik jest zbyt duży. Maksymalny rozmiar to 2MB.", result.Result);
+            Assert.False(result.Result);
+            Assert.Equal("File is too large. Maximum size is 2MB.", result.ErrorMessage);
         }
 
-        // TEST 5: Poprawny plik //
-
         [Fact]
-        public async Task UploadAvatarTest5()
+        public async Task UploadFile_ReturnsTrueAndBase64String()
         {
             var service = new FileService();
             var fileMock = new Mock<IFormFile>();
 
-            fileMock.Setup(f => f.Length).Returns(1024 * 1024);
+            fileMock.Setup(f => f.Length).Returns(1024);
             fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
+            fileMock.Setup(f => f.ContentType).Returns("image/jpeg");
+
+            var dummyBytes = new byte[] { 1, 2, 3 };
 
             fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                    .Callback<Stream, CancellationToken>((stream, token) => stream.Write(dummyBytes, 0, dummyBytes.Length))
                     .Returns(Task.CompletedTask);
 
-            var result = await service.UploadAvatar(fileMock.Object);
+            var result = await service.UploadFile(fileMock.Object);
 
-            Assert.True(result.IsSuccess);
-
-            Assert.StartsWith("/uploads/avatars/", result.Result);
-            Assert.EndsWith(".jpg", result.Result);
-
-            var fileName = result.Result.Replace("/uploads/avatars/", "").Replace(".jpg", "");
-            Assert.True(Guid.TryParse(fileName, out _), "Nazwa pliku powinna być prawidłowym identyfikatorem GUID.");
-        }*/
+            Assert.True(result.Result);
+            Assert.Equal("data:image/jpeg;base64,AQID", result.ErrorMessage);
+        }
     }
 }

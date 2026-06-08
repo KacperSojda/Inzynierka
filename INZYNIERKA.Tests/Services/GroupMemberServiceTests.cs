@@ -7,33 +7,33 @@ namespace INZYNIERKA.Tests.Services
 {
     public class GroupMemberServiceTests
     {
-        private INZDbContext CreateInMemoryDbContext()
+        private INZDbContext<User> CreateInMemoryDbContext()
         {
-            var options = new DbContextOptionsBuilder<INZDbContext>()
+            var options = new DbContextOptionsBuilder<INZDbContext<User>>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            return new INZDbContext(options);
+            return new INZDbContext<User>(options);
         }
 
-        // TESTY DLA: GroupMembers //
-        /*
+        // TESTS FOR: GroupMembers //
+
         [Fact]
-        public async Task GroupMembersTest()
+        public async Task GroupMembers_ReturnsAdminsAndMembers()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
 
-            var group = new Group {Id = groupId, Name = "Grupa Testowa", Description = ""};
-            var adminUser = new User {Id = "admin", UserName = "Admin", Avatar = "", PublicDescription = "", PrivateDescription = ""};
-            var memberUser = new User {Id = "member", UserName = "Członek", Avatar = "", PublicDescription = "", PrivateDescription = ""};
+            var group = new Group { Id = groupId, Name = "Test Group", Description = "" };
+            var adminUser = new User { Id = "admin", UserName = "Admin", Avatar = "", PublicDescription = "", PrivateDescription = "" };
+            var memberUser = new User { Id = "member", UserName = "Member", Avatar = "", PublicDescription = "", PrivateDescription = "" };
 
             context.Groups.Add(group);
             context.Users.AddRange(adminUser, memberUser);
 
             context.UserGroups.AddRange(
-                new UserGroup {ChatGroupId = groupId, UserId = adminUser.Id, Type = MemberType.Administrator, User = adminUser},
-                new UserGroup {ChatGroupId = groupId, UserId = memberUser.Id, Type = MemberType.Member, User = memberUser}
+                new UserGroup { ChatGroupId = groupId, UserId = adminUser.Id, Type = MemberType.Administrator, User = adminUser },
+                new UserGroup { ChatGroupId = groupId, UserId = memberUser.Id, Type = MemberType.Member, User = memberUser }
             );
             await context.SaveChangesAsync();
 
@@ -46,37 +46,50 @@ namespace INZYNIERKA.Tests.Services
             Assert.Equal("member", result.Members.First().UserId);
         }
 
-        // TESTY DLA: EnsureIsAdminAsync (Ochrona wszystkich metod) //
-
         [Fact]
-        public async Task GiveAdminTest()
+        public async Task GroupMembers_ThrowsUnauthorized()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
-            var adminId = "Admin";
-            var friendId = "Znajomy";
 
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Member});
-            await context.SaveChangesAsync();
+            var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.GroupMembers(groupId, "nonMemberId"));
 
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                service.GiveAdmin(groupId, friendId, adminId));
+            Assert.Equal("You are not a member of this group.", exception.Message);
         }
 
-        // TESTY DLA: Akcje na członkach grupy //
+        // TESTS FOR: GiveAdmin //
 
         [Fact]
-        public async Task GiveAdminTest2()
+        public async Task GiveAdmin_ThrowsUnauthorized()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
+            var groupId = 1;
+            var nonAdminId = "Caller";
+            var targetId = "Target";
+
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = nonAdminId, Type = MemberType.Member });
+            await context.SaveChangesAsync();
+
+            var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.GiveAdmin(groupId, targetId, nonAdminId));
+
+            Assert.Equal("You do not have administrator privileges for this group.", exception.Message);
+        }
+
+        [Fact]
+        public async Task GiveAdmin_PromotesUserToAdmin()
+        {
+            var context = CreateInMemoryDbContext();
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
             var adminId = "Admin";
             var memberId = "Member";
 
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator});
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = memberId, Type = MemberType.Member});
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator });
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = memberId, Type = MemberType.Member });
             await context.SaveChangesAsync();
 
             var result = await service.GiveAdmin(groupId, memberId, adminId);
@@ -86,51 +99,55 @@ namespace INZYNIERKA.Tests.Services
             Assert.Equal(MemberType.Administrator, promotedUser.Type);
         }
 
+        // TESTS FOR: DemoteAdmin //
+
         [Fact]
-        public async Task DemoteAdminTest()
+        public async Task DemoteAdmin_ThrowsUnauthorized()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
             var adminId = "Admin";
 
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator});
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator });
             await context.SaveChangesAsync();
 
             var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 service.DemoteAdmin(groupId, adminId, adminId));
 
-            Assert.Equal("Nie możesz zdegradować sam siebie.", exception.Message);
+            Assert.Equal("You cannot demote yourself.", exception.Message);
         }
 
+        // TESTS FOR: KickUser //
+
         [Fact]
-        public async Task KickUserTest()
+        public async Task KickUser_ThrowsUnauthorized()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
             var adminId = "Admin";
 
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator});
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator });
             await context.SaveChangesAsync();
 
             var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 service.KickUser(groupId, adminId, adminId));
 
-            Assert.Equal("Nie możesz wyrzucić sam siebie.", exception.Message);
+            Assert.Equal("You cannot kick yourself.", exception.Message);
         }
 
         [Fact]
-        public async Task KickUserTest2()
+        public async Task KickUser_RemovesUserFromGroup()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
             var adminId = "Admin";
             var memberId = "Member";
 
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator});
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = memberId, Type = MemberType.Member});
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator });
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = memberId, Type = MemberType.Member });
             await context.SaveChangesAsync();
 
             var result = await service.KickUser(groupId, memberId, adminId);
@@ -140,17 +157,19 @@ namespace INZYNIERKA.Tests.Services
             Assert.False(isStillInGroup);
         }
 
+        // TESTS FOR: BanUser //
+
         [Fact]
-        public async Task BanUserTest()
+        public async Task BanUser_SetsMemberTypeToBanned()
         {
             var context = CreateInMemoryDbContext();
-            var service = new GroupMemberService<User>(context);
+            var service = new GroupMemberService<User>(context, null, null);
             var groupId = 1;
             var adminId = "Admin";
             var memberId = "Member";
 
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator});
-            context.UserGroups.Add(new UserGroup {ChatGroupId = groupId, UserId = memberId, Type = MemberType.Member});
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = adminId, Type = MemberType.Administrator });
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = memberId, Type = MemberType.Member });
             await context.SaveChangesAsync();
 
             var result = await service.BanUser(groupId, memberId, adminId);
@@ -158,6 +177,51 @@ namespace INZYNIERKA.Tests.Services
             var bannedUser = await context.UserGroups.FirstAsync(ug => ug.UserId == memberId);
             Assert.True(result);
             Assert.Equal(MemberType.Banned, bannedUser.Type);
-        }*/
+        }
+
+        // TESTS FOR: GetBannedUsers //
+
+        [Fact]
+        public async Task GetBannedUsers_ReturnsBannedUsers()
+        {
+            var context = CreateInMemoryDbContext();
+            var service = new GroupMemberService<User>(context, null, null);
+            var groupId = 1;
+
+            var group = new Group { Id = groupId, Name = "Test Group", Description = "Test Description" };
+            var bannedUser = new User { Id = "bannedUser", UserName = "Bad Guy", PrivateDescription = "PrivateDescription", PublicDescription = "PublicDescription", Avatar = "DefaultAvatar" };
+
+            context.Groups.Add(group);
+            context.Users.Add(bannedUser);
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = bannedUser.Id, Type = MemberType.Banned, User = bannedUser });
+            await context.SaveChangesAsync();
+
+            var result = await service.GetBannedUsers(groupId);
+
+            Assert.NotNull(result);
+            Assert.Equal(groupId, result.GroupId);
+            Assert.Equal("Test Group", result.GroupName);
+            Assert.Single(result.BannedUsers);
+            Assert.Equal("bannedUser", result.BannedUsers.First().UserId);
+        }
+
+        // TESTS FOR: UnbanUser //
+
+        [Fact]
+        public async Task UnbanUser_SetsMemberTypeToMember()
+        {
+            var context = CreateInMemoryDbContext();
+            var service = new GroupMemberService<User>(context, null, null);
+            var groupId = 1;
+            var userId = "bannedUser";
+
+            context.UserGroups.Add(new UserGroup { ChatGroupId = groupId, UserId = userId, Type = MemberType.Banned });
+            await context.SaveChangesAsync();
+
+            await service.UnbanUser(groupId, userId);
+
+            var userGroup = await context.UserGroups.FirstAsync(ug => ug.UserId == userId);
+            Assert.Equal(MemberType.Member, userGroup.Type);
+        }
     }
 }
