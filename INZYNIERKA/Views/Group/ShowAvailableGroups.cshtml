@@ -1,7 +1,7 @@
 ﻿@model INZYNIERKA.Services.ViewModels.GroupViewModel
 
 @{
-    ViewData["Title"] = "Dostępne Grupy";
+    ViewData["Title"] = "Available Groups";
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
@@ -19,15 +19,15 @@
         {
                 <form method="get" asp-action="ShowAvailableGroups" class="mb-4 w-100">
                     <div class="input-group shadow-sm" style="border-radius: 15px; overflow: hidden; border: 1px solid #f0f0f0;">
-                        <input type="text" name="searchQuery" value="@Context.Request.Query["searchQuery"]" class="form-control border-0 py-2 shadow-none" placeholder="Szukaj grupy po nazwie...">
+                        <input type="text" name="searchQuery" value="@Context.Request.Query["searchQuery"]" class="form-control border-0 py-2 shadow-none" placeholder="Search group by name...">
                         
                         <button type="submit" class="btn px-4 border-0" style="background: linear-gradient(135deg, #552459, #ae2eb8); color: white;">
-                            <i class="bi bi-search me-1"></i> Szukaj
+                            <i class="bi bi-search me-1"></i> Search
                         </button>
 
                         @if (!string.IsNullOrEmpty(Context.Request.Query["searchQuery"]))
                         {
-                            <a asp-action="ShowAvailableGroups" class="btn btn-light px-3 border-start d-flex align-items-center" title="Wyczyść wyszukiwanie">
+                            <a asp-action="ShowAvailableGroups" class="btn btn-light px-3 border-start d-flex align-items-center" title="Clear search">
                                 <i class="bi bi-x-lg text-danger"></i>
                             </a>
                         }
@@ -74,7 +74,7 @@
                 @if (totalPages > 1)
                 {
                     <div class="d-flex justify-content-center mt-4 w-100">
-                        <nav aria-label="Nawigacja dostępnych grup">
+                        <nav aria-label="Available group page navigation">
                             <ul class="pagination pagination-sm shadow-sm" style="border-radius: 10px;">
                                 
                                 <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
@@ -191,3 +191,5 @@
         box-shadow: 0 4px 10px rgba(174, 46, 184, 0.2);
     }
 </style>
+
+dotnet nuget add source "https://nuget.pkg.github.com/KacperSojda/index.json" --name "Inz Git"-username "nazwa programisty-password "PAT Token"
