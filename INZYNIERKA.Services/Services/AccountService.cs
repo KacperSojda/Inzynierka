@@ -22,6 +22,24 @@ namespace INZYNIERKA.Services.Services
             _cache = cache;
         }
 
+        /// <summary>
+        /// Uwierzytelnia użytkownika w systemie na podstawie przekazanych danych logowania.
+        /// Sprawdza poprawność danych uwierzytelniających oraz weryfikuje, czy konto nie jest zablokowane.
+        /// </summary>
+        /// <returns>
+        /// Krotka (Tuple) zawierająca wynik operacji:
+        /// <list type="bullet">
+        /// <item>
+        /// <description><c>Result</c>: <c>true</c> jeśli logowanie zakończyło się sukcesem, w przeciwnym razie <c>false</c>.</description>
+        /// </item>
+        /// <item>
+        /// <description><c>IsLockedOut</c>: <c>true</c> jeśli konto użytkownika zostało tymczasowo zablokowane (np. po zbyt wielu błędnych próbach).</description>
+        /// </item>
+        /// <item>
+        /// <description><c>ErrorMessage</c>: Komunikat błędu wyjaśniający powód niepowodzenia (np. zablokowane konto lub błędne dane logowania).</description>
+        /// </item>
+        /// </list>
+        /// </returns>
         public async Task<(bool Result, bool IsLockedOut, string? ErrorMessage)> Login(LoginViewModel model)
         {
             var result = await _signInManager.PasswordSignInAsync(model.Name, model.Password, model.RememberMe, false);
