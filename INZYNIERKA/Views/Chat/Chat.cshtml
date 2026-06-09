@@ -339,6 +339,7 @@
         }
 
         async function generateSmartReply() {
+            return;
             smartRepliesContainer.innerHTML = `
             <div class="d-flex align-items-center justify-content-center p-4 border rounded-3" style="background: rgba(174, 46, 184, 0.05);">
             <div class="spinner-grow spinner-grow-sm me-2" style="color: #ae2eb8;" role="status"></div>
@@ -456,6 +457,13 @@
         // SCROLL & MESSAGE HANDLING //
 
         const chatWindow = document.getElementById("chatWindow");
+
+        setTimeout(function() {
+            if (chatWindow) {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }, 100);
+
         let loadedMessagesCount = 30;
         let isLoadingOlder = false;
         let hasMoreMessages = true;
