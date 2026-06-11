@@ -51,7 +51,7 @@
 
                         @if (notification.NotificationType == NotificationType.FriendRequest)
                         {
-                            <form asp-action="FriendRequestAccept" method="post" class="m-0">
+                            <form asp-controller="Friendship" asp-action="FriendRequestAccept" method="post" class="m-0">
                                 <input type="hidden" name="notificationId" value="@notification.Id" />
                                 <input type="hidden" name="senderUserName" value="@notification.SenderName" />
                                 <button type="submit" class="btn-notification btn-accept gradient-green" title="Accept Request">

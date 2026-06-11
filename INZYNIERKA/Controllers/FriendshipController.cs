@@ -26,7 +26,7 @@ namespace INZYNIERKA.Controllers
 
             if (notificationId <= 0)
             {
-                return RedirectToAction("Notifications");
+                return RedirectToAction("Notifications", "Notifications");
             }
 
             try
@@ -44,13 +44,13 @@ namespace INZYNIERKA.Controllers
                     TempData["SuccessMessage"] = "Friend request accepted.";
                 }
 
-                return RedirectToAction("Notifications");
+                return RedirectToAction("Notifications", "Notifications");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Server error while accepting friend request from notification {NotificationId} for user {UserId}.", notificationId, userId);
                 TempData["ErrorMessage"] = "Server error";
-                return RedirectToAction("Notifications");
+                return RedirectToAction("Notifications", "Notifications");
             }
         }
 
