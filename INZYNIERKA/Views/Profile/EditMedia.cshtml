@@ -36,14 +36,14 @@
 
         <div class="row g-4">
             <div class="col-md-6">
-                <div class="p-4 h-100 row-form-card">
+                <div class="p-4 h-100 card-media">
                     <h5 class="fw-bold mb-3"><i class="bi bi-image-fill text-purple me-2"></i>Cover Photo</h5>
                     <form asp-action="EditCover" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold">Choose a panoramic banner (Max 2MB)</label>
-                            <input type="file" name="CoverFile" class="form-control custom-file-input" accept=".jpg,.jpeg,.png" required />
+                            <input type="file" name="CoverFile" class="form-control my-input" accept=".jpg,.jpeg,.png" required />
                         </div>
-                        <button type="submit" class="btn btn-purple w-100 fw-bold rounded-pill shadow-sm">
+                        <button type="submit" class="btn btn-media w-100 fw-bold rounded-pill shadow-sm">
                             <i class="bi bi-cloud-arrow-up-fill me-1"></i> Update Cover
                         </button>
                     </form>
@@ -51,14 +51,14 @@
             </div>
 
             <div class="col-md-6">
-                <div class="p-4 h-100 row-form-card">
+                <div class="p-4 h-100 card-media">
                     <h5 class="fw-bold mb-3"><i class="bi bi-person-circle text-purple me-2"></i>Avatar</h5>
                     <form asp-action="EditAvatar" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold">Choose a square image (Max 2MB)</label>
-                            <input type="file" name="AvatarFile" class="form-control custom-file-input" accept=".jpg,.jpeg,.png" required />
+                            <input type="file" name="AvatarFile" class="form-control my-input" accept=".jpg,.jpeg,.png" required />
                         </div>
-                        <button type="submit" class="btn btn-purple w-100 fw-bold rounded-pill shadow-sm">
+                        <button type="submit" class="btn btn-media w-100 fw-bold rounded-pill shadow-sm">
                             <i class="bi bi-cloud-arrow-up-fill me-1"></i> Update Avatar
                         </button>
                     </form>
@@ -79,24 +79,13 @@
         color: #ae2eb8;
     }
     
-    .row-form-card {
+    .card-media {
         background: #f9fafb;
         border-radius: 15px;
         border: 1px solid #f3f4f6;
     }
 
-    .custom-file-input {
-        border-radius: 10px;
-        padding: 10px;
-        border: 1px solid #d1d5db;
-    }
-
-        .custom-file-input:focus {
-            border-color: #ae2eb8;
-            box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.15);
-        }
-
-    .btn-purple {
+    .btn-media {
         background: linear-gradient(135deg, #552459, #ae2eb8);
         color: white;
         padding: 10px 0;
@@ -104,7 +93,7 @@
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
-        .btn-purple:hover {
+        .btn-media:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(174, 46, 184, 0.3);
             color: white;

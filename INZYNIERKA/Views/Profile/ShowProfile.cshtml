@@ -67,7 +67,7 @@
                 {
                     foreach (var tag in Model.Tags)
                     {
-                        <span class="badge custom-badge shadow-sm">@tag</span>
+                        <span class="badge badge-show shadow-sm">@tag</span>
                     }
                 }
                 else
@@ -126,7 +126,7 @@
     </div>
 
     <div class="home-menu d-flex flex-row flex-lg-column justify-content-center flex-wrap gap-3">
-        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn-profile btn-chat" title="Write message" data-bs-toggle="tooltip">
+        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn-profile gradient-blue" title="Write message" data-bs-toggle="tooltip">
             <i class="bi bi-chat-dots-fill"></i> <span>Chat</span>
         </a>
         
@@ -135,7 +135,7 @@
 </div>
 
 <style>
-    .custom-badge {
+    .badge-show {
         background: linear-gradient(135deg, #552459, #ae2eb8);
         padding: 8px 15px;
         border-radius: 12px;
@@ -144,37 +144,8 @@
         color: white;
     }
 
-    .btn-profile {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 15px 10px;
-        border-radius: 15px;
-        width: 140px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .btn-profile i {
-            font-size: 1.6rem;
-            margin-bottom: 5px;
-        }
-
-        .btn-profile span {
-            font-size: 0.95rem;
-        }
-
-        .btn-profile:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-            color: white;
-        }
-
-    .btn-chat {
-        background: linear-gradient(135deg, #1b3480, #4565c4);
+    .btn-profile i {
+        font-size: 1.6rem;
+        margin-bottom: 5px;
     }
 </style>

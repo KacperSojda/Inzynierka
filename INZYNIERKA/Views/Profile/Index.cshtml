@@ -18,7 +18,7 @@
                 <div class="card-body px-4 px-md-5 pb-4">
                     
                     <div style="margin-top: -75px; margin-bottom: 15px;">
-                        <img src="@Model.Avatar" alt="Avatar" class="prof-avatar rounded-circle border border-4 border-white shadow-sm" />
+                        <img src="@Model.Avatar" alt="Avatar" class="profile-avatar rounded-circle border border-4 border-white shadow-sm" />
                     </div>
 
                     <h3 class="fw-bold mb-1">
@@ -55,7 +55,7 @@
                         {
                             foreach (var tag in Model.Tags)
                             {
-                                <span class="badge tag-badge gradient-main">@tag</span>
+                                <span class="badge badge-profile gradient-main">@tag</span>
                             }
                         }
                         else
@@ -109,35 +109,16 @@
 
 <style>
 
-    .prof-avatar {
+    .profile-avatar {
         width: 150px;
         height: 150px;
         object-fit: cover;
         background-color: white;
     }
 
-    .tag-badge {
+    .badge-profile {
         padding: 8px 15px;
         border-radius: 12px;
-        color: white;
-    }
-
-    .btn-profile {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 15px 10px;
-        border-radius: 15px;
-        width: 140px;
-        color: white;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .btn-profile:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         color: white;
     }
 </style>

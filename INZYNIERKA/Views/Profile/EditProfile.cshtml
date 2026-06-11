@@ -67,13 +67,13 @@
                 <input type="hidden" asp-for="Language" id="HiddenPreferredLanguage" />
 
                 <div id="flag-container" class="d-flex flex-wrap gap-2">
-                    <button type="button" class="flag-btn" data-lang="Polish">🇵🇱 Polish</button>
-                    <button type="button" class="flag-btn" data-lang="English">🇬🇧 English</button>
-                    <button type="button" class="flag-btn" data-lang="German">🇩🇪 German</button>
-                    <button type="button" class="flag-btn" data-lang="Spanish">🇪🇸 Spanish</button>
-                    <button type="button" class="flag-btn" data-lang="French">🇫🇷 French</button>
-                    <button type="button" class="flag-btn" data-lang="Italian">🇮🇹 Italian</button>
-                    <button type="button" class="flag-btn" data-lang="Ukrainian">🇺🇦 Ukrainian</button>
+                    <button type="button" class="btn-flag" data-lang="Polish">🇵🇱 Polish</button>
+                    <button type="button" class="btn-flag" data-lang="English">🇬🇧 English</button>
+                    <button type="button" class="btn-flag" data-lang="German">🇩🇪 German</button>
+                    <button type="button" class="btn-flag" data-lang="Spanish">🇪🇸 Spanish</button>
+                    <button type="button" class="btn-flag" data-lang="French">🇫🇷 French</button>
+                    <button type="button" class="btn-flag" data-lang="Italian">🇮🇹 Italian</button>
+                    <button type="button" class="btn-flag" data-lang="Ukrainian">🇺🇦 Ukrainian</button>
                 </div>
                 <span asp-validation-for="Language" class="text-danger"></span>
             </div>
@@ -93,7 +93,7 @@
 </div>
 
 <style>
-    .flag-btn {
+    .btn-flag {
         background: white;
         border: 2px solid #e5e7eb;
         border-radius: 12px;
@@ -106,13 +106,13 @@
         opacity: 0.7;
     }
 
-    .flag-btn:hover {
+        .btn-flag:hover {
         filter: grayscale(0%);
         opacity: 1;
         border-color: #ae2eb8;
     }
 
-    .flag-btn.selected {
+    .btn-flag.selected {
         filter: grayscale(0%);
         opacity: 1;
         border-color: #ae2eb8;
@@ -130,7 +130,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             
-            const flagBtns = document.querySelectorAll('.flag-btn');
+            const flagBtns = document.querySelectorAll('.btn-flag');
             const hiddenLangInput = document.getElementById('HiddenPreferredLanguage');
             
             let selectedLang = hiddenLangInput.value ? hiddenLangInput.value.trim() : "";

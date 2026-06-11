@@ -3,44 +3,13 @@
 }
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="result-card text-center p-5">
+    <div class="card-browser text-center p-5">
         <div class="mb-4">
             <i class="bi bi-search" style="font-size: 4rem; color: #552459;"></i>
         </div>
         <h3 class="fw-bold mb-4" style="color: #111827;">There are no more users with the selected tags</h3>
         <div class="d-flex justify-content-center mt-2">
-            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="action-btn">Back to browser</a>
+            <a asp-controller="Browser" asp-action="SearchUsersByTags" class="text-decoration-none btn-main gradient-main">Back to browser</a>
         </div>
     </div>
 </div>
-
-<style>
-    .result-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        width: 100%;
-        max-width: 500px;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        font-weight: bold;
-        padding: 12px 30px;
-        border-radius: 15px;
-        min-width: 200px;
-        text-decoration: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-        .action-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-            color: white;
-        }
-</style>

@@ -8,7 +8,7 @@
 
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h2 class="fw-bold display-5" style="color: #111827;">Your groups</h2>
+        <h2 class="fw-bold display-5">Your groups</h2>
         <p class="text-muted">Manage the communities you own or are part of</p>
     </div>
 
@@ -56,10 +56,10 @@
                 <div class="d-flex flex-column gap-4 mb-5">
                     @foreach (var group in Model.Groups)
                     {
-                        <div class="group-list-card p-4 group-item" data-name="@group.Name.ToLower()">
+                        <div class="card-group-list p-4 group-item" data-name="@group.Name.ToLower()">
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                                 
-                                <h3 class="fw-bold mb-3 mb-md-0 d-flex align-items-center" style="color: #111827;">
+                                <h3 class="fw-bold mb-3 mb-md-0 d-flex align-items-center">
                                     @group.Name
                                     @if (group.IsAdmin)
                                     {
@@ -67,25 +67,25 @@
                                     }
                                 </h3>
                                 
-                                <div class="action-menu gap-2">
+                                <div class="menu-group gap-2">
                                     <form asp-action="LeaveGroup" method="post" class="m-0">
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-leave" title="Leave"><i class="bi bi-box-arrow-right"></i></button>
+                                        <button type="submit" class="btn-group-list gradient-pink" title="Leave"><i class="bi bi-box-arrow-right"></i></button>
                                     </form>
                                     <form asp-action="ShowGroupMembers" method="get" class="m-0">
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-show" title="Members"><i class="bi bi-people"></i></button>
+                                        <button type="submit" class="btn-group-list gradient-green" title="Members"><i class="bi bi-people"></i></button>
                                     </form>
                                     <form asp-action="GroupChat" asp-controller="Chat" method="get" class="m-0">
                                         <input type="hidden" name="groupId" value="@group.GroupId" />
-                                        <button type="submit" class="action-btn btn-chat" title="Chat"><i class="bi bi-chat-dots"></i></button>
+                                        <button type="submit" class="btn-group-list gradient-blue" title="Chat"><i class="bi bi-chat-dots"></i></button>
                                     </form>
                                     
                                     @if (group.IsAdmin)
                                     {
                                         <form asp-action="EditGroup" asp-controller="Group" method="get" class="m-0">
                                             <input type="hidden" name="groupId" value="@group.GroupId" />
-                                            <button type="submit" class="action-btn btn-edit" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                                            <button type="submit" class="btn-group-list gradient-yellow" title="Edit"><i class="bi bi-pencil-square"></i></button>
                                         </form>
                                     }
                                 </div>
@@ -98,7 +98,7 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     @foreach (var tag in group.Tags)
                                     {
-                                        <span class="badge custom-badge">@tag</span>
+                                        <span class="badge badge-group">@tag</span>
                                     }
                                 </div>
                             }
@@ -147,62 +147,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .group-list-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #f0f0f0;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .group-list-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-
-    .action-menu {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-        border-radius: 12px;
-        width: 50px;
-        height: 40px;
-        text-decoration: none;
-        color: white;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .action-btn i {
-        font-size: 1.1rem;
-    }
-
-    .action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        color: white;
-    }
-
-    .btn-leave { background: linear-gradient(135deg, #8c144c, #d43780); }
-    .btn-show  { background: linear-gradient(135deg, #1c7a15, #32b528); }
-    .btn-chat  { background: linear-gradient(135deg, #1b3480, #4565c4); }
-    .btn-edit  { background: linear-gradient(135deg, #757009, #cfc61d); }
-
-    .custom-badge {
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        color: white;
-        padding: 8px 15px;
-        border-radius: 12px;
-        font-weight: 500;
-        box-shadow: 0 4px 10px rgba(174, 46, 184, 0.2);
-    }
-</style>

@@ -17,12 +17,12 @@
         <div class="d-flex flex-column align-items-center gap-3">
             @foreach (var friend in Model)
             {
-                <div class="list-card d-flex justify-content-between align-items-center p-3 px-4 w-100" style="max-width: 600px;">
+                <div class="card-friendlist d-flex justify-content-between align-items-center p-3 px-4 w-100" style="max-width: 600px;">
                     <strong class="fs-5" style="color: #111827;">@friend.UserName</strong>
                     
                     <form asp-action="DeleteRequest" method="post" class="m-0">
                         <input type="hidden" name="friendId" value="@friend.Id" />
-                        <button type="submit" class="action-btn btn-delete" title="Delete" data-bs-toggle="tooltip">
+                        <button type="submit" class="btn-friendlist gradient-pink" title="Delete" data-bs-toggle="tooltip">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </form>
@@ -75,47 +75,3 @@
         </div>
     }
 </div>
-
-<style>
-    .list-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #f0f0f0;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .list-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-        border-radius: 12px;
-        width: 60px;
-        height: 45px;
-        text-decoration: none;
-        color: white;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .action-btn i {
-            font-size: 1.2rem;
-        }
-
-    .btn-delete {
-        background: linear-gradient(135deg, #8c144c, #d43780);
-    }
-
-    .action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        color: white;
-    }
-</style>

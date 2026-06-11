@@ -35,7 +35,7 @@
         {
             @foreach (var friend in Model)
             {
-                <div class="list-card d-flex align-items-center justify-content-between friend-item p-3 px-4 w-100" style="max-width: 800px;" data-name="@friend.UserName.ToLower()">
+                <div class="card-friendlist d-flex align-items-center justify-content-between friend-item p-3 px-4 w-100" style="max-width: 800px;" data-name="@friend.UserName.ToLower()">
                     <div class="d-flex align-items-center">
                         <strong class="fs-5 me-2" style="color: @(friend.IsDeleted ? "#6c757d" : "#111827"); text-decoration: @(friend.IsDeleted ? "line-through" : "none");">
                             @friend.UserName
@@ -54,18 +54,18 @@
                     <div class="d-flex flex-wrap gap-2 justify-content-center mt-3 mt-md-0">
                         <form asp-action="DeleteFriend" method="post" class="m-0">
                             <input type="hidden" name="friendId" value="@friend.Id" />
-                            <button type="submit" class="action-btn btn-delete" title="Delete" data-bs-toggle="tooltip">
+                            <button type="submit" class="btn-friendlist gradient-pink" title="Delete" data-bs-toggle="tooltip">
                                 <i class="bi bi-trash3"></i>
                             </button>
                         </form>
 
                         @if (!friend.IsDeleted)
                         {
-                            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="action-btn btn-chat" title="Chat" data-bs-toggle="tooltip">
+                            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@friend.Id" class="btn-friendlist gradient-blue" title="Chat" data-bs-toggle="tooltip">
                                 <i class="bi bi-chat-dots"></i>
                             </a>
 
-                            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@friend.Id" class="action-btn btn-profile" title="Show Profile" data-bs-toggle="tooltip">
+                            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@friend.Id" class="btn-friendlist gradient-yellow" title="Show Profile" data-bs-toggle="tooltip">
                                     <i class="bi bi-person"></i>
                             </a>
                         }
@@ -169,47 +169,3 @@
         checkAllFriendsStatus();
     </script>
 }
-
-<style>
-    .list-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #f0f0f0;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .list-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-        border-radius: 12px;
-        width: 60px;
-        height: 45px;
-        text-decoration: none;
-        color: white;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .action-btn i {
-        font-size: 1.2rem;
-    }
-
-    .action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        color: white;
-    }
-
-    .btn-delete  { background: linear-gradient(135deg, #8c144c, #d43780); }
-    .btn-chat    { background: linear-gradient(135deg, #1b3480, #4565c4); }
-    .btn-profile { background: linear-gradient(135deg, #757009, #cfc61d); }
-</style>

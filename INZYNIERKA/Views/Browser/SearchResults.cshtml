@@ -5,7 +5,7 @@
 }
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="result-card text-center p-5">
+    <div class="card-browser text-center p-5">
         
         <div class="mb-3">
             <i class="bi bi-person-circle" style="font-size: 4rem; color: #552459;"></i>
@@ -20,79 +20,25 @@
         <div class="tags-wrapper mb-5">
             @foreach (var tag in Model.Tags)
             {
-                <span class="badge custom-badge mx-1 mb-2">@tag</span>
+                <span class="badge badge-browser mx-1 mb-2">@tag</span>
             }
         </div>
 
         <div class="buttons-wrapper d-flex justify-content-center gap-3 flex-wrap">
             <form asp-action="SendFriendRequest" method="post" style="display:inline;">
                 <input type="hidden" name="userId" value="@Model.Id" />
-                <button type="submit" class="action-btn add-friend" title="Send friend requests" data-bs-toggle="tooltip">
+                <button type="submit" class="btn-browser gradient-green" title="Send friend requests" data-bs-toggle="tooltip">
                     <i class="bi bi-person-add"></i> Add
                 </button>
             </form>
 
             <form asp-action="NextUser" method="post" style="display:inline;">
-                <button type="submit" class="action-btn next">Next &rarr;</button>
+                <button type="submit" class="btn-browser gradient-blue">Next &rarr;</button>
             </form>
 
-            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.Id" class="action-btn show-profile">
+            <a asp-controller="Profile" asp-action="ShowProfile" asp-route-userId="@Model.Id" class="btn-browser gradient-yellow">
                 <i class="bi bi-person"></i> Profile
             </a>
         </div>
     </div>
 </div>
-
-<style>
-    .result-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        width: 100%;
-        max-width: 600px;
-    }
-
-    .custom-badge {
-        background: linear-gradient(135deg, #552459, #ae2eb8);
-        padding: 8px 15px;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        box-shadow: 0 4px 10px rgba(174, 46, 184, 0.2);
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px 25px;
-        border-radius: 15px;
-        min-width: 140px;
-        height: 50px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        border: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .add-friend {
-        background: linear-gradient(135deg, #1c7a15, #32b528);
-    }
-
-    .next {
-        background: linear-gradient(135deg, #757009, #cfc61d);
-    }
-
-    .show-profile {
-        background: linear-gradient(135deg, #1b3480, #4565c4);
-    }
-
-    .action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        color: white;
-    }
-</style>

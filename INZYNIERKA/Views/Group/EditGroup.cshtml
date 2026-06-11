@@ -7,11 +7,11 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="form-card p-5 w-100" style="max-width: 600px;">
+    <div class="card-group-form p-5 w-100" style="max-width: 600px;">
         
         <div class="text-center mb-4">
             <i class="bi bi-gear-fill" style="font-size: 3rem; color: #552459;"></i>
-            <h2 class="fw-bold mt-3" style="color: #111827;">Edit Group</h2>
+            <h2 class="fw-bold mt-3">Edit Group</h2>
             <p class="text-muted">Manage settings for <strong>@Model.Name</strong></p>
         </div>
 
@@ -20,17 +20,17 @@
 
             <div class="mb-3">
                 <label asp-for="Name" class="form-label fw-bold text-muted"></label>
-                <input asp-for="Name" class="form-control custom-input" />
+                <input asp-for="Name" class="form-control my-input" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
 
             <div class="mb-4">
                 <label asp-for="Description" class="form-label fw-bold text-muted">Group Description</label>
-                <textarea asp-for="Description" class="form-control custom-input" rows="4"></textarea>
+                <textarea asp-for="Description" class="form-control my-input" rows="4"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             
-            <button type="submit" form="editGroupForm" class="action-btn btn-save w-100">
+            <button type="submit" form="editGroupForm" class="btn-group-edit gradient-green w-100">
                 <i class="bi bi-check-circle me-2"></i> Save changes
             </button>
         </form>
@@ -41,21 +41,21 @@
             
             <form asp-action="SelectGroupTags" method="get" class="m-0 flex-grow-1">
                 <input type="hidden" name="groupId" value="@Model.Id" />
-                <button type="submit" class="action-btn btn-edit w-100">
+                <button type="submit" class="btn-group-edit gradient-yellow w-100">
                     <i class="bi bi-tags me-2"></i> Edit tags
                 </button>
             </form>
 
             <form asp-action="ShowBannedMembers" method="get" class="m-0 flex-grow-1">
                 <input type="hidden" name="groupId" value="@Model.Id" />
-                <button type="submit" class="action-btn btn-bans w-100">
+                <button type="submit" class="btn-group-edit gradient-pink w-100">
                     <i class="bi bi-shield-x me-2"></i> Banned users
                 </button>
             </form>
 
             <form asp-action="DeleteGroup" method="post" class="m-0 flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this group?');">
                 <input type="hidden" name="groupId" value="@Model.Id" />
-                <button type="submit" class="action-btn btn-delete w-100">
+                <button type="submit" class="btn-group-edit gradient-pink w-100">
                     <i class="bi bi-trash3 me-2"></i> Delete group
                 </button>
             </form>
@@ -64,49 +64,3 @@
 
     </div>
 </div>
-
-<style>
-    .form-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-
-    .custom-input {
-        border-radius: 12px;
-        padding: 12px 15px;
-        border: 1px solid #ced4da;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .custom-input:focus {
-        border-color: #ae2eb8;
-        box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.25);
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 0;
-        border-radius: 15px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        text-decoration: none;
-        color: white;
-        border: none;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .action-btn:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-        color: white;
-    }
-
-    .btn-save   { background: linear-gradient(135deg, #1c7a15, #32b528); }
-    .btn-edit   { background: linear-gradient(135deg, #757009, #cfc61d); }
-    .btn-delete { background: linear-gradient(135deg, #8c144c, #d43780); }
-    .btn-bans   { background: linear-gradient(135deg, #4b5563, #ae2eb8); }
-</style>

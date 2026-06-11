@@ -7,23 +7,23 @@
 <div class="container py-5 d-flex flex-column align-items-center">
 
     <div class="text-center mb-5 mt-4">
-        <h1 class="display-4 fw-bold" style="color: #111827;">Groups Hub</h1>
+        <h1 class="display-4 fw-bold">Groups Hub</h1>
         <p class="lead text-muted mt-3">Manage your communities, find new ones, or create your own</p>
     </div>
 
     <div class="d-flex justify-content-center gap-4 flex-wrap w-100" style="max-width: 900px;">
         
-        <a asp-controller="Group" asp-action="ShowUserGroups" class="group-card">
+        <a asp-controller="Group" asp-action="ShowUserGroups" class="card-group">
             <i class="bi bi-people-fill"></i>
             <h3>Your Groups</h3>
         </a>
         
-        <a asp-controller="Group" asp-action="ShowAvailableGroups" class="group-card">
+        <a asp-controller="Group" asp-action="ShowAvailableGroups" class="card-group">
             <i class="bi bi-search"></i>
             <h3>Search Groups</h3>
         </a>
         
-        <a asp-controller="Group" asp-action="CreateGroup" class="group-card">
+        <a asp-controller="Group" asp-action="CreateGroup" class="card-group">
             <i class="bi bi-plus-circle-fill"></i>
             <h3>Create Group</h3>
         </a>
@@ -32,7 +32,7 @@
 </div>
 
 <style>
-    .group-card {
+    .card-group {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -47,18 +47,18 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-        .group-card:hover {
+        .card-group:hover {
             transform: translateY(-8px);
             box-shadow: 0 15px 35px rgba(174, 46, 184, 0.3);
             color: white;
         }
 
-        .group-card i {
+        .card-group i {
             font-size: 3.5rem;
             margin-bottom: 20px;
         }
 
-        .group-card h3 {
+        .card-group h3 {
             margin: 0;
             font-size: 1.5rem;
             font-weight: 700;

@@ -330,7 +330,7 @@
             if (connection && connection.state === signalR.HubConnectionState.Connected) {
                 try {
                     await connection.invoke("SaveSmartReplySettings", "@Model.FriendId", tone, custom, isAuto);
-                    console.log("AI configuration has been saved in the database.");
+                    console.log("AI configuration has been saved.");
                 } 
                 catch (err) {
                     console.error("Error saving AI configuration:", err);

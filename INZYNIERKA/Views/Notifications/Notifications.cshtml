@@ -9,7 +9,7 @@
 <div class="container py-5" style="max-width: 800px;">
     
     <div class="text-center mb-5">
-        <h2 class="fw-bold display-5" style="color: #111827;">Notifications</h2>
+        <h2 class="fw-bold display-5">Notifications</h2>
         <p class="text-muted">Manage your alerts and friend requests</p>
     </div>
 
@@ -18,7 +18,7 @@
         <div class="d-flex flex-column gap-3">
             @foreach (var notification in Model.Notifications)
             {
-                <div class="notification-card p-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center w-100">
+                <div class="card-notification p-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center w-100">
                     
                     <div class="mb-3 mb-md-0 d-flex align-items-center">
                         @if (notification.NotificationType == NotificationType.FriendRequest)
@@ -47,34 +47,34 @@
                         }
                     </div>
 
-                    <div class="action-menu gap-2">
+                    <div class="d-flex align-items-center gap-2">
 
                         @if (notification.NotificationType == NotificationType.FriendRequest)
                         {
                             <form asp-action="FriendRequestAccept" method="post" class="m-0">
                                 <input type="hidden" name="notificationId" value="@notification.Id" />
                                 <input type="hidden" name="senderUserName" value="@notification.SenderName" />
-                                <button type="submit" class="action-btn btn-accept" title="Accept Request">
+                                <button type="submit" class="btn-notification btn-accept gradient-green" title="Accept Request">
                                     <i class="bi bi-check-circle"></i> Accept
                                 </button>
                             </form>
                         }
                         else if (notification.NotificationType == NotificationType.Message)
                         {
-                            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@notification.SenderId" class="action-btn btn-chat" title="Go to Chat">
+                            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@notification.SenderId" class="btn-notification btn-chat gradient-blue" title="Go to Chat">
                                 <i class="bi bi-chat-dots"></i> Chat
                             </a>
                         }
                         else if (notification.NotificationType == NotificationType.GroupMessage)
                         {
-                            <a asp-controller="Chat" asp-action="GroupChat" asp-route-groupId="@notification.GroupId" class="action-btn btn-chat" title="Go to Group">
+                            <a asp-controller="Chat" asp-action="GroupChat" asp-route-groupId="@notification.GroupId" class="btn-notification btn-chat gradient-blue" title="Go to Group">
                                 <i class="bi bi-people"></i> Chat
                             </a>
                         }
 
                         <form asp-action="DeleteNotification" method="post" class="m-0">
                             <input type="hidden" name="notificationId" value="@notification.Id" />
-                            <button type="submit" class="action-btn btn-delete" title="Delete Notification">
+                            <button type="submit" class="btn-notification btn-delete gradient-pink" title="Delete Notification">
                                 <i class="bi bi-trash3"></i>
                             </button>
                         </form>
@@ -131,7 +131,7 @@
 </div>
 
 <style>
-    .notification-card {
+    .card-notification {
         background: white;
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -140,17 +140,12 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .notification-card:hover {
+        .card-notification:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
 
-    .action-menu {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .action-btn {
+    .btn-notification {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -165,25 +160,22 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .action-btn:hover {
+        .btn-notification:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             color: white;
         }
 
     .btn-delete {
-        background: linear-gradient(135deg, #8c144c, #d43780);
         width: 50px;
     }
 
     .btn-accept {
-        background: linear-gradient(135deg, #1c7a15, #32b528);
         min-width: 100px;
         gap: 5px;
     }
 
     .btn-chat {
-        background: linear-gradient(135deg, #1b3480, #4565c4);
         min-width: 90px;
         gap: 5px;
     }

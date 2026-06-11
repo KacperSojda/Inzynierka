@@ -5,7 +5,7 @@
 }
 
 <div class="container py-5 d-flex justify-content-center">
-    <div class="form-card text-center p-5 w-100" style="max-width: 500px;">
+    <div class="card-tag text-center p-5 w-100" style="max-width: 500px;">
         <div class="mb-3">
             <i class="bi bi-tag-fill" style="font-size: 3rem; color: #552459;"></i>
         </div>
@@ -17,11 +17,11 @@
 
             <div class="mb-4 text-start">
                 <label asp-for="TagName" class="form-label fw-bold text-muted"></label>
-                <input asp-for="TagName" class="form-control custom-input" placeholder="Enter tag name..." />
+                <input asp-for="TagName" class="form-control my-input" placeholder="Enter tag name..." />
                 <span asp-validation-for="TagName" class="text-danger"></span>
             </div>
             
-            <button type="submit" class="action-btn w-100">Save</button>
+            <button type="submit" class="btn-tag w-100">Save</button>
         </form>
     </div>
 </div>
@@ -33,25 +33,13 @@
 }
 
 <style>
-    .form-card {
+    .card-tag {
         background: white;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
-    .custom-input {
-        border-radius: 12px;
-        padding: 12px 15px;
-        border: 1px solid #ced4da;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-        .custom-input:focus {
-            border-color: #ae2eb8;
-            box-shadow: 0 0 0 0.25rem rgba(174, 46, 184, 0.25);
-        }
-
-    .action-btn {
+    .btn-tag {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -67,7 +55,7 @@
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-        .action-btn:hover {
+        .btn-tag:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 25px rgba(0,0,0,0.25);
             color: white;

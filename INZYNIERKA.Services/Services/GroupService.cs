@@ -97,6 +97,17 @@ namespace INZYNIERKA.Services.Services
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Group name cannot be empty.");
 
+            var normalizedName = name.Trim();
+            var searchName = normalizedName.ToLower();
+
+            var groupExists = await _context.Groups
+                .AnyAsync(g => g.Name.ToLower() == searchName);
+
+            if (groupExists)
+            {
+                throw new InvalidOperationException("A group with this name already exists.");
+            }
+
             var group = new Group
             {
                 Name = name,
