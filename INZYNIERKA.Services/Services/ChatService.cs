@@ -210,7 +210,7 @@ namespace INZYNIERKA.Services.Services
                 }
             }
 
-            var censored = ""; //await chatAiService.CensorMessage(finalMessage);
+            var censored = await _chatAiService.CensorMessage(finalMessage);
             if (!string.IsNullOrEmpty(censored))
             {
                 finalMessage = censored;
@@ -293,7 +293,7 @@ namespace INZYNIERKA.Services.Services
 
             string finalMessage = content;
 
-            var censored = ""; //await chatAiService.CensorMessage(finalMessage);
+            var censored = await _chatAiService.CensorMessage(finalMessage);
             if (!string.IsNullOrEmpty(censored))
             {
                 finalMessage = censored;
