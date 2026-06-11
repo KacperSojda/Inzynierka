@@ -25,7 +25,7 @@ jobs:
         dotnet-version: '8.0.x' 
 
     - name: Authenticate with GitHub Packages
-      run: dotnet nuget update source "https://nuget.pkg.github.com/KacperSojda/index.json" --name "Inz_Git" --username "KacperSojda" --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+      run: dotnet nuget update source "Inz_Git" --username "KacperSojda" --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
     - name: Restore dependencies
       run: dotnet restore
