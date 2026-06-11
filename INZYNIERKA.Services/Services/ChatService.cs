@@ -307,7 +307,7 @@ namespace INZYNIERKA.Services.Services
             {
                 GroupId = groupId,
                 SenderId = senderId,
-                Content = content,
+                Content = finalMessage,
                 Timestamp = DateTime.UtcNow
             };
 

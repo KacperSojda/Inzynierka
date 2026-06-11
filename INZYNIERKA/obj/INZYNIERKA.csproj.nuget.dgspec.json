@@ -55,7 +55,7 @@
           "dependencies": {
             "Inzynierka.Services": {
               "target": "Package",
-              "version": "[1.0.15, )"
+              "version": "[1.0.16, )"
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",
