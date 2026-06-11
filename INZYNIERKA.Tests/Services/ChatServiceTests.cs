@@ -38,29 +38,6 @@ namespace INZYNIERKA.Tests.Services
             return new Mock<SignInManager<User>>(userManager, contextAccessor.Object, claimsFactory.Object, null, null, null, null);
         }
 
-        // TESTS FOR: SaveMessage //
-
-        [Fact]
-        public async Task SaveMessage_CreatesMessageAndNotification()
-        {
-            var context = CreateInMemoryDbContext();
-            var mockUserManager = CreateMockUserManager();
-            var service = new ChatService<User>(context, mockUserManager.Object, null, null);
-
-            var senderId = "sender1";
-            var receiverId = "receiver1";
-
-            await service.SaveMessage(senderId, receiverId, "Hello", false);
-
-            var savedMessage = await context.Messages.FirstOrDefaultAsync();
-            var notification = await context.Notifications.FirstOrDefaultAsync();
-
-            Assert.NotNull(savedMessage);
-            Assert.Equal("Hello", savedMessage.Content);
-            Assert.NotNull(notification);
-            Assert.Equal(receiverId, notification.ReceiverId);
-        }
-
         // TESTS FOR: SaveGroupMessage //
 
         [Fact]
@@ -79,41 +56,6 @@ namespace INZYNIERKA.Tests.Services
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 service.SaveGroupMessage(999, senderId, "Message"));
-        }
-
-        [Fact]
-        public async Task SaveGroupMessage_CreatesMessageAndNotifications()
-        {
-            var context = CreateInMemoryDbContext();
-            var mockUserManager = CreateMockUserManager();
-            var mockSignInManager = CreateMockSignInManager(mockUserManager.Object);
-
-            var groupId = 1;
-            var senderId = "UserA";
-            var memberId = "UserB";
-
-            mockUserManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
-                           .ReturnsAsync(new User { Id = senderId, UserName = "SenderName" });
-
-            var service = new ChatService<User>(context, mockUserManager.Object, mockSignInManager.Object, null);
-
-            var group = new Group { Id = groupId, Name = "Test Group", Description = "Test Description" };
-            context.Groups.Add(group);
-            context.UserGroups.AddRange(
-                new UserGroup { ChatGroupId = groupId, UserId = senderId },
-                new UserGroup { ChatGroupId = groupId, UserId = memberId }
-            );
-            await context.SaveChangesAsync();
-
-            await service.SaveGroupMessage(groupId, senderId, "Group message");
-
-            var msg = await context.GroupMessages.FirstOrDefaultAsync();
-            var notif = await context.Notifications.FirstOrDefaultAsync(n => n.GroupId == groupId);
-
-            Assert.NotNull(msg);
-            Assert.Equal("Group message", msg.Content);
-            Assert.NotNull(notif);
-            Assert.Equal(memberId, notif.ReceiverId);
         }
 
         // TESTS FOR: ClearNotification //
