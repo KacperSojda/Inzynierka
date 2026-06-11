@@ -22,24 +22,9 @@ namespace INZYNIERKA.Services.Services
             _cache = cache;
         }
 
-        /// <summary>
-        /// Uwierzytelnia użytkownika w systemie na podstawie przekazanych danych logowania.
-        /// Sprawdza poprawność danych uwierzytelniających oraz weryfikuje, czy konto nie jest zablokowane.
-        /// </summary>
-        /// <returns>
-        /// Krotka (Tuple) zawierająca wynik operacji:
-        /// <list type="bullet">
-        /// <item>
-        /// <description><c>Result</c>: <c>true</c> jeśli logowanie zakończyło się sukcesem, w przeciwnym razie <c>false</c>.</description>
-        /// </item>
-        /// <item>
-        /// <description><c>IsLockedOut</c>: <c>true</c> jeśli konto użytkownika zostało tymczasowo zablokowane (np. po zbyt wielu błędnych próbach).</description>
-        /// </item>
-        /// <item>
-        /// <description><c>ErrorMessage</c>: Komunikat błędu wyjaśniający powód niepowodzenia (np. zablokowane konto lub błędne dane logowania).</description>
-        /// </item>
-        /// </list>
-        /// </returns>
+        /// <summary>Authenticates a user and checks for account lockout.</summary>
+        /// <param name="model">Login data.</param>
+        /// <returns>Result, IsLockedOut, and ErrorMessage.</returns>
         public async Task<(bool Result, bool IsLockedOut, string? ErrorMessage)> Login(LoginViewModel model)
         {
             var result = await _signInManager.PasswordSignInAsync(model.Name, model.Password, model.RememberMe, false);
@@ -57,6 +42,9 @@ namespace INZYNIERKA.Services.Services
             return (false, false, "Wrong username or password.");
         }
 
+        /// <summary>Registers a new user with default settings and signs him in.</summary>
+        /// <param name="model">Registration details.</param>
+        /// <returns>Result and collection of Errors.</returns>
         public async Task<(bool Result, IEnumerable<string> Errors)> Register(RegisterViewModel model)
         {
             var errors = new List<string>();
@@ -79,6 +67,9 @@ namespace INZYNIERKA.Services.Services
             return (false, result.Errors.Select(e => e.Description));
         }
 
+        /// <summary>Generates and sends an OTP to the user's email for password reset.</summary>
+        /// <param name="model">The user's email address data.</param>
+        /// <returns>Result and ErrorMessage.</returns>
         public async Task<(bool Result, string? ErrorMessage)> VerifyEmail(VerifyEmailViewModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -104,6 +95,9 @@ namespace INZYNIERKA.Services.Services
             return (true, null);
         }
 
+        /// <summary>Resets the user's password using a verified OTP.</summary>
+        /// <param name="model">Email, OTP code, and new password details.</param>
+        /// <returns>Result and a collection of Errors.</returns>
         public async Task<(bool Result, IEnumerable<string> Errors)> ChangePassword(ChangePasswordViewModel model)
         {
             var errors = new List<string>();
@@ -135,11 +129,15 @@ namespace INZYNIERKA.Services.Services
             return (false, result.Errors.Select(e => e.Description));
         }
 
+        /// <summary>Signs out the current user.</summary>
         public async Task Logout()
         {
             await _signInManager.SignOutAsync();
         }
 
+        /// <summary>Deletes the user's account by locking it and signing them out.</summary>
+        /// <param name="user">The user to delete.</param>
+        /// <returns>Result and ErrorMessage.</returns>
         public async Task<(bool Result, string? ErrorMessage)> DeleteAccount(TUser user)
         {
             var currentUser = await _userManager.GetUserAsync(_signInManager.Context.User);

@@ -20,6 +20,10 @@ namespace INZYNIERKA.Services.Services
             _configuration = configuration;
         }
 
+        /// <summary>Generates smart replies for a private chat based on recent history and user tone settings.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend.</param>
+        /// <returns>A list of up to three suggested replies.</returns>
         public async Task<List<string>> ResponseHelp(string currentUserId, string friendId)
         {
             var relation = await _context.UserFriends
@@ -78,6 +82,12 @@ namespace INZYNIERKA.Services.Services
             return ans.Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(3).ToList();
         }
 
+        /// <summary>Saves the user's smart reply configuration for a specific private chat.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend.</param>
+        /// <param name="tone">The selected AI response tone.</param>
+        /// <param name="custom">Custom instructions for the AI response style.</param>
+        /// <param name="auto">Indicates whether smart replies should be generated automatically.</param>
         public async Task SaveSRSettings(string currentUserId, string friendId, string tone, string custom, bool auto)
         {
             var relation = await _context.UserFriends
@@ -93,6 +103,10 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Generates smart replies for a group chat based on recent history and user tone settings.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="groupId">The ID of the group chat.</param>
+        /// <returns>A list of up to three suggested replies.</returns>
         public async Task<List<string>> GroupResponseHelp(string currentUserId, int groupId)
         {
             var relation = await _context.UserGroups
@@ -150,6 +164,9 @@ namespace INZYNIERKA.Services.Services
             return ans.Split('\n', StringSplitOptions.RemoveEmptyEntries).Take(3).ToList();
         }
 
+        /// <summary>Uses AI to correct grammar in the provided message.</summary>
+        /// <param name="userMessage">The message to be corrected.</param>
+        /// <returns>The corrected message, or the original if no changes were made.</returns>
         public async Task<string> CorrectMessage(string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
@@ -159,7 +176,12 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(correctedMessage) ? userMessage : correctedMessage;
 
         }
-
+        
+        /// <summary>Translates a message between two users with AI.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend.</param>
+        /// <param name="userMessage">The message to be translated.</param>
+        /// <returns>The translated message, or the original if no translation was made.</returns>
         public async Task<string> TranslateMessage(string currentUserId, string friendId, string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
@@ -183,6 +205,10 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(translatedResult) ? userMessage : translatedResult;
         }
 
+        /// <summary>Translates a message into the target user's preferred language.</summary>
+        /// <param name="targetUserId">The ID of the user who will receive the message.</param>
+        /// <param name="message">The message to be translated.</param>
+        /// <returns>The translated message.</returns>
         public async Task<string> AutoTranslateToUserLanguage(string targetUserId, string message)
         {
             if (string.IsNullOrWhiteSpace(message)) return message;
@@ -200,6 +226,10 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(translatedResult) ? message : translatedResult;
         }
 
+        /// <summary>Detects the context language of a group chat and translates the message into it.</summary>
+        /// <param name="groupId">The ID of the group chat.</param>
+        /// <param name="userMessage">The message to be translated.</param>
+        /// <returns>The translated message.</returns>
         public async Task<string> TranslateGroupMessage(int groupId, string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage)) return userMessage;
@@ -223,6 +253,9 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(translatedResult) ? userMessage : translatedResult;
         }
 
+        /// <summary>Uses AI to detect and censor content in a message.</summary>
+        /// <param name="message">The message to be analyzed.</param>
+        /// <returns>The censored message, or the original if no inappropriate content was found.</returns>
         public async Task<string> CensorMessage(string message)
         {
             if (string.IsNullOrWhiteSpace(message))
@@ -235,6 +268,12 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
         }
 
+        /// <summary>Generates an AI summary of a private chat history within a specified date range.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend.</param>
+        /// <param name="startDate">The start date of the summary.</param>
+        /// <param name="endDate">The end date of the summary.</param>
+        /// <returns>A text summary of the conversation.</returns>
         public async Task<string> SummarizeChat(string currentUserId, string friendId, DateTime startDate, DateTime endDate)
         {
             DateTime utcStart = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
@@ -264,6 +303,12 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(summary) ? "AI was unable to generate a summary." : summary;
         }
 
+        /// <summary>Generates an AI summary of a group chat history within a specified date range.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="groupId">The ID of the group chat.</param>
+        /// <param name="startDate">The start date of the summary.</param>
+        /// <param name="endDate">The end date of the summary.</param>
+        /// <returns>A text summary of the group conversation.</returns>
         public async Task<string> SummarizeGroupChat(string currentUserId, int groupId, DateTime startDate, DateTime endDate)
         {
             DateTime utcStart = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
@@ -293,6 +338,12 @@ namespace INZYNIERKA.Services.Services
             return string.IsNullOrEmpty(summary) ? "AI was unable to generate a summary." : summary;
         }
 
+        /// <summary>Saves the user's smart reply configuration for a specific group chat.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="groupId">The ID of the group chat.</param>
+        /// <param name="tone">The selected AI response tone.</param>
+        /// <param name="custom">Custom instructions for the AI response style.</param>
+        /// <param name="auto">Indicates whether smart replies should be generated automatically.</param>
         public async Task SaveGroupSRSettings(string currentUserId, int groupId, string tone, string custom, bool auto)
         {
             var relation = await _context.UserGroups

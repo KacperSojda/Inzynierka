@@ -15,6 +15,12 @@ namespace INZYNIERKA.Services.Services
             _context = context;
         }
 
+        /// <summary>Retrieves a paginated and filtered list of groups the user is not currently a member.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="searchQuery">An optional search string to filter groups by name.</param>
+        /// <param name="page">The page number for pagination.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <returns>A tuple containing the list of available groups and the total count of matches.</returns>
         public async Task<(GroupViewModel Model, int TotalCount)> AvailableGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10)
         {
             var userGroupIds = await _context.UserGroups
@@ -50,6 +56,12 @@ namespace INZYNIERKA.Services.Services
             return (new GroupViewModel { Groups = model }, totalCount);
         }
 
+        /// <summary>Retrieves a paginated and filtered list of groups the user is currently a member.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="searchQuery">An optional search string to filter groups by name.</param>
+        /// <param name="page">The page number for pagination.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <returns>A tuple containing the list of the user's groups and the total count.</returns>
         public async Task<(GroupViewModel Model, int TotalCount)> UserGroups(string userId, string? searchQuery = null, int page = 1, int pageSize = 10)
         {
             var query = _context.UserGroups
@@ -78,6 +90,9 @@ namespace INZYNIERKA.Services.Services
             return (model, totalCount);
         }
 
+        /// <summary>Creates a new chat group and assigns user as its initial administrator.</summary>
+        /// <param name="name">The name of the new group.</param>
+        /// <param name="creatorUserId">The ID of the user creating the group.</param>
         public async Task CreateGroup(string name, string creatorUserId)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Group name cannot be empty.");
@@ -93,6 +108,9 @@ namespace INZYNIERKA.Services.Services
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>Adds a user to a specific group as a regular member.</summary>
+        /// <param name="groupId">The ID of the group to join.</param>
+        /// <param name="userId">The ID of the user joining the group.</param>
         public async Task JoinGroup(int groupId, string userId)
         {
             var alreadyMember = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
@@ -104,6 +122,9 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Removes a user from a group, ensuring that the last administrator cannot leave without transferring rights or deleting the group.</summary>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="userId">The ID of the user leaving the group.</param>
         public async Task LeaveGroup(int groupId, string userId)
         {
             var membership = await _context.UserGroups.FirstOrDefaultAsync(ug => ug.UserId == userId && ug.ChatGroupId == groupId);
@@ -123,6 +144,10 @@ namespace INZYNIERKA.Services.Services
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>Retrieves the details of a group for editing purposes, verifying administrator privileges.</summary>
+        /// <param name="groupId">The ID of the group to edit.</param>
+        /// <param name="userId">The ID of the user requesting the edit.</param>
+        /// <returns>A view model containing the group's current name and description.</returns>
         public async Task<EditGroupViewModel> EditGroup(int groupId, string userId)
         {
             if (!await IsAdminAsync(groupId, userId)) throw new UnauthorizedAccessException();
@@ -139,6 +164,9 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Updates the name and description of an existing group, verifying administrator privileges.</summary>
+        /// <param name="model">The view model containing the updated group details.</param>
+        /// <param name="userId">The ID of the user performing the update.</param>
         public async Task UpdateGroup(EditGroupViewModel model, string userId)    
         {
             if (model == null || model.Id <= 0) return;
@@ -153,6 +181,9 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Deletes a group and its associated data entirely, verifying administrator privileges.</summary>
+        /// <param name="groupId">The ID of the group to delete.</param>
+        /// <param name="currentUserId">The ID of the user performing the deletion.</param>
         public async Task DeleteGroup(int groupId, string currentUserId)
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
@@ -166,6 +197,10 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Retrieves all available tags, indicating which ones are currently assigned to the group.</summary>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="currentUserId">The ID of the user requesting the tags.</param>
+        /// <returns>A view model containing the tag selection state.</returns>
         public async Task<SelectGroupTagsViewModel> GroupTags(int groupId, string currentUserId)
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();
@@ -180,6 +215,10 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Updates the tags associated with a specific group.</summary>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="currentUserId">The ID of the user updating the tags.</param>
+        /// <param name="selectedTagIds">A list of tag IDs to be assigned to the group.</param>
         public async Task UpdateGroupTags(int groupId, string currentUserId, List<int> selectedTagIds)
         {
             if (!await IsAdminAsync(groupId, currentUserId)) throw new UnauthorizedAccessException();

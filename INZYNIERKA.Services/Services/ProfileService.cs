@@ -18,6 +18,9 @@ namespace INZYNIERKA.Services.Services
             _userManager = userManager;
         }
 
+        /// <summary>Retrieves profile details, including tags, for the current user.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>A view model containing the user's profile information, or null if not found.</returns>
         public async Task<UserViewModel> Profile(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -47,6 +50,9 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Retrieves the user's profile data for editing interface.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>A view model containing the user's editable profile information.</returns>
         public async Task<UserViewModel> EditProfile(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -71,6 +77,9 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Retrieves the public profile details of another user, hiding private information.</summary>
+        /// <param name="targetUserId">The ID of the target user.</param>
+        /// <returns>A view model containing the user's public profile information, or null if not found.</returns>
         public async Task<UserViewModel> OtherProfile(string targetUserId)
         {
             if (string.IsNullOrWhiteSpace(targetUserId)) return null;
@@ -101,6 +110,10 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Updates the user's profile information in the database.</summary>
+        /// <param name="userId">The ID of the user being updated.</param>
+        /// <param name="model">The view model containing the updated profile data.</param>
+        /// <returns>A tuple containing the result and an ErrorMessage if the update fails.</returns>
         public async Task<(bool Result, string ErrorMessage)> UpdateProfile(string userId, UserViewModel model)
         {
             if (model == null) return (false, "No Data");
@@ -138,6 +151,11 @@ namespace INZYNIERKA.Services.Services
 
             return (false, "Failed to update profile");
         }
+
+        /// <summary>Updates the user's avatar image.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="avatarData">The base64-encoded image data for the new avatar.</param>
+        /// <returns>True if the avatar was updated successfully, otherwise false.</returns>
         public async Task<bool> UpdateAvatar(string userId, string avatarData)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(avatarData))
@@ -153,6 +171,10 @@ namespace INZYNIERKA.Services.Services
             return result.Succeeded;
         }
 
+        /// <summary>Updates the user's profile cover image.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="coverData">The base64-encoded image data for the new cover.</param>
+        /// <returns>True if the cover was updated successfully, otherwise false.</returns>
         public async Task<bool> UpdateCover(string userId, string coverData)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(coverData))

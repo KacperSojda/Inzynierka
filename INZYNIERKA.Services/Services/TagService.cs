@@ -15,6 +15,9 @@ namespace INZYNIERKA.Services.Services
             _context = context;
         }
 
+        /// <summary>Retrieves all available tags, indicating which ones are currently assigned to the user.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>A view model containing the tag selection state for the user.</returns>
         public async Task<SelectTagsViewModel> UserTags(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return new SelectTagsViewModel { Tags = new List<TagItem>() };
@@ -37,6 +40,9 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Updates the tags associated with a user.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="selectedTagIds">A list of tag IDs to be assigned to the user.</param>
         public async Task UpdateUserTags(string userId, List<int> selectedTagIds)
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
@@ -63,6 +69,9 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Creates a new tag if one with the same name does not already exist.</summary>
+        /// <param name="tagName">The name of the new tag.</param>
+        /// <returns>A tuple containing the result and an ErrorMessage if the creation fails.</returns>
         public async Task<(bool Result, string ErrorMessage)> NewTag(string tagName)
         {
             if (string.IsNullOrWhiteSpace(tagName)) return (false, "Tag name cannot be empty");
@@ -88,6 +97,8 @@ namespace INZYNIERKA.Services.Services
             return (true, "");
         }
 
+        /// <summary>Retrieves a complete list of all tags stored in the database.</summary>
+        /// <returns>A list of all tags.</returns>
         public async Task<List<Tag>> AllTags()
         {
             return await _context.Tags.ToListAsync();

@@ -15,6 +15,10 @@ namespace INZYNIERKA.Services.Services
             _context = context;
         }
 
+        /// <summary>Accepts a friend request and creates friendship records.</summary>
+        /// <param name="currentUserId">The ID of the user accepting the request.</param>
+        /// <param name="notificationId">The ID of the friend request notification.</param>
+        /// <returns>True if the request was accepted successfully, otherwise false.</returns>
         public async Task<bool> AcceptRequest(string currentUserId, int notificationId)
         {
             var notification = await _context.Notifications
@@ -40,6 +44,13 @@ namespace INZYNIERKA.Services.Services
 
             return true;
         }
+
+        /// <summary>Retrieves a paginated and filtered list of a user's friends.</summary>
+        /// <param name="userId">The ID of the user whose friends are being retrieved.</param>
+        /// <param name="searchQuery">An optional search string to filter friends by name.</param>
+        /// <param name="page">The page number for pagination.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <returns>A tuple containing the list of friends and the total count of matches.</returns>
         public async Task<(List<FriendViewModel> Friends, int TotalCount)> FriendList(string userId, string? searchQuery, int page, int pageSize)
         {
             var friends = _context.UserFriends
@@ -70,6 +81,9 @@ namespace INZYNIERKA.Services.Services
             return (model, totalCount);
         }
 
+        /// <summary>Removes a friend by deleting friendship records between two users.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend to remove.</param>
         public async Task DeleteFriend(string currentUserId, string friendId)
         {
             var friendship1 = await _context.UserFriends
@@ -83,6 +97,11 @@ namespace INZYNIERKA.Services.Services
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>Retrieves a list of pending friend requests for a user.</summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="page">The page number for pagination.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <returns>A tuple containing the list of pending requests and the total count.</returns>
         public async Task<(List<FriendViewModel> Requests, int TotalCount)> RequestList(string userId, int page, int pageSize)
         {
             var query = _context.UserFriends
@@ -104,6 +123,9 @@ namespace INZYNIERKA.Services.Services
             return (requests, totalCount);
         }
 
+        /// <summary>Cancels or declines a pending friend request and removes the associated notification.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the other user involved in the request.</param>
         public async Task DeleteRequest(string currentUserId, string friendId)
         {
             var friendship = await _context.UserFriends
@@ -122,6 +144,9 @@ namespace INZYNIERKA.Services.Services
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>Sends a friend request to another user and creates a notification.</summary>
+        /// <param name="senderId">The ID of the user sending the request.</param>
+        /// <param name="receiverId">The ID of the user receiving the request.</param>
         public async Task SendRequest(string senderId, string receiverId)
         {
             if (senderId == receiverId) return;

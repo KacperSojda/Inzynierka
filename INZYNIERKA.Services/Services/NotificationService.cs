@@ -15,6 +15,11 @@ namespace INZYNIERKA.Services.Services
             _context = context;
         }
 
+        /// <summary>Retrieves a paginated list of notifications for a specific user.</summary>
+        /// <param name="userId">The ID of the user receiving the notifications.</param>
+        /// <param name="page">The page number for pagination.</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <returns>A tuple containing the notification list and the total count of notifications.</returns>
         public async Task<(NotificationListViewModel Model, int TotalCount)> Notifications(string userId, int page = 1, int pageSize = 10)
         {
             if (string.IsNullOrWhiteSpace(userId))
@@ -52,6 +57,10 @@ namespace INZYNIERKA.Services.Services
             return (model, totalCount);
         }
 
+        /// <summary>Deletes a specific notification and removes pending friend requests.</summary>
+        /// <param name="currentUserId">The ID of the user owning the notification.</param>
+        /// <param name="notificationId">The ID of the notification to delete.</param>
+        /// <returns>True if the notification was successfully deleted, otherwise false.</returns>
         public async Task<bool> DeleteNotification(string currentUserId, int notificationId)
         {
             if (string.IsNullOrWhiteSpace(currentUserId) || notificationId <= 0) return false;

@@ -5,6 +5,9 @@ namespace INZYNIERKA.Services.Services
 {
     public class FileService : IFileService
     {
+        /// <summary>Validates an uploaded image file and converts it into a base64 Data URL.</summary>
+        /// <param name="file">The uploaded image file.</param>
+        /// <returns>Result success status and either the base64 Data URL or an ErrorMessage.</returns>
         public async Task<(bool Result, string ErrorMessage)> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)

@@ -14,6 +14,8 @@ namespace INZYNIERKA.Services.Services{
             _context = context;
         }
 
+        /// <summary>Retrieves all available tags for use in search filters.</summary>
+        /// <returns>A view model with unselected tag checkbox items.</returns>
         public async Task<SearchByTagsViewModel> Tags()
         {
             var tags = await _context.Tags.ToListAsync();
@@ -29,6 +31,13 @@ namespace INZYNIERKA.Services.Services{
             };
         }
 
+        /// <summary>Retrieves a randomized list of user IDs matching the specified filters, excluding the user's current friends.</summary>
+        /// <param name="currentUserId">The ID of the user performing the search.</param>
+        /// <param name="selectedTagIds">A list of tag IDs to filter users by their interests.</param>
+        /// <param name="searchName">An optional username search string.</param>
+        /// <param name="searchCity">An optional city search string.</param>
+        /// <param name="searchCountry">An optional country search string.</param>
+        /// <returns>A randomized list of matching user IDs.</returns>
         public async Task<List<string>> MatchingUsersIds(string currentUserId, List<int> selectedTagIds, string? searchName = null, string? searchCity = null, string? searchCountry = null)
         {
             if (string.IsNullOrWhiteSpace(currentUserId)) return new List<string>();
@@ -66,6 +75,9 @@ namespace INZYNIERKA.Services.Services{
             return matchingUserIds.OrderBy(id => random.Next()).ToList();
         }
 
+        /// <summary>Retrieves the profile details and associated tags for a specific user.</summary>
+        /// <param name="targetUserId">The ID of the user to retrieve.</param>
+        /// <returns>A view model containing the user's profile information, or null if not found.</returns>
         public async Task<UserViewModel> MatchedUser(string targetUserId)
         {
             if (string.IsNullOrWhiteSpace(targetUserId)) return null;

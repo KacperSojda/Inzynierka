@@ -14,6 +14,11 @@ namespace INZYNIERKA.Services.Services
             _configuration = configuration;
         }
 
+        /// <summary>Sends an email with an HTML body using configured SMTP settings.</summary>
+        /// <param name="email">The email address.</param>
+        /// <param name="subject">The subject line of the email.</param>
+        /// <param name="htmlMessage">The HTML-formatted body of the email.</param>
+        /// <returns>True if the email was sent successfully, otherwise false.</returns>
         public async Task<bool> SendEmail(string email, string subject, string htmlMessage)
         {
             try

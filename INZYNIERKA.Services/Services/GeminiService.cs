@@ -18,6 +18,10 @@ namespace INZYNIERKA.Services.Services
             _httpClient = httpClient;
         }
 
+        /// <summary>Sends a prompt and an optional question to the Gemini API and retrieves the generated text.</summary>
+        /// <param name="question">The specific question, user input, or chat history to provide to the AI.</param>
+        /// <param name="prompt">The system prompt or context instructions outlining how the AI should behave.</param>
+        /// <returns>The generated text from the AI, or null if the API request fails.</returns>
         public async Task<string> AskAsync(string question, string prompt)
         {
             if (string.IsNullOrWhiteSpace(prompt) && string.IsNullOrWhiteSpace(question))

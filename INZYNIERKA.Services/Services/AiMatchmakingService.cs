@@ -20,6 +20,9 @@ namespace INZYNIERKA.Services.Services
             _configuration = configuration;
         }
 
+        /// <summary>Retrieves a randomized list of potential user IDs who are not already friends with the current user.</summary>
+        /// <param name="currentUserId">The ID of the user looking for matches.</param>
+        /// <returns>A list of potential match users IDs.</returns>
         public async Task<List<string>> AiMatches(string currentUserId)
         {
             var connectedUserIds = await _context.UserFriends
@@ -36,6 +39,11 @@ namespace INZYNIERKA.Services.Services
             return matchingUsers;
         }
 
+        /// <summary>Evaluates potential matches using AI and returns the next user found.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="userIds">The list of potential match IDs.</param>
+        /// <param name="startIndex">The index in the list to start from.</param>
+        /// <returns>The matched user's profile and the index of the last processed user.</returns>
         public async Task<(UserViewModel MatchedUser, int LastProcessedIndex)> AiNext(string currentUserId, List<string> userIds, int startIndex)
         {
             var user = await _context.Users

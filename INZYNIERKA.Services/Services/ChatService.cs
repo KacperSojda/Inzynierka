@@ -24,6 +24,12 @@ namespace INZYNIERKA.Services.Services
             _chatAiService = chatAiService;
         }
 
+        /// <summary>Retrieves the chat history and view model for a private conversation.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend.</param>
+        /// <param name="userMessage">The current text in the input field.</param>
+        /// <param name="geminiAnswer">The generated AI response to display.</param>
+        /// <returns>ChatViewModel containing messages and AI configuration.</returns>
         public async Task<ChatViewModel> Chat(string currentUserId, string friendId, string userMessage, string geminiAnswer)
         {
             var user = await _userManager.FindByIdAsync(currentUserId);
@@ -72,6 +78,12 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Retrieves an older batch of messages for a private chat.</summary>
+        /// <param name="userId">The ID of the current user.</param>
+        /// <param name="friendId">The ID of the friend.</param>
+        /// <param name="skip">The number of messages to skip.</param>
+        /// <param name="take">The number of messages to retrieve.</param>
+        /// <returns>A list of older messages.</returns>
         public async Task<List<MessageViewModel>> OlderMessages(string userId, string friendId, int skip, int take = 30)
         {
             var messages = await _context.Messages
@@ -99,6 +111,12 @@ namespace INZYNIERKA.Services.Services
             }).ToList();
         }
 
+        /// <summary>Retrieves the chat history and view model for a group conversation.</summary>
+        /// <param name="currentUserId">The ID of the current user.</param>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="userMessage">The current text in the input field.</param>
+        /// <param name="geminiAnswer">The generated AI response to display.</param>
+        /// <returns> GroupChatViewModel containing messages and AI configuration.</returns>
         public async Task<GroupChatViewModel> GroupChat(string currentUserId, int groupId, string userMessage, string geminiAnswer)
         {
             var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
@@ -139,6 +157,11 @@ namespace INZYNIERKA.Services.Services
             };
         }
 
+        /// <summary>Retrieves an older batch of messages for a group chat.</summary>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="skip">The number of messages to skip.</param>
+        /// <param name="take">The number of messages to retrieve.</param>
+        /// <returns>A list of older group messages.</returns>
         public async Task<List<GroupMessageViewModel>> OlderGroupMessages(int groupId, int skip, int take = 30)
         {
             var currentUser = await _userManager.GetUserAsync(_signInManager.Context.User);
@@ -168,6 +191,12 @@ namespace INZYNIERKA.Services.Services
             }).ToList();
         }
 
+        /// <summary>Saves a new message in a private chat and creates a notification for the receiver.</summary>
+        /// <param name="senderId">The ID of the message sender.</param>
+        /// <param name="receiverId">The ID of the message receiver.</param>
+        /// <param name="content">The text of the message.</param>
+        /// <param name="autoTranslate">Indicates whether the message should be automatically translated to the receiver's language.</param>
+        /// <returns>The final message.</returns>
         public async Task<string> SaveMessage(string senderId, string receiverId, string content, bool autoTranslate)
         {
             string finalMessage = content;
@@ -217,6 +246,12 @@ namespace INZYNIERKA.Services.Services
             return finalMessage;
         }
 
+        /// <summary>Saves a base64-encoded image as a message in a private chat.</summary>
+        /// <param name="senderId">The ID of the message sender.</param>
+        /// <param name="receiverId">The ID of the message receiver.</param>
+        /// <param name="imageData">The base64-encoded image data.</param>
+        /// <param name="imageType">The type of the image.</param>
+        /// <returns>True if the image was saved successfully, otherwise false.</returns>
         public async Task<bool> SaveImage(string senderId, string receiverId, string imageData, string imageType)
         {
             if (string.IsNullOrEmpty(imageData))
@@ -243,6 +278,11 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
+        /// <summary>Saves a new message in a group chat and creates notifications for other group members.</summary>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="senderId">The ID of the message sender.</param>
+        /// <param name="content">The text content of the message.</param>
+        /// <returns>The final message content.</returns>
         public async Task<string> SaveGroupMessage(int groupId, string senderId, string content)
         {
             var currentUser = await _userManager.GetUserAsync(_signInManager.Context.User);
@@ -301,6 +341,12 @@ namespace INZYNIERKA.Services.Services
             return finalMessage;
         }
 
+        /// <summary>Saves a base64-encoded image as a message in a group chat.</summary>
+        /// <param name="senderId">The ID of the message sender.</param>
+        /// <param name="groupId">The ID of the group.</param>
+        /// <param name="imageData">The base64-encoded image data.</param>
+        /// <param name="imageType">The type of the image.</param>
+        /// <returns>True if the image was saved successfully, otherwise false.</returns>
         public async Task<bool> SaveGroupImage(string senderId, int groupId, string imageData, string imageType)
         {
             var isMember = await _context.UserGroups.AnyAsync(ug => ug.ChatGroupId == groupId && ug.UserId == senderId);
@@ -332,6 +378,9 @@ namespace INZYNIERKA.Services.Services
             return true;
         }
 
+        /// <summary>Clears message notification from a specific friend.</summary>
+        /// <param name="userId">The ID of the receiving user.</param>
+        /// <param name="friendId">The ID of the sender.</param>
         public async Task ClearNotification(string userId, string friendId)
         {
             var notification = await _context.Notifications
@@ -344,6 +393,9 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Clears message notification for a specific group chat.</summary>
+        /// <param name="userId">The ID of the receiving user.</param>
+        /// <param name="groupId">The ID of the group.</param>
         public async Task ClearGroupNotification(string userId, int groupId)
         {
             var notification = await _context.Notifications
@@ -356,6 +408,9 @@ namespace INZYNIERKA.Services.Services
             }
         }
 
+        /// <summary>Marks all unread messages from a friend as read.</summary>
+        /// <param name="userId">The ID of the receiving user.</param>
+        /// <param name="friendId">The ID of the sender.</param>
         public async Task MarkAsReaded(string userId, string friendId)
         {
             var unreadMessages = await _context.Messages
