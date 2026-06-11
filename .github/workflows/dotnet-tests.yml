@@ -9,22 +9,29 @@ on:
 jobs:
   build-and-test:
     name: Run Unit Tests
-    runs-on: ubuntu-latest # GitHub uruchomi to na darmowym, wirtualnym Linuksie
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: read
 
     steps:
-    - name: Pobieranie kodu (Checkout)
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Instalacja środowiska .NET
+    - name: Setup .NET environment
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x' 
 
-    - name: Przywracanie zależności (Restore)
+    - name: Authenticate with GitHub Packages
+      run: dotnet nuget add source "https://nuget.pkg.github.com/KacperSojda/index.json" --name "github" --username "KacperSojda" --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+    - name: Restore dependencies
       run: dotnet restore
 
-    - name: Kompilacja projektu (Build)
+    - name: Build project
       run: dotnet build --no-restore --configuration Release
 
-    - name: Uruchamianie testów (Test)
+    - name: Run tests
       run: dotnet test --no-build --configuration Release --verbosity normal
