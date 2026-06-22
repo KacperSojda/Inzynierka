@@ -61,6 +61,10 @@
               "target": "Package",
               "version": "[8.9.0, )"
             },
+            "Inzynierka.Data": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
             "Inzynierka.Services": {
               "target": "Package",
               "version": "[1.0.17, )"
@@ -173,6 +177,10 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
+            "Inzynierka.Data": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
             "Inzynierka.Services": {
               "target": "Package",
               "version": "[1.0.17, )"

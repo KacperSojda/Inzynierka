@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "INZYNIERKA/1.0.0": {
         "dependencies": {
+          "Inzynierka.Data": "1.0.3",
           "Inzynierka.Services": "1.0.17",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.AspNetCore.SignalR": "1.2.0",
@@ -54,7 +55,7 @@
           }
         }
       },
-      "Inzynierka.Data/1.0.2": {
+      "Inzynierka.Data/1.0.3": {
         "dependencies": {
           "Inzynierka.Domain": "1.0.3",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
@@ -63,8 +64,8 @@
         },
         "runtime": {
           "lib/net8.0/INZYNIERKA.Data.dll": {
-            "assemblyVersion": "1.0.2.0",
-            "fileVersion": "1.0.2.0"
+            "assemblyVersion": "1.0.3.0",
+            "fileVersion": "1.0.3.0"
           }
         }
       },
@@ -81,7 +82,7 @@
       },
       "Inzynierka.Services/1.0.17": {
         "dependencies": {
-          "Inzynierka.Data": "1.0.2",
+          "Inzynierka.Data": "1.0.3",
           "Inzynierka.Domain": "1.0.3",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore": "8.0.4"
@@ -962,12 +963,12 @@
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
     },
-    "Inzynierka.Data/1.0.2": {
+    "Inzynierka.Data/1.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-s27XDmGAn7GBSrJjESDaFen7ii8pRryA2huv4Y7RXJMBLpVtePNW3jt9EHnuEhV+7naxvt0vKOopRJp14/MYuw==",
-      "path": "inzynierka.data/1.0.2",
-      "hashPath": "inzynierka.data.1.0.2.nupkg.sha512"
+      "sha512": "sha512-2hcVd6TzAxVwS71VdnbuJg0OH6zeKhJ+nPe86cZnSVbkAkCdnd4B73xG5RSF9nSDrlPuw41ZBk1tOaOLJtTpDg==",
+      "path": "inzynierka.data/1.0.3",
+      "hashPath": "inzynierka.data.1.0.3.nupkg.sha512"
     },
     "Inzynierka.Domain/1.0.3": {
       "type": "package",

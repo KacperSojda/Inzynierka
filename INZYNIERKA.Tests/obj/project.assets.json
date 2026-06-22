@@ -81,7 +81,7 @@
           }
         }
       },
-      "Inzynierka.Data/1.0.2": {
+      "Inzynierka.Data/1.0.3": {
         "type": "package",
         "dependencies": {
           "Inzynierka.Domain": "1.0.3",
@@ -2264,6 +2264,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
+          "Inzynierka.Data": "1.0.3",
           "Inzynierka.Services": "1.0.17",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.AspNetCore.SignalR": "1.2.0",
@@ -2442,13 +2443,13 @@
         "lib/netstandard2.1/FluentAssertions.xml"
       ]
     },
-    "Inzynierka.Data/1.0.2": {
-      "sha512": "s27XDmGAn7GBSrJjESDaFen7ii8pRryA2huv4Y7RXJMBLpVtePNW3jt9EHnuEhV+7naxvt0vKOopRJp14/MYuw==",
+    "Inzynierka.Data/1.0.3": {
+      "sha512": "2hcVd6TzAxVwS71VdnbuJg0OH6zeKhJ+nPe86cZnSVbkAkCdnd4B73xG5RSF9nSDrlPuw41ZBk1tOaOLJtTpDg==",
       "type": "package",
-      "path": "inzynierka.data/1.0.2",
+      "path": "inzynierka.data/1.0.3",
       "files": [
         ".nupkg.metadata",
-        "inzynierka.data.1.0.2.nupkg.sha512",
+        "inzynierka.data.1.0.3.nupkg.sha512",
         "inzynierka.data.nuspec",
         "lib/net8.0/INZYNIERKA.Data.dll",
         "lib/net8.0/INZYNIERKA.Data.runtimeconfig.json"
@@ -5492,6 +5493,7 @@
     "net8.0": [
       "FluentAssertions >= 8.9.0",
       "INZYNIERKA >= 1.0.0",
+      "Inzynierka.Data >= 1.0.3",
       "Inzynierka.Services >= 1.0.17",
       "Microsoft.EntityFrameworkCore.InMemory >= 9.0.*",
       "Microsoft.NET.Test.Sdk >= 17.11.1",
@@ -5561,6 +5563,10 @@
           "FluentAssertions": {
             "target": "Package",
             "version": "[8.9.0, )"
+          },
+          "Inzynierka.Data": {
+            "target": "Package",
+            "version": "[1.0.3, )"
           },
           "Inzynierka.Services": {
             "target": "Package",

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "4NeQYqtNB9Q=",
+  "dgSpecHash": "/4pqOVsRYwQ=",
   "success": true,
   "projectFilePath": "G:\\Inzynierka\\Inzynierka\\INZYNIERKA\\INZYNIERKA.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\JA\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
-    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.data\\1.0.2\\inzynierka.data.1.0.2.nupkg.sha512",
+    "C:\\Users\\JA\\.nuget\\packages\\inzynierka.data\\1.0.3\\inzynierka.data.1.0.3.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\inzynierka.domain\\1.0.3\\inzynierka.domain.1.0.3.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\inzynierka.services\\1.0.17\\inzynierka.services.1.0.17.nupkg.sha512",
     "C:\\Users\\JA\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.0\\microsoft.aspnetcore.authentication.abstractions.2.3.0.nupkg.sha512",
