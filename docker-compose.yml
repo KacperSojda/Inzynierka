@@ -8,7 +8,7 @@
     ports:
       - "8080:80"
     environment:
-      - ConnectionStrings__DefaultConnection=Host=${HOST}
+      - ConnectionStrings__DefaultConnection=${HOST}
 
       - EmailConfiguration__SmtpServer=${SMTP_SERVER}
       - EmailConfiguration__SmtpPort=${SMTP_PORT}
