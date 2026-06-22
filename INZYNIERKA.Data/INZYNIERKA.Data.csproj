@@ -7,7 +7,7 @@
 
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageId>Inzynierka.Data</PackageId>
-	<Version>1.0.2</Version>
+	<Version>1.0.3</Version>
 	<Authors>Kacper Sojda</Authors>
 	<Description>Kontekst bazy danych dla systemu chatu.</Description>
 	<UserSecretsId>d207f8bb-832d-42e5-811e-5b5381af14f7</UserSecretsId>
