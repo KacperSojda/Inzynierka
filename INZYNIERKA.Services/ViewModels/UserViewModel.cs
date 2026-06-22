@@ -25,7 +25,9 @@ namespace INZYNIERKA.Services.ViewModels
         [StringLength(30)]
         public string? Language { get; set; }
         public int? Age { get; set; }
+        public bool IsFriend { get; set; }
         public List<string> Tags { get; set; } = new List<String>();
         public List<Notification> Notifications { get; set; } = new List<Notification>();
+                
     }
 }

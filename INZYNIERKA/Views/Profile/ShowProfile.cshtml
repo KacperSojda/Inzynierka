@@ -126,10 +126,13 @@
     </div>
 
     <div class="home-menu d-flex flex-row flex-lg-column justify-content-center flex-wrap gap-3">
-        <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn-profile gradient-blue" title="Write message" data-bs-toggle="tooltip">
-            <i class="bi bi-chat-dots-fill"></i> <span>Chat</span>
-        </a>
-        
+        @if (Model.IsFriend)
+        {
+            <a asp-controller="Chat" asp-action="Chat" asp-route-friendId="@Model.Id" class="btn-profile gradient-blue" title="Write message" data-bs-toggle="tooltip">
+                <i class="bi bi-chat-dots-fill"></i> <span>Chat</span>
+            </a>
+        }
+
     </div>
 
 </div>

@@ -139,7 +139,7 @@ namespace INZYNIERKA.Controllers
 
             try
             {
-                var model = await _profileService.OtherProfile(userId);
+                var model = await _profileService.OtherProfile(userId, currentUserId);
 
                 if (model == null)
                 {

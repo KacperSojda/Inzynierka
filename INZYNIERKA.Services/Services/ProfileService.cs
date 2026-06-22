@@ -79,8 +79,9 @@ namespace INZYNIERKA.Services.Services
 
         /// <summary>Retrieves the public profile details of another user, hiding private information.</summary>
         /// <param name="targetUserId">The ID of the target user.</param>
+        /// <param name="currentUserId">The ID of the current user.</param>
         /// <returns>A view model containing the user's public profile information, or null if not found.</returns>
-        public async Task<UserViewModel> OtherProfile(string targetUserId)
+        public async Task<UserViewModel> OtherProfile(string targetUserId, string currentUserId)
         {
             if (string.IsNullOrWhiteSpace(targetUserId)) return null;
 
@@ -90,6 +91,10 @@ namespace INZYNIERKA.Services.Services
                 .FirstOrDefaultAsync(u => u.Id == targetUserId);
 
             if (user == null) return null;
+
+            bool isFriend = await _context.UserFriends.AnyAsync(f =>
+                (f.UserId == currentUserId && f.FriendId == targetUserId) ||
+                (f.UserId == targetUserId && f.FriendId == currentUserId));
 
             return new UserViewModel
             {
@@ -106,7 +111,8 @@ namespace INZYNIERKA.Services.Services
                 Status = user.Status,
                 Zodiac = user.Zodiac,
                 Cover = user.Cover,
-                Language = user.PreferredLanguages
+                Language = user.PreferredLanguages,
+                IsFriend = isFriend
             };
         }
 
