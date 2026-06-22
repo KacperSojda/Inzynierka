@@ -9,7 +9,7 @@
       "INZYNIERKA/1.0.0": {
         "dependencies": {
           "Inzynierka.Data": "1.0.3",
-          "Inzynierka.Services": "1.0.17",
+          "Inzynierka.Services": "1.0.18",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.AspNetCore.SignalR": "1.2.0",
           "Microsoft.EntityFrameworkCore": "8.0.4",
@@ -80,7 +80,7 @@
           }
         }
       },
-      "Inzynierka.Services/1.0.17": {
+      "Inzynierka.Services/1.0.18": {
         "dependencies": {
           "Inzynierka.Data": "1.0.3",
           "Inzynierka.Domain": "1.0.3",
@@ -89,8 +89,8 @@
         },
         "runtime": {
           "lib/net8.0/INZYNIERKA.Services.dll": {
-            "assemblyVersion": "1.0.17.0",
-            "fileVersion": "1.0.17.0"
+            "assemblyVersion": "1.0.18.0",
+            "fileVersion": "1.0.18.0"
           }
         }
       },
@@ -977,12 +977,12 @@
       "path": "inzynierka.domain/1.0.3",
       "hashPath": "inzynierka.domain.1.0.3.nupkg.sha512"
     },
-    "Inzynierka.Services/1.0.17": {
+    "Inzynierka.Services/1.0.18": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-u9zAD4TFsMrv2TAD05xd04Ig9l8zzyoorPODcdM20wCUGExmuGtxb0JTlicOxA/bu1G6Zft6FSMcRZFOnamWbA==",
-      "path": "inzynierka.services/1.0.17",
-      "hashPath": "inzynierka.services.1.0.17.nupkg.sha512"
+      "sha512": "sha512-LeA3qyihwzi2Rqqdo1zajgcfxUWkBm+1Vkf5dMY+sxOSUVlGenR0OqrulFWyXunAaGjv51b5T46E2kTlgAZoTA==",
+      "path": "inzynierka.services/1.0.18",
+      "hashPath": "inzynierka.services.1.0.18.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Cryptography.Internal/8.0.4": {
       "type": "package",

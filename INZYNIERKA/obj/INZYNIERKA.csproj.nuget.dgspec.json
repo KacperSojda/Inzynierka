@@ -59,7 +59,7 @@
             },
             "Inzynierka.Services": {
               "target": "Package",
-              "version": "[1.0.17, )"
+              "version": "[1.0.18, )"
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",

@@ -91,7 +91,7 @@ namespace INZYNIERKA.Tests.Services
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
 
-            var result = await service.OtherProfile(userId);
+            var result = await service.OtherProfile(userId, "userid");
 
             Assert.NotNull(result);
             Assert.Equal("Friend", result.UserName);
@@ -106,7 +106,7 @@ namespace INZYNIERKA.Tests.Services
             var mockUserManager = CreateMockUserManager();
             var service = new ProfileService<User>(dbContext, mockUserManager.Object);
 
-            var result = await service.OtherProfile("nonexistent");
+            var result = await service.OtherProfile("nonexistent", "userid");
 
             Assert.Null(result);
         }
