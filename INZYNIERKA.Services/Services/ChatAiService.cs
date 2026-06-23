@@ -264,8 +264,9 @@ namespace INZYNIERKA.Services.Services
             }
 
             string censorPrompt = _configuration["Prompts:Censor"];
-            var censoredMessage = await _geminiService.AskAsync(message, censorPrompt);
-            return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
+            //var censoredMessage = await _geminiService.AskAsync(message, censorPrompt);
+            //return string.IsNullOrEmpty(censoredMessage) ? message : censoredMessage;
+            return message;
         }
 
         /// <summary>Generates an AI summary of a private chat history within a specified date range.</summary>
